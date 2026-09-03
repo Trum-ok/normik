@@ -1,0 +1,35 @@
+"""Запись списка источников, на которую нет ссылок."""
+
+from collections.abc import Iterable
+
+from nk.core.document import Document
+from nk.core.finding import Finding, Severity
+from nk.core.rule import rule
+from nk.rules._shared import BIBITEM_COMMAND, BIBLIOGRAPHY_ENVIRONMENT, cited_keys
+
+
+@rule(
+    id="G732-6.16-bibitem-uncited",
+    clause="6.16",
+    severity=Severity.WARNING,
+    title="На запись списка источников нет ссылок в тексте",
+)
+def bibitem_uncited(doc: Document) -> Iterable[Finding]:
+    cited = cited_keys(doc)
+    for bibliography in doc.structure.find_environments(BIBLIOGRAPHY_ENVIRONMENT):
+        for command in bibliography.all_commands():
+            if command.name != BIBITEM_COMMAND or not command.arg:
+                continue
+            if command.arg in cited:
+                continue
+            yield bibitem_uncited.finding(
+                doc,
+                command.span,
+                message=f"На запись {command.arg!r} в тексте нет ни одной ссылки.",
+                requirement=(
+                    "Список содержит источники, использованные при составлении отчёта; "
+                    "сведения располагают в порядке появления ссылок на них."
+                ),
+                suggestion=f"Сослаться на источник \\cite{{{command.arg}}} либо убрать запись.",
+                col=command.col,
+            )

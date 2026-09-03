@@ -7,7 +7,7 @@
 import re
 from collections.abc import Iterator
 
-from nk.core.document import Command, Document, Environment
+from nk.core.document import Command, Document, Environment, Line
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
@@ -166,3 +166,116 @@ def structural_element(text: str) -> str | None:
 def is_numbered(command: Command) -> bool:
     """Нумеруется ли рубрика: команда без звёздочки."""
     return not command.name.endswith("*")
+
+
+#: Окружения выключных формул.
+MATH_ENVIRONMENTS = frozenset(
+    {
+        "equation",
+        "equation*",
+        "align",
+        "align*",
+        "gather",
+        "gather*",
+        "multline",
+        "multline*",
+        "displaymath",
+        "eqnarray",
+        "eqnarray*",
+        "alignat",
+        "alignat*",
+        "flalign",
+        "flalign*",
+    }
+)
+
+BIBLIOGRAPHY_ENVIRONMENT = "thebibliography"
+BIBITEM_COMMAND = "bibitem"
+BIBTEX_COMMANDS = frozenset({"bibliography", "addbibresource", "printbibliography"})
+
+
+def ordered_commands(doc: Document, *names: str) -> list[Command]:
+    """Команды в порядке следования по исходнику, а не по дереву окружений."""
+    return sorted(
+        doc.structure.find_commands(*names),
+        key=lambda command: (str(command.path), command.lineno, command.col),
+    )
+
+
+def is_numbered_environment(name: str) -> bool:
+    """Нумеруется ли формула: окружение без звёздочки."""
+    return not name.endswith("*") and name != "displaymath"
+
+
+#: Порядок структурных элементов по разделу 4. Термины и объединённый перечень
+#: занимают одно место, поэтому ранг у них общий.
+ELEMENT_ORDER: dict[str, int] = {
+    "СПИСОК ИСПОЛНИТЕЛЕЙ": 1,
+    "РЕФЕРАТ": 2,
+    "СОДЕРЖАНИЕ": 3,
+    "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ": 4,
+    "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ": 4,
+    "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ": 5,
+    "ВВЕДЕНИЕ": 6,
+    "ЗАКЛЮЧЕНИЕ": 7,
+    "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ": 8,
+    APPENDIX: 9,
+}
+
+#: Прописные буквы кириллицы, которыми обозначают приложения.
+APPENDIX_LETTERS = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
+
+DOCUMENT_ENVIRONMENT = "document"
+CONTENTS_COMMAND = "tableofcontents"
+
+
+def is_full_document(doc: Document) -> bool:
+    """Проверяется отчёт целиком, а не отдельная глава.
+
+    Правила о составе и порядке структурных элементов на отдельной главе
+    выдавали бы сплошной шум.
+    """
+    return any(doc.structure.find_environments(DOCUMENT_ENVIRONMENT))
+
+
+def structural_headings(doc: Document) -> list[tuple[Command, str]]:
+    """Заголовки структурных элементов в порядке следования, с каноническим наименованием."""
+    found: list[tuple[Command, str]] = []
+    for command in ordered_commands(doc, *SECTION_DEPTH):
+        element = structural_element(heading_text(command))
+        if element is not None:
+            found.append((command, element))
+    return found
+
+
+def section_lines(doc: Document, command: Command) -> list[Line]:
+    """Строки раздела: от заголовка до следующего заголовка в том же файле."""
+    same_file = sorted(
+        item.lineno for item in ordered_commands(doc, *SECTION_DEPTH) if item.path == command.path
+    )
+    following = [lineno for lineno in same_file if lineno > command.span.end]
+    end = following[0] - 1 if following else len(doc.lines_of(command.path))
+    return [line for line in doc.lines_of(command.path) if command.span.end < line.lineno <= end]
+
+
+KEYWORDS_PREFIX = re.compile(r"^\s*(?:\\\w+\{)?\s*КЛЮЧЕВЫЕ\s+СЛОВА\s*:", re.IGNORECASE)
+
+
+def keyword_lists(doc: Document) -> Iterator[tuple[Line, list[str]]]:
+    """Строки перечня ключевых слов и сами слова.
+
+    Перечень приводят в строку через запятые, поэтому берётся одна строка исходника
+    вместе с продолжением до первой пустой строки.
+    """
+    lines = list(doc.iter_lines())
+    for index, line in enumerate(lines):
+        match = KEYWORDS_PREFIX.match(line.stripped)
+        if match is None:
+            continue
+        parts = [line.stripped[match.end() :]]
+        for following in lines[index + 1 :]:
+            if following.path != line.path or following.is_blank:
+                break
+            parts.append(following.stripped)
+        text = visible_text(" ".join(parts))
+        yield line, [word.strip() for word in text.split(",") if word.strip()]
