@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
-from conftest import make_document
+from support import make_document
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity

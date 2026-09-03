@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from conftest import make_document
+from support import make_document
 
 from nk.core.document import Document, Line, Span
 

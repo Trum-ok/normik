@@ -40,6 +40,10 @@ class DuplicateRuleError(ValueError):
 class UnknownRuleError(KeyError):
     """Запрошено правило, которого нет в реестре."""
 
+    def __str__(self) -> str:
+        # KeyError по умолчанию печатает repr аргумента, а сообщение уходит пользователю.
+        return str(self.args[0]) if self.args else ""
+
 
 @dataclass(frozen=True, slots=True)
 class RuleImpl:

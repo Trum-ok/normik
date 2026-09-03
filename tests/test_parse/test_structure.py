@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from conftest import make_document
+from support import make_document
 
 from nk.core.document import Structure
 from nk.parse.issues import ENVIRONMENT_ORPHAN_END, ENVIRONMENT_UNCLOSED, GROUP_UNCLOSED
