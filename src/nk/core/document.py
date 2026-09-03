@@ -42,6 +42,99 @@ class Span:
     def contains(self, lineno: int) -> bool:
         return self.start <= lineno <= self.end
 
+    @property
+    def length(self) -> int:
+        return self.end - self.start + 1
+
+
+@dataclass(frozen=True, slots=True)
+class Command:
+    """Команда LaTeX с разобранными аргументами."""
+
+    name: str
+    """Имя без обратной косой черты, например ``caption``."""
+
+    path: Path
+    lineno: int
+    col: int
+    options: tuple[str, ...]
+    """Содержимое групп в квадратных скобках."""
+
+    args: tuple[str, ...]
+    """Содержимое групп в фигурных скобках."""
+
+    span: Span
+
+    @property
+    def arg(self) -> str:
+        return self.args[0] if self.args else ""
+
+
+@dataclass(frozen=True, slots=True)
+class Environment:
+    """Окружение LaTeX от ``\\begin`` до ``\\end`` включительно."""
+
+    name: str
+    path: Path
+    span: Span
+    options: tuple[str, ...] = ()
+    args: tuple[str, ...] = ()
+    children: tuple["Environment", ...] = ()
+    commands: tuple[Command, ...] = ()
+    """Команды непосредственно внутри окружения, без вложенных."""
+
+    def walk(self) -> Iterator["Environment"]:
+        """Само окружение и все вложенные, сверху вниз."""
+        yield self
+        for child in self.children:
+            yield from child.walk()
+
+    def all_commands(self) -> Iterator[Command]:
+        for env in self.walk():
+            yield from env.commands
+
+
+@dataclass(frozen=True, slots=True)
+class Structure:
+    """Дерево окружений и команд документа."""
+
+    environments: tuple[Environment, ...] = ()
+    """Окружения верхнего уровня."""
+
+    commands: tuple[Command, ...] = ()
+    """Команды вне окружений."""
+
+    def walk_environments(self) -> Iterator[Environment]:
+        for env in self.environments:
+            yield from env.walk()
+
+    def find_environments(self, *names: str) -> Iterator[Environment]:
+        wanted = set(names)
+        for env in self.walk_environments():
+            if not wanted or env.name in wanted:
+                yield env
+
+    def find_commands(self, *names: str) -> Iterator[Command]:
+        wanted = set(names)
+        for command in self._all_commands():
+            if not wanted or command.name in wanted:
+                yield command
+
+    def enclosing(self, path: Path, lineno: int) -> Environment | None:
+        """Самое внутреннее окружение, накрывающее позицию."""
+        found: Environment | None = None
+        for env in self.walk_environments():
+            if not (env.path == path and env.span.contains(lineno)):
+                continue
+            if found is None or env.span.length <= found.span.length:
+                found = env
+        return found
+
+    def _all_commands(self) -> Iterator[Command]:
+        yield from self.commands
+        for env in self.environments:
+            yield from env.all_commands()
+
 
 @dataclass(frozen=True, slots=True)
 class Document:
@@ -53,6 +146,7 @@ class Document:
     files: tuple[Path, ...]
     lines: tuple[Line, ...]
     profile: Profile = field(default_factory=Profile)
+    structure: Structure = field(default_factory=Structure)
 
     _index: dict[Path, tuple[Line, ...]] = field(
         init=False, repr=False, compare=False, default_factory=dict
