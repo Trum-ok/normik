@@ -1,0 +1,42 @@
+[project]
+name = "normik"
+version = "0.1.0"
+description = "Проверка работ на соответствие ГОСТ"
+requires-python = ">=3.13.4"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.5",
+    "ty>=0.0.78",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
+    "N",
+    "RUF",
+    "SIM",
+]
+ignore = [
+    "E501",
+    "B008",
+    "RUF001", # кириллица в строках
+    "RUF002", # кириллица в докстрингах
+    "RUF003", # кириллица в комментариях
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
