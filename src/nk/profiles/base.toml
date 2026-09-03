@@ -1,0 +1,17 @@
+# Чистый ГОСТ 7.32-2017: все правила включены, уровни и параметры — как объявлены.
+#
+# Профиль кафедры наследуется от этого и правит только нужное:
+#
+#   name = "Кафедра N"
+#   extends = "base"
+#
+#   disable = ["G732-5.3.2-abstract-volume"]   # реферат не требуется
+#
+#   [rules."G732-6.2.4-heading-hyphenation"]
+#   severity = "warning"
+#
+#   [rules."G732-5.3.2.1-keywords-count".params]
+#   keywords_min = 5
+#   keywords_max = 15
+
+name = "base"

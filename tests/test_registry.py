@@ -4,8 +4,8 @@ import pytest
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
-from nk.core.profile import Profile
-from nk.core.registry import load_rules, select_rules
+from nk.core.profile import Profile, ProfileError
+from nk.core.registry import load_rules, select_rules, validate_profile
 from nk.core.rule import REGISTRY, RuleRegistry, UnknownRuleError, rule
 
 
@@ -62,3 +62,18 @@ def test_unknown_id_in_ignore_is_an_error(three_rules: RuleRegistry) -> None:
 
 def test_load_rules_walks_the_package_without_errors() -> None:
     assert load_rules() is REGISTRY
+
+
+def test_validate_profile_accepts_known_rules(three_rules: RuleRegistry) -> None:
+    profile = Profile(
+        disabled=frozenset({"G732-a"}),
+        severities={"G732-b": Severity.WARNING},
+    )
+    validate_profile(profile, three_rules)
+
+
+def test_validate_profile_rejects_typos(three_rules: RuleRegistry) -> None:
+    profile = Profile(name="Кафедра N", disabled=frozenset({"G732-ф"}))
+
+    with pytest.raises(ProfileError, match="G732-ф"):
+        validate_profile(profile, three_rules)

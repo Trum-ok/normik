@@ -8,7 +8,7 @@ import importlib
 import pkgutil
 from collections.abc import Iterable
 
-from nk.core.profile import Profile
+from nk.core.profile import Profile, ProfileError
 from nk.core.rule import REGISTRY, RuleImpl, RuleRegistry, UnknownRuleError
 
 RULES_PACKAGE = "nk.rules"
@@ -57,3 +57,13 @@ def _require(registry: RuleRegistry, rule_id: str) -> RuleImpl:
         return registry.get(rule_id)
     except UnknownRuleError:
         raise UnknownRuleError(f"неизвестное правило {rule_id!r}") from None
+
+
+def validate_profile(profile: Profile, registry: RuleRegistry) -> None:
+    """Проверить, что профиль ссылается на существующие правила.
+
+    Опечатка в идентификаторе иначе молча выключает проверку или теряет параметр.
+    """
+    unknown = sorted(rule_id for rule_id in profile.mentioned_rules() if rule_id not in registry)
+    if unknown:
+        raise ProfileError(f"профиль {profile.name!r} ссылается на неизвестные правила: {unknown}")
