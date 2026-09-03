@@ -15,7 +15,7 @@ from nk.core.registry import load_rules, select_rules, validate_profile
 from nk.core.rule import UnknownRuleError
 from nk.core.runner import RunResult, run
 from nk.parse.tex import parse, parse_findings
-from nk.report import agent, human
+from nk.report import agent, human, rules_docs
 from nk.report import json as json_report
 
 app = typer.Typer(
@@ -201,3 +201,16 @@ def _split(value: str | None) -> list[str] | None:
     if value is None:
         return None
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+@rules_app.command("docs")
+def rules_docs_command(
+    output: Path = typer.Option(
+        Path("docs/RULES.md"), "--output", "-o", help="Куда записать перечень правил."
+    ),
+) -> None:
+    """Сгенерировать перечень правил в Markdown."""
+    registry = load_rules()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(rules_docs.render(registry), encoding="utf-8")
+    console.print(f"Записано правил: {len(registry)} → {output}")
