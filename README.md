@@ -89,3 +89,7 @@ keywords_max = 20
 ```bash
 make check
 ```
+
+## Лицензия
+
+MIT — см. [`LICENSE`](LICENSE).
