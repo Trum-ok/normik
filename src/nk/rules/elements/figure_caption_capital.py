@@ -1,0 +1,31 @@
+"""Наименование рисунка со строчной буквы."""
+
+from collections.abc import Iterable
+
+from nk.core.document import Document
+from nk.core.finding import Finding, Severity
+from nk.core.rule import rule
+from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, first_letter
+
+
+@rule(
+    id="G732-6.5.8-caption-capital",
+    clause="6.5.8",
+    severity=Severity.ERROR,
+    title="Наименование рисунка начинается со строчной буквы",
+)
+def figure_caption_capital(doc: Document) -> Iterable[Finding]:
+    for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
+        for command in captions(environment):
+            text = caption_text(command)
+            letter = first_letter(text)
+            if not letter or not letter.islower():
+                continue
+            yield figure_caption_capital.finding(
+                doc,
+                command.span,
+                message=f"Наименование рисунка начинается со строчной буквы «{letter}».",
+                requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
+                suggestion=f"Начать наименование с прописной буквы: «{letter.upper()}».",
+                col=command.col,
+            )

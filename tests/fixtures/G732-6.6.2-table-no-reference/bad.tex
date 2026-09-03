@@ -1,0 +1,16 @@
+Текст без единой ссылки на таблицы.
+
+\begin{table} % EXPECT
+  \caption{Результаты измерений}
+  \label{tab:results}
+  \begin{tabular}{ll}
+    а & б \\
+  \end{tabular}
+\end{table}
+
+\begin{table} % EXPECT
+  \caption{Сводка по этапам}
+  \begin{tabular}{ll}
+    а & б \\
+  \end{tabular}
+\end{table}

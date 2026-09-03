@@ -11,21 +11,29 @@ RULE_ID = "G732-6.5.7-caption-dot"
 runner = CliRunner()
 
 
+FIGURE = """\
+Схема установки приведена на рисунке~\\ref{fig:setup}.
+
+\\begin{figure}
+  \\includegraphics{img/setup.png}
+  \\caption{Схема установки%s}
+  \\label{fig:setup}
+\\end{figure}
+"""
+
+
 @pytest.fixture
 def report(tmp_path: Path) -> Path:
+    """Отчёт ровно с одним нарушением — точкой в конце наименования рисунка."""
     path = tmp_path / "report.tex"
-    path.write_text(
-        "\\begin{figure}\n  \\caption{Схема установки.}\n\\end{figure}\n", encoding="utf-8"
-    )
+    path.write_text(FIGURE % ".", encoding="utf-8")
     return path
 
 
 @pytest.fixture
 def clean_report(tmp_path: Path) -> Path:
     path = tmp_path / "clean.tex"
-    path.write_text(
-        "\\begin{figure}\n  \\caption{Схема установки}\n\\end{figure}\n", encoding="utf-8"
-    )
+    path.write_text(FIGURE % "", encoding="utf-8")
     return path
 
 
