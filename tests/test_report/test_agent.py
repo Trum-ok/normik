@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from helpers import make_finding
 
 from nk.core.finding import Severity
@@ -75,3 +77,10 @@ def test_limit_keeps_every_error(result: RunResult) -> None:
 def test_zero_limit_shows_everything(result: RunResult) -> None:
     text = agent.render(result, command="nk check .", limit=0)
     assert "Скрыто" not in text
+
+
+def test_multiline_suggestion_stays_a_block() -> None:
+    finding = replace(make_finding(), suggestion="\\begin{figure}\n\\end{figure}")
+    text = agent.render(RunResult(profile="base", findings=(finding,)), command="nk check .")
+
+    assert "  Исправить:\n    \\begin{figure}\n    \\end{figure}\n" in text

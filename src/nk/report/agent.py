@@ -8,7 +8,13 @@ from pathlib import Path
 
 from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
-from nk.report.common import SEVERITY_LABELS, context_start, group_by_file, summary_line
+from nk.report.common import (
+    SEVERITY_LABELS,
+    context_start,
+    field_lines,
+    group_by_file,
+    summary_line,
+)
 
 #: Сколько находок показывать по умолчанию. Простыня на тысячу строк бесполезна.
 DEFAULT_LIMIT = 50
@@ -43,10 +49,10 @@ def _render_finding(path: Path, finding: Finding) -> list[str]:
         position = f"{position}:{finding.col}"
 
     lines = [f"{position}  {SEVERITY_LABELS[finding.severity]}  {finding.rule_id}"]
-    lines.append(f"  Нарушение: {finding.message}")
-    lines.append(f"  Требуется: {finding.requirement}")
+    lines.extend(field_lines("Нарушение", finding.message, "  "))
+    lines.extend(field_lines("Требуется", finding.requirement, "  "))
     if finding.suggestion:
-        lines.append(f"  Исправить: {finding.suggestion}")
+        lines.extend(field_lines("Исправить", finding.suggestion, "  "))
     if finding.context:
         lines.append("  Контекст:")
         start = context_start(finding)

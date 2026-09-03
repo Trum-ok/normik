@@ -9,7 +9,13 @@ from rich.text import Text
 
 from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
-from nk.report.common import SEVERITY_LABELS, context_start, group_by_file, summary_line
+from nk.report.common import (
+    SEVERITY_LABELS,
+    context_start,
+    field_lines,
+    group_by_file,
+    summary_line,
+)
 
 SEVERITY_STYLES: dict[Severity, str] = {
     Severity.ERROR: "bold red",
@@ -48,10 +54,14 @@ def _print_finding(console: Console, finding: Finding) -> None:
     header.append(SEVERITY_LABELS[finding.severity], style=style)
     header.append(f"  {finding.rule_id}", style="dim")
     console.print(header)
-    console.print(Text(f"{INDENT * 2}Нарушение: {finding.message}"))
-    console.print(Text(f"{INDENT * 2}Требуется: {finding.requirement}"))
-    if finding.suggestion:
-        console.print(Text(f"{INDENT * 2}Исправить: {finding.suggestion}"))
+    for label, value in (
+        ("Нарушение", finding.message),
+        ("Требуется", finding.requirement),
+        ("Исправить", finding.suggestion or ""),
+    ):
+        if value:
+            for text in field_lines(label, value, INDENT * 2):
+                console.print(Text(text))
 
     start = context_start(finding)
     width = len(str(start + len(finding.context) - 1))

@@ -31,3 +31,14 @@ def context_start(finding: Finding) -> int:
 
 def summary_line(counts: dict[Severity, int]) -> str:
     return ", ".join(f"{counts[level]} {SEVERITY_LABELS[level]}" for level in Severity)
+
+
+def field_lines(label: str, value: str, indent: str) -> list[str]:
+    """Поле находки: одна строка, а многострочное значение — меткой и блоком с отступом.
+
+    Плоский формат разбирают глазами и построчно, поэтому значение не должно
+    сливаться со следующим полем.
+    """
+    if "\n" not in value:
+        return [f"{indent}{label}: {value}"]
+    return [f"{indent}{label}:", *(f"{indent}  {line.strip()}" for line in value.splitlines())]
