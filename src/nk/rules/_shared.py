@@ -103,3 +103,66 @@ def first_tabular_line(environment: Environment) -> int | None:
         child.span.start for child in environment.walk() if child.name in TABULAR_ENVIRONMENTS
     ]
     return min(starts) if starts else None
+
+
+#: Команды рубрикации и глубина уровня: раздел, подраздел, пункт, подпункт.
+SECTION_DEPTH: dict[str, int] = {
+    "section": 1,
+    "section*": 1,
+    "subsection": 2,
+    "subsection*": 2,
+    "subsubsection": 3,
+    "subsubsection*": 3,
+    "paragraph": 4,
+    "paragraph*": 4,
+    "subparagraph": 5,
+    "subparagraph*": 5,
+}
+
+#: Наименования структурных элементов отчёта по разделу 4 стандарта.
+STRUCTURAL_ELEMENTS = frozenset(
+    {
+        "СПИСОК ИСПОЛНИТЕЛЕЙ",
+        "РЕФЕРАТ",
+        "СОДЕРЖАНИЕ",
+        "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ",
+        "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ",
+        "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ",
+        "ВВЕДЕНИЕ",
+        "ЗАКЛЮЧЕНИЕ",
+        "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
+        "ПРИЛОЖЕНИЕ",
+    }
+)
+
+APPENDIX = "ПРИЛОЖЕНИЕ"
+
+
+def headings(doc: Document) -> Iterator[Command]:
+    """Команды рубрикации в порядке следования по документу."""
+    yield from doc.structure.find_commands(*SECTION_DEPTH)
+
+
+def heading_text(command: Command) -> str:
+    return command.arg.strip()
+
+
+def normalize_heading(text: str) -> str:
+    """Заголовок без команд, знаков препинания и различий в регистре."""
+    cleaned = visible_text(text).upper().replace(",", " ").replace(".", " ")
+    return one_line(cleaned)
+
+
+def structural_element(text: str) -> str | None:
+    """Каноническое наименование структурного элемента либо ``None``."""
+    normalized = normalize_heading(text)
+    if normalized in STRUCTURAL_ELEMENTS:
+        return normalized
+    if normalized.startswith(f"{APPENDIX} "):
+        return APPENDIX
+    return None
+
+
+def is_numbered(command: Command) -> bool:
+    """Нумеруется ли рубрика: команда без звёздочки."""
+    return not command.name.endswith("*")

@@ -4,7 +4,7 @@
 файлов помимо того, что уже в документе.
 """
 
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
@@ -69,7 +69,7 @@ class RuleImpl:
     def module(self) -> str:
         return getattr(self.func, "__module__", "<unknown>")
 
-    def params(self, doc: Document) -> Mapping[str, object]:
+    def params(self, doc: Document) -> Params:
         """Значения по умолчанию, перекрытые профилем документа."""
         return {**self.default_params, **doc.profile.params_for(self.id)}
 
