@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      - name: ruff format
+        run: uv run ruff format --check src tests
+
+      - name: ruff check
+        run: uv run ruff check src tests
+
+      - name: ty
+        run: uv run ty check src tests
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      - name: pytest
+        run: uv run pytest
+
+  # Единственный required-чек ветки: агрегирует остальные job'ы, чтобы при
+  # добавлении новой проверки не править список в настройках репозитория.
+  ci:
+    if: always()
+    needs:
+      - lint
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Итог
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.value.result)\t\(.key)"' <<< "$RESULTS"
+          failed=$(jq -r 'to_entries[]
+            | select(.value.result != "success" and .value.result != "skipped")
+            | .key' <<< "$RESULTS")
+          if [ -n "$failed" ]; then
+            echo "Провалились: $(echo "$failed" | tr '\n' ' ')"
+            exit 1
+          fi

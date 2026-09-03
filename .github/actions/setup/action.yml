@@ -1,0 +1,14 @@
+name: setup
+description: uv и синхронизация зависимостей
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v10.0.1
+      with:
+        enable-cache: true
+
+    - name: Sync deps
+      shell: bash
+      run: uv sync --frozen
