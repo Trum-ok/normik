@@ -39,9 +39,6 @@ PAGE_BREAK_COMMANDS = frozenset({"newpage", "clearpage", "cleardoublepage", "pag
 #: Обозначения приложений: прописные буквы кириллицы, кроме исключённых стандартом.
 APPENDIX_LETTERS = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
 
-#: Уровень команды, которая рубрикацией не является.
-NOT_A_HEADING = 0
-
 
 @dataclass(frozen=True, slots=True)
 class Heading:
@@ -59,6 +56,10 @@ class Heading:
 
     breaks_page: bool = False
     """Начинает ли рубрика новую страницу сама, без ``\\newpage`` перед ней."""
+
+
+#: Команда, рубрикацией не являющаяся: нулевой уровень, без нумерации и разрыва.
+NOT_A_HEADING = Heading(name="", depth=0, numbered=False)
 
 
 def base_headings(shifted: bool = False) -> dict[str, Heading]:
@@ -92,21 +93,21 @@ class Headings:
         return name in self.commands
 
     def depth_of(self, name: str) -> int:
-        heading = self.commands.get(name)
-        return heading.depth if heading is not None else NOT_A_HEADING
+        return self._of(name).depth
 
     def is_numbered(self, name: str) -> bool:
-        heading = self.commands.get(name)
-        return heading.numbered if heading is not None else False
+        return self._of(name).numbered
 
     def breaks_page(self, name: str) -> bool:
         """Открывает ли рубрика новую страницу сама: глава либо макрос с разрывом внутри."""
-        heading = self.commands.get(name)
-        return heading.breaks_page if heading is not None else False
+        return self._of(name).breaks_page
 
     def alias_of(self, name: str) -> str:
-        heading = self.commands.get(name)
-        return heading.alias_of if heading is not None else ""
+        return self._of(name).alias_of
+
+    def _of(self, name: str) -> Heading:
+        """Команда рубрикации либо заглушка: не рубрика — значит уровня нет и не нумеруется."""
+        return self.commands.get(name, NOT_A_HEADING)
 
 
 def is_heading_call(command: "Command") -> bool:

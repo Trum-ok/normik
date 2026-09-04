@@ -8,36 +8,56 @@
 
 from collections.abc import Mapping
 
+CONTRIBUTORS = "СПИСОК ИСПОЛНИТЕЛЕЙ"
+ABSTRACT = "РЕФЕРАТ"
+CONTENTS = "СОДЕРЖАНИЕ"
+TERMS = "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ"
+ABBREVIATIONS = "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ"
+DEFINITIONS = "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ"
+"""Объединённый перечень: стандарт допускает его вместо двух отдельных."""
+
+INTRODUCTION = "ВВЕДЕНИЕ"
+CONCLUSION = "ЗАКЛЮЧЕНИЕ"
+BIBLIOGRAPHY = "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
+APPENDIX = "ПРИЛОЖЕНИЕ"
+
 #: Наименования структурных элементов отчёта по разделу 4 стандарта.
 STRUCTURAL_ELEMENTS = frozenset(
     {
-        "СПИСОК ИСПОЛНИТЕЛЕЙ",
-        "РЕФЕРАТ",
-        "СОДЕРЖАНИЕ",
-        "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ",
-        "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ",
-        "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ",
-        "ВВЕДЕНИЕ",
-        "ЗАКЛЮЧЕНИЕ",
-        "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
-        "ПРИЛОЖЕНИЕ",
+        CONTRIBUTORS,
+        ABSTRACT,
+        CONTENTS,
+        TERMS,
+        ABBREVIATIONS,
+        DEFINITIONS,
+        INTRODUCTION,
+        CONCLUSION,
+        BIBLIOGRAPHY,
+        APPENDIX,
     }
 )
 
-APPENDIX = "ПРИЛОЖЕНИЕ"
+#: Элементы, где ведут перечень терминов.
+TERMS_ELEMENTS = frozenset({TERMS})
+
+#: Элементы, где ведут перечень сокращений: свой либо объединённый.
+ABBREVIATION_ELEMENTS = frozenset({ABBREVIATIONS, DEFINITIONS})
+
+#: Элементы, содержимое которых — перечень записей через тире.
+LISTING_ELEMENTS = TERMS_ELEMENTS | ABBREVIATION_ELEMENTS
 
 #: Порядок структурных элементов по разделу 4. Термины и объединённый перечень
 #: занимают одно место, поэтому ранг у них общий.
 ELEMENT_ORDER: dict[str, int] = {
-    "СПИСОК ИСПОЛНИТЕЛЕЙ": 1,
-    "РЕФЕРАТ": 2,
-    "СОДЕРЖАНИЕ": 3,
-    "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ": 4,
-    "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ": 4,
-    "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ": 5,
-    "ВВЕДЕНИЕ": 6,
-    "ЗАКЛЮЧЕНИЕ": 7,
-    "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ": 8,
+    CONTRIBUTORS: 1,
+    ABSTRACT: 2,
+    CONTENTS: 3,
+    TERMS: 4,
+    DEFINITIONS: 4,
+    ABBREVIATIONS: 5,
+    INTRODUCTION: 6,
+    CONCLUSION: 7,
+    BIBLIOGRAPHY: 8,
     APPENDIX: 9,
 }
 

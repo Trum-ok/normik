@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document, Line
+from nk.core.elements import ABSTRACT
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
@@ -12,8 +13,6 @@ from nk.rules._shared import (
     structural_headings,
     visible_text,
 )
-
-ABSTRACT = "РЕФЕРАТ"
 
 
 @rule(

@@ -9,12 +9,14 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
+from nk.core.diagnostics import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING
 from nk.core.document import Document, Line
 from nk.core.finding import Finding
+from nk.core.latex import VERB, literal_end
 from nk.core.profile import Profile
 from nk.core.suppressions import Suppressions
 from nk.parse.headings import build_headings
-from nk.parse.issues import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING, ParseIssue
+from nk.parse.issues import ParseIssue
 from nk.parse.math import build_math
 from nk.parse.numbering import build_numbering
 from nk.parse.structure import VERBATIM_ENVIRONMENTS, build_structure
@@ -27,7 +29,6 @@ _INPUT = re.compile(r"\\(?:input|include)\s*\{([^{}]*)\}")
 _DOCUMENT = re.compile(r"\\begin\s*\{document\}")
 _BEGIN = re.compile(r"\\begin\s*\{([^{}]*)\}")
 _END = re.compile(r"\\end\s*\{([^{}]*)\}")
-_VERB = "verb"
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,23 +58,14 @@ def strip_comment(raw: str) -> str:
 
 
 def _verb_end(raw: str, start: int) -> int | None:
-    """Позиция сразу за аргументом ``\\verb``, если в ``start`` стоит эта команда.
-
-    Незакрытый аргумент тянется до конца строки: LaTeX на нём падает, а резать
-    строку по процентам внутри него всё равно неверно.
-    """
+    """Позиция сразу за аргументом ``\\verb``, если в ``start`` стоит эта команда."""
     index = start + 1
-    if not raw.startswith(_VERB, index):
+    if not raw.startswith(VERB, index):
         return None
-    index += len(_VERB)
+    index += len(VERB)
     if index < len(raw) and raw[index] == "*":
         index += 1
-    while index < len(raw) and raw[index].isspace():
-        index += 1
-    if index >= len(raw) or raw[index].isalpha():
-        return None
-    close = raw.find(raw[index], index + 1)
-    return len(raw) if close == -1 else close + 1
+    return literal_end(raw, index)
 
 
 def read_file(

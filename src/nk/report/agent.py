@@ -10,9 +10,9 @@ from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
     SEVERITY_LABELS,
-    caret_line,
-    context_start,
+    context_lines,
     field_lines,
+    finding_fields,
     fixable_line,
     group_by_file,
     summary_line,
@@ -58,20 +58,11 @@ def _render_finding(path: Path, finding: Finding) -> list[str]:
         position = f"{position}:{finding.col}"
 
     lines = [f"{position}  {SEVERITY_LABELS[finding.severity]}  {finding.rule_id}"]
-    lines.extend(field_lines("Нарушение", finding.message, "  "))
-    lines.extend(field_lines("Требуется", finding.requirement, "  "))
-    if finding.suggestion:
-        lines.extend(field_lines("Исправить", finding.suggestion, "  "))
+    for label, value in finding_fields(finding):
+        lines.extend(field_lines(label, value, "  "))
     if finding.context:
         lines.append("  Контекст:")
-        start = context_start(finding)
-        width = len(str(start + len(finding.context) - 1))
-        for offset, text in enumerate(finding.context):
-            lineno = start + offset
-            lines.append(f"    {lineno:>{width}} | {text}")
-            caret = caret_line(finding, text) if lineno == finding.lineno else None
-            if caret is not None:
-                lines.append(f"    {'':>{width}} | {caret}")
+        lines.extend(f"    {item.number} | {item.text}" for item in context_lines(finding))
     return lines
 
 

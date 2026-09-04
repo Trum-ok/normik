@@ -1,33 +1,15 @@
 """Замечания парсера.
 
 Битый или непонятый TeX не роняет запуск: парсер сообщает о таких участках
-находками уровня ``info`` и продолжает работу.
+находкой и продолжает работу. Уровень находки объявлен вместе с самой
+диагностикой в :mod:`nk.core.diagnostics`.
 """
 
 from dataclasses import dataclass
 from pathlib import Path
 
-from nk.core.diagnostics import (
-    ENCODING_FALLBACK,
-    ENVIRONMENT_ORPHAN_END,
-    ENVIRONMENT_UNCLOSED,
-    GROUP_UNCLOSED,
-    INPUT_CYCLE,
-    INPUT_MISSING,
-    NO_CLAUSE,
-)
-from nk.core.finding import Finding, Severity
-
-__all__ = [
-    "ENCODING_FALLBACK",
-    "ENVIRONMENT_ORPHAN_END",
-    "ENVIRONMENT_UNCLOSED",
-    "GROUP_UNCLOSED",
-    "INPUT_CYCLE",
-    "INPUT_MISSING",
-    "NO_CLAUSE",
-    "ParseIssue",
-]
+from nk.core import diagnostics
+from nk.core.finding import Finding
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,16 +27,14 @@ class ParseIssue:
         excerpt: str | None = None,
         context: tuple[str, ...] = (),
     ) -> Finding:
-        return Finding(
-            rule_id=self.code,
-            clause=NO_CLAUSE,
-            severity=Severity.INFO,
+        return diagnostics.to_finding(
+            self.code,
             message=self.message,
             requirement=self.requirement,
             path=self.path,
             lineno=self.lineno,
             col=self.col,
+            suggestion=self.suggestion,
             excerpt=excerpt,
             context=context,
-            suggestion=self.suggestion,
         )

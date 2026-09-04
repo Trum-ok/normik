@@ -3,11 +3,10 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import TERMS_ELEMENTS
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import alphabet_key, alphabet_of, listing_entries
-
-ELEMENTS = frozenset({"ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ"})
 
 
 @rule(
@@ -35,7 +34,7 @@ def terms_order(doc: Document) -> Iterable[Finding]:
     previous_term = ""
     previous_key = ""
     previous_alphabet = ""
-    for line, term in listing_entries(doc, ELEMENTS):
+    for line, term in listing_entries(doc, TERMS_ELEMENTS):
         key, alphabet = alphabet_key(term), alphabet_of(term)
         if alphabet != previous_alphabet or key >= previous_key:
             previous_term, previous_key, previous_alphabet = term, key, alphabet

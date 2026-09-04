@@ -4,14 +4,13 @@ import re
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import TERMS_ELEMENTS
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
-from nk.rules._shared import section_lines, structural_headings
+from nk.rules._shared import DASH, section_lines, structural_headings
 
-DASH = "—"
 SEPARATOR = re.compile(r"\S( - )\S")
-ELEMENTS = frozenset({"ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ"})
 
 
 @rule(
@@ -34,7 +33,7 @@ def terms_dash(doc: Document) -> Iterable[Finding]:
     Заменить дефис на тире.
     """
     for command, element in structural_headings(doc):
-        if element not in ELEMENTS:
+        if element not in TERMS_ELEMENTS:
             continue
         for line in section_lines(doc, command):
             match = SEPARATOR.search(line.stripped)

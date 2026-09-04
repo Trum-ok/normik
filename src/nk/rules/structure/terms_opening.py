@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import TERMS
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import section_lines, structural_headings
@@ -32,7 +33,7 @@ def terms_opening(doc: Document) -> Iterable[Finding]:
     применяют следующие термины с соответствующими определениями.».
     """
     for command, element in structural_headings(doc):
-        if element != "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ":
+        if element != TERMS:
             continue
         body = section_lines(doc, command)
         if any(OPENING in line.stripped.lower() for line in body):

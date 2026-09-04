@@ -5,25 +5,16 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from nk.core.document import Document
+from nk.core.elements import LISTING_ELEMENTS
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
-from nk.rules._shared import section_lines, structural_headings
+from nk.rules._shared import DASH, section_lines, structural_headings
 from nk.rules._text import is_code, prose
 
-DASH = "—"
 #: Одиночный дефис между пробелами. Последовательности «--» и «---» LaTeX сам
 #: превращает в тире, их правило не трогает.
 LONELY_HYPHEN = re.compile(r"(?<!-)(?<!\w)-(?!-)(?=\s)")
-
-#: Перечни, где тире требует сам стандарт: там работают правила 6.14 и 6.15.
-DEDICATED_ELEMENTS = frozenset(
-    {
-        "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ",
-        "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ",
-        "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ",
-    }
-)
 
 
 @rule(
@@ -78,7 +69,7 @@ def _dedicated_lines(doc: Document) -> set[tuple[Path, int]]:
     """
     covered: set[tuple[Path, int]] = set()
     for command, element in structural_headings(doc):
-        if element not in DEDICATED_ELEMENTS:
+        if element not in LISTING_ELEMENTS:
             continue
         covered.update((line.path, line.lineno) for line in section_lines(doc, command))
     return covered

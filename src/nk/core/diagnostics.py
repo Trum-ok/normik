@@ -6,8 +6,9 @@
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 
-from nk.core.finding import Severity
+from nk.core.finding import Finding, Severity
 
 #: Диагностики не ссылаются на пункт стандарта.
 NO_CLAUSE = ""
@@ -42,3 +43,35 @@ INTERNAL: dict[str, Diagnostic] = {
         Diagnostic(IGNORE_UNKNOWN, Severity.WARNING, "Подавление ссылается на неизвестное правило"),
     )
 }
+
+
+def to_finding(
+    code: str,
+    *,
+    message: str,
+    requirement: str,
+    path: Path,
+    lineno: int,
+    col: int | None = None,
+    suggestion: str | None = None,
+    excerpt: str | None = None,
+    context: tuple[str, ...] = (),
+) -> Finding:
+    """Находка по внутренней диагностике: уровень берётся из её объявления.
+
+    Диагностики рождаются в двух местах — у парсера и у проверки директив
+    подавления, — а уровень у них один и тот же и объявлен здесь.
+    """
+    return Finding(
+        rule_id=code,
+        clause=NO_CLAUSE,
+        severity=INTERNAL[code].severity,
+        message=message,
+        requirement=requirement,
+        path=path,
+        lineno=lineno,
+        col=col,
+        excerpt=excerpt,
+        context=context,
+        suggestion=suggestion,
+    )

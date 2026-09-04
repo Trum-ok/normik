@@ -1,17 +1,14 @@
 """Форма обозначения элемента перечисления."""
 
-import re
 from collections.abc import Iterable
 
 from nk.core.document import Command, Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.rules._shared import DASH, ITEM_COMMAND, parse_enumeration_label
 
-DASH = "—"
 #: Знаки, которыми маркер перечисления записывают вместо тире.
 WRONG_MARKERS = frozenset({"-", "--", "---", "–", "*", "•", "·"})
-#: Обозначение: буква или число, за которыми может стоять скобка или точка.
-LABEL = re.compile(r"^\s*(?P<mark>[A-Za-zА-Яа-яЁё]|\d+)\s*(?P<tail>[).]?)\s*$")
 
 REQUIREMENT = (
     "Элементы перечисления обозначают тире либо строчной буквой русского алфавита "
@@ -45,7 +42,7 @@ def enumeration_label(doc: Document) -> Iterable[Finding]:
     Привести обозначение к принятой форме: `\item[--]` заменить на тире,
     `\item[1.]` — на `\item[1)]`, латинскую букву — на русскую.
     """
-    for command in doc.structure.find_commands("item"):
+    for command in doc.structure.find_commands(ITEM_COMMAND):
         for option in command.options:
             finding = _check(doc, command, option)
             if finding is not None:
@@ -59,10 +56,10 @@ def _check(doc: Document, command: Command, option: str) -> Finding | None:
     if label in WRONG_MARKERS:
         return _finding(doc, command, DASH, f"Элемент перечисления помечен «{label}», а не тире.")
 
-    match = LABEL.match(label)
-    if match is None:
+    parsed = parse_enumeration_label(label)
+    if parsed is None:
         return None
-    mark, tail = match.group("mark"), match.group("tail")
+    mark, tail = parsed
     if mark.isascii() and mark.isalpha():
         return _finding(
             doc,

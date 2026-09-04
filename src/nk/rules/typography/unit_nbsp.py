@@ -7,9 +7,8 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.rules._shared import NBSP
 from nk.rules._text import is_code, prose
-
-NBSP = "~"
 
 #: Сокращения со точкой: сведения об объёме реферата, даты, счётные единицы.
 ABBREVIATIONS = "с. кн. рис. табл. ил. источн. прил. шт. экз. руб. тыс. г. гг. в. мин. ч. сут."

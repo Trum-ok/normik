@@ -8,8 +8,9 @@
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
+from nk.core import diagnostics
 from nk.core.baseline import Baseline
-from nk.core.diagnostics import IGNORE_UNKNOWN, IGNORE_UNUSED, INTERNAL, NO_CLAUSE
+from nk.core.diagnostics import IGNORE_UNKNOWN, IGNORE_UNUSED, INTERNAL
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import RuleImpl
@@ -188,15 +189,13 @@ def _diagnostic(
     requirement: str,
     suggestion: str,
 ) -> Finding:
-    return Finding(
-        rule_id=code,
-        clause=NO_CLAUSE,
-        severity=INTERNAL[code].severity,
+    return diagnostics.to_finding(
+        code,
         message=message,
         requirement=requirement,
         path=item.path,
         lineno=item.lineno,
+        suggestion=suggestion,
         excerpt=document.excerpt(item.path, item.lineno),
         context=document.context(item.path, item.lineno),
-        suggestion=suggestion,
     )

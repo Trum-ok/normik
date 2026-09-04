@@ -11,9 +11,9 @@ from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
     SEVERITY_LABELS,
-    caret_line,
-    context_start,
+    context_lines,
     field_lines,
+    finding_fields,
     fixable_line,
     group_by_file,
     summary_line,
@@ -63,32 +63,16 @@ def _print_finding(console: Console, finding: Finding) -> None:
     header.append(SEVERITY_LABELS[finding.severity], style=style)
     header.append(f"  {finding.rule_id}", style="dim")
     console.print(header)
-    for label, value in (
-        ("Нарушение", finding.message),
-        ("Требуется", finding.requirement),
-        ("Исправить", finding.suggestion or ""),
-    ):
-        if value:
-            for text in field_lines(label, value, INDENT * 2):
-                console.print(Text(text))
+    for label, value in finding_fields(finding):
+        for text in field_lines(label, value, INDENT * 2):
+            console.print(Text(text))
 
-    start = context_start(finding)
-    width = len(str(start + len(finding.context) - 1))
-    for offset, text in enumerate(finding.context):
-        lineno = start + offset
-        hit = lineno == finding.lineno
+    for item in context_lines(finding):
+        mark = MARKER if item.hit and not item.caret else "  "
         console.print(
-            Text(f"{INDENT * 2}{MARKER if hit else '  '}{lineno:>{width}} | {text}"),
-            style=style if hit else "dim",
+            Text(f"{INDENT * 2}{mark}{item.number} | {item.text}"),
+            style=style if item.hit else "dim",
             no_wrap=True,
             overflow="ellipsis",
         )
-        caret = caret_line(finding, text) if hit else None
-        if caret is not None:
-            console.print(
-                Text(f"{INDENT * 2}  {'':>{width}} | {caret}"),
-                style=style,
-                no_wrap=True,
-                overflow="ellipsis",
-            )
     console.print()

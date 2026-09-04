@@ -21,14 +21,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from nk.core.diagnostics import ENVIRONMENT_ORPHAN_END, ENVIRONMENT_UNCLOSED, GROUP_UNCLOSED
 from nk.core.document import Command, Environment, Line, Span, Structure
 from nk.core.position import Position, Region
-from nk.parse.issues import (
-    ENVIRONMENT_ORPHAN_END,
-    ENVIRONMENT_UNCLOSED,
-    GROUP_UNCLOSED,
-    ParseIssue,
-)
+from nk.parse.issues import ParseIssue
 
 #: Окружения, содержимое которых не разбирается: там может быть что угодно.
 VERBATIM_ENVIRONMENTS = frozenset(

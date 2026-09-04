@@ -3,12 +3,12 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import ABBREVIATION_ELEMENTS
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import section_lines, structural_headings
 
 OPENING = "применяют следующие сокращения"
-ELEMENTS = frozenset({"ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ", "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ"})
 
 
 @rule(
@@ -34,7 +34,7 @@ def abbreviations_opening(doc: Document) -> Iterable[Finding]:
     применяют следующие сокращения и обозначения.», а сам перечень — ниже.
     """
     for command, element in structural_headings(doc):
-        if element not in ELEMENTS:
+        if element not in ABBREVIATION_ELEMENTS:
             continue
         body = section_lines(doc, command)
         if any(OPENING in line.stripped.lower() for line in body):

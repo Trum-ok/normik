@@ -3,11 +3,10 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import ABBREVIATION_ELEMENTS
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import alphabet_key, alphabet_of, listing_entries
-
-ELEMENTS = frozenset({"ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ", "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ"})
 
 
 @rule(
@@ -35,7 +34,7 @@ def abbreviations_order(doc: Document) -> Iterable[Finding]:
     previous_short = ""
     previous_key = ""
     previous_alphabet = ""
-    for line, short in listing_entries(doc, ELEMENTS):
+    for line, short in listing_entries(doc, ABBREVIATION_ELEMENTS):
         key, alphabet = alphabet_key(short), alphabet_of(short)
         if alphabet != previous_alphabet or key >= previous_key:
             previous_short, previous_key, previous_alphabet = short, key, alphabet

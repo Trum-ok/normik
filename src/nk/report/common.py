@@ -1,6 +1,7 @@
 """Общее для форматов вывода."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 from itertools import groupby
 from pathlib import Path
 
@@ -60,6 +61,49 @@ def caret_line(finding: Finding, text: str) -> str | None:
     # отступ повторяет исходные пробельные знаки.
     prefix = "".join("\t" if char == "\t" else " " for char in text[: col - 1])
     return prefix + CARET
+
+
+@dataclass(frozen=True, slots=True)
+class ContextLine:
+    """Строка выводимого контекста: сам исходник либо указатель под ним."""
+
+    number: str
+    """Номер строки, выровненный по ширине; у строки с указателем — пробелы."""
+
+    text: str
+    hit: bool
+    """Относится к месту нарушения: сама строка либо указатель под ней."""
+
+    caret: bool = False
+    """Это указатель, а не строка исходника."""
+
+
+def context_lines(finding: Finding) -> Iterator[ContextLine]:
+    """Контекст находки с указателем под местом нарушения.
+
+    Форматы выводят его по-разному — с цветом и без, — но считается он одинаково:
+    номера строк восстанавливаются из позиции находки, ширина колонки берётся
+    по самому длинному номеру.
+    """
+    start = context_start(finding)
+    width = len(str(start + len(finding.context) - 1))
+    for offset, text in enumerate(finding.context):
+        lineno = start + offset
+        hit = lineno == finding.lineno
+        yield ContextLine(number=f"{lineno:>{width}}", text=text, hit=hit)
+        caret = caret_line(finding, text) if hit else None
+        if caret is not None:
+            yield ContextLine(number=" " * width, text=caret, hit=True, caret=True)
+
+
+def finding_fields(finding: Finding) -> list[tuple[str, str]]:
+    """Заполненные поля находки в порядке вывода: что не так, что требуется, что сделать."""
+    pairs = (
+        ("Нарушение", finding.message),
+        ("Требуется", finding.requirement),
+        ("Исправить", finding.suggestion or ""),
+    )
+    return [(label, value) for label, value in pairs if value]
 
 
 def summary_line(counts: dict[Severity, int]) -> str:

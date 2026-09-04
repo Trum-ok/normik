@@ -2,8 +2,8 @@ from pathlib import Path
 
 from support import make_document
 
+from nk.core.diagnostics import ENVIRONMENT_ORPHAN_END, ENVIRONMENT_UNCLOSED, GROUP_UNCLOSED
 from nk.core.document import Structure
-from nk.parse.issues import ENVIRONMENT_ORPHAN_END, ENVIRONMENT_UNCLOSED, GROUP_UNCLOSED
 from nk.parse.structure import build_structure
 
 REPORT = Path("report.tex")

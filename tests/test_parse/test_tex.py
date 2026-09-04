@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from nk.parse.issues import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING
+from nk.core.diagnostics import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING
 from nk.parse.tex import collect_sources, parse, parse_findings, read_file, strip_comment
 
 

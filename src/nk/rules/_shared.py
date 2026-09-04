@@ -9,6 +9,7 @@ from collections.abc import Iterable, Iterator
 
 from nk.core.document import Command, Document, Environment, Line, Span
 from nk.core.elements import canonical_element, normalize_element
+from nk.core.finding import Fix
 from nk.core.headings import PAGE_BREAK_COMMANDS, is_heading_call
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
@@ -16,6 +17,10 @@ TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"}
 TABULAR_ENVIRONMENTS = frozenset({"tabular", "tabular*", "tabularx", "longtable", "array"})
 GRAPHIC_COMMANDS = frozenset({"includegraphics", "includesvg", "input", "includepdf"})
 GRAPHIC_ENVIRONMENTS = frozenset({"tikzpicture", "pgfpicture", "picture"})
+
+#: Знаки, которые правила ставят в исходник вместо неверных.
+DASH = "—"
+NBSP = "~"
 
 CAPTION_COMMANDS = frozenset({"caption", "caption*", "captionof"})
 LABEL_COMMANDS = frozenset({"label"})
@@ -135,6 +140,20 @@ def place(command: Command, span: Span) -> str:
     if command.path == span.path:
         return f"строка {command.lineno}"
     return f"{command.path.name}, строка {command.lineno}"
+
+
+#: Точка переноса, заданная в исходнике вручную.
+HYPHENATION_MARKER = "\\-"
+
+
+def without_hyphenation(doc: Document, command: Command) -> Fix | None:
+    """Тот же фрагмент исходника, но без точек переноса."""
+    if command.region is None:
+        return None
+    return Fix(
+        region=command.region,
+        replacement=doc.slice(command.region).replace(HYPHENATION_MARKER, ""),
+    )
 
 
 def has_graphic(environment: Environment) -> bool:
@@ -307,6 +326,25 @@ def listing_entries(doc: Document, elements: frozenset[str]) -> Iterator[tuple[L
             left = text[: match.start()].strip()
             if left:
                 yield line, left
+
+
+ITEM_COMMAND = "item"
+
+#: Обозначение элемента перечисления: буква или число, за которыми может стоять
+#: скобка или точка.
+_ENUMERATION_LABEL = re.compile(r"^\s*(?P<mark>[A-Za-zА-Яа-яЁё]|\d+)\s*(?P<tail>[).]?)\s*$")
+
+
+def parse_enumeration_label(option: str) -> tuple[str, str] | None:
+    """Обозначение и знак после него либо ``None``, если это не обозначение.
+
+    Форму обозначения разбирают два правила пункта 6.4.6 — одно проверяет саму
+    форму, другое допустимость буквы, — и разбирают одинаково.
+    """
+    match = _ENUMERATION_LABEL.match(option.strip())
+    if match is None:
+        return None
+    return match.group("mark"), match.group("tail")
 
 
 def alphabet_key(text: str) -> str:

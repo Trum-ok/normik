@@ -7,9 +7,8 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.rules._shared import NBSP
 from nk.rules._text import is_code, prose
-
-NBSP = "~"
 
 #: Однобуквенные предлоги и союзы: их не оставляют в конце строки никогда.
 ONE_LETTER = "в к с о у а и"

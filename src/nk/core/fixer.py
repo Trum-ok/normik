@@ -51,12 +51,8 @@ def plan(findings: Iterable[Finding], overlay: Mapping[Path, str] | None = None)
         if overlay is not None and path in overlay:
             original = overlay[path]
         else:
-            try:
-                # newline="" отключает трансляцию переводов строки: иначе правка
-                # молча превратила бы CRLF-файл в LF.
-                with path.open(encoding="utf-8", newline="") as handle:
-                    original = handle.read()
-            except (OSError, UnicodeDecodeError):
+            original = _read(path)
+            if original is None:
                 skipped.append(path)
                 continue
         text, applied = _apply(original, fixes)
@@ -64,6 +60,19 @@ def plan(findings: Iterable[Finding], overlay: Mapping[Path, str] | None = None)
             edits.append(FileEdit(path=path, text=text, applied=applied))
 
     return FixResult(edits=tuple(edits), skipped=tuple(skipped))
+
+
+def _read(path: Path) -> str | None:
+    """Содержимое файла как есть либо ``None``, если оно не читается.
+
+    ``newline=""`` отключает трансляцию переводов строки: иначе правка молча
+    превратила бы CRLF-файл в LF.
+    """
+    try:
+        with path.open(encoding="utf-8", newline="") as handle:
+            return handle.read()
+    except (OSError, UnicodeDecodeError):
+        return None
 
 
 def write(result: FixResult) -> int:
@@ -122,10 +131,8 @@ def diff(texts: Mapping[Path, str]) -> str:
     """Унифицированный diff между файлами на диске и подготовленным содержимым."""
     chunks: list[str] = []
     for path, text in sorted(texts.items(), key=lambda item: str(item[0])):
-        try:
-            with path.open(encoding="utf-8", newline="") as handle:
-                original = handle.read()
-        except (OSError, UnicodeDecodeError):
+        original = _read(path)
+        if original is None:
             continue
         chunks.extend(
             unified_diff(

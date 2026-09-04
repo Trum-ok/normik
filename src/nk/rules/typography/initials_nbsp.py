@@ -7,9 +7,8 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.rules._shared import NBSP
 from nk.rules._text import is_code, prose
-
-NBSP = "~"
 
 #: Пара инициалов подряд: «И. И.». Одиночный инициал не ищем — он неотличим
 #: от однобуквенного обозначения в конце предложения: «...в приложении А. В работе...».

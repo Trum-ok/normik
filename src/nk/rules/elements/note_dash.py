@@ -7,8 +7,8 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.rules._shared import DASH
 
-DASH = "—"
 #: Единственное примечание: слово, затем разделитель и текст в той же строке.
 SINGLE_NOTE = re.compile(r"^\s*Примечание(?P<gap>\s*)(?P<rest>\S.*)$")
 WRONG_SEPARATORS = ":.-–"

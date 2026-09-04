@@ -1,16 +1,14 @@
 """Буквы, недопустимые в перечислениях."""
 
-import re
 from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.rules._shared import ITEM_COMMAND, parse_enumeration_label
 
 #: Буквы, которые в перечислениях не используют.
 FORBIDDEN_LETTERS = frozenset("ёзйочъыь")
-
-_LABEL = re.compile(r"^\s*([а-яё])\s*\)?\s*$")
 
 
 @rule(
@@ -34,12 +32,12 @@ def enumeration_letters(doc: Document) -> Iterable[Finding]:
     Заменить букву на следующую допустимую по порядку и сдвинуть обозначения
     остальных элементов перечисления.
     """
-    for command in doc.structure.find_commands("item"):
+    for command in doc.structure.find_commands(ITEM_COMMAND):
         for option in command.options:
-            match = _LABEL.match(option)
-            if match is None:
+            parsed = parse_enumeration_label(option)
+            if parsed is None:
                 continue
-            letter = match.group(1)
+            letter = parsed[0]
             if letter not in FORBIDDEN_LETTERS:
                 continue
             yield enumeration_letters.finding(

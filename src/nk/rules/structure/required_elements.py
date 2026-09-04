@@ -3,7 +3,14 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.elements import normalize_element
+from nk.core.elements import (
+    ABSTRACT,
+    BIBLIOGRAPHY,
+    CONCLUSION,
+    CONTENTS,
+    INTRODUCTION,
+    normalize_element,
+)
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
@@ -29,15 +36,12 @@ def _element(doc: Document, name: object) -> str:
 #: Обязательные элементы, обнаружимые по исходникам. Титульный лист и основная
 #: часть заголовка структурного элемента не имеют и сюда не входят.
 REQUIRED = (
-    "РЕФЕРАТ",
-    "СОДЕРЖАНИЕ",
-    "ВВЕДЕНИЕ",
-    "ЗАКЛЮЧЕНИЕ",
-    "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
+    ABSTRACT,
+    CONTENTS,
+    INTRODUCTION,
+    CONCLUSION,
+    BIBLIOGRAPHY,
 )
-
-CONTENTS = "СОДЕРЖАНИЕ"
-BIBLIOGRAPHY = "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
 
 
 @rule(
