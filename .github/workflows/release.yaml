@@ -1,0 +1,52 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      - name: uv build
+        run: uv build
+
+      # Версия живёт в src/nk/__init__.py, а тег ставится руками — сверяем их
+      # по имени собранного архива, чтобы на PyPI не уехала чужая версия.
+      - name: Тег совпадает с версией пакета
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          tag="${TAG#v}"
+          built=$(ls dist/normik-*.tar.gz | sed -E 's|.*/normik-(.*)\.tar\.gz|\1|')
+          if [ "$tag" != "$built" ]; then
+            echo "тег $tag, а собрана версия $built"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # Обмен OIDC-удостоверения на временный токен PyPI: Trusted Publisher,
+      # никаких секретов в репозитории.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@v1.14.2
