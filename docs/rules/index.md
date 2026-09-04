@@ -27,6 +27,7 @@
 | [`G732-6.4.5-heading-depth`](G732-6.4.5-heading-depth.md) | 6.4.5 | warning | Глубина рубрикации превышает четыре уровня |
 | [`G732-6.4.6-enumeration-letters`](G732-6.4.6-enumeration-letters.md) | 6.4.6 | error | В перечислении использована недопустимая буква |
 | [`G732-6.5.1-figure-no-reference`](G732-6.5.1-figure-no-reference.md) | 6.5.1 | error | На рисунок нет ссылки в тексте |
+| [`G732-6.5.1-figure-position`](G732-6.5.1-figure-position.md) | 6.5.1 | error | Иллюстрация размещена выше первой ссылки на неё |
 | [`G732-6.5.1-reference-word`](G732-6.5.1-reference-word.md) | 6.5.1 | warning | В ссылке на иллюстрацию использовано сокращение «рис.» |
 | [`G732-6.5.4-numbering-scheme-mixed`](G732-6.5.4-numbering-scheme-mixed.md) | 6.5.4 | error | Схема нумерации иллюстраций задана в документе несколько раз |
 | [`G732-6.5.5-appendix-numbering`](G732-6.5.5-appendix-numbering.md) | 6.5.5 | error | Иллюстрация приложения нумеруется без его обозначения |
@@ -37,6 +38,7 @@
 | [`G732-6.5.8-caption-hyphenation`](G732-6.5.8-caption-hyphenation.md) | 6.5.8 | error | В наименовании рисунка задан перенос слова |
 | [`G732-6.6.2-reference-word`](G732-6.6.2-reference-word.md) | 6.6.2 | warning | В ссылке на таблицу использовано сокращение «табл.» |
 | [`G732-6.6.2-table-no-reference`](G732-6.6.2-table-no-reference.md) | 6.6.2 | error | На таблицу нет ссылки в тексте |
+| [`G732-6.6.2-table-position`](G732-6.6.2-table-position.md) | 6.6.2 | error | Таблица размещена выше первой ссылки на неё |
 | [`G732-6.6.3-caption-capital`](G732-6.6.3-caption-capital.md) | 6.6.3 | error | Наименование таблицы начинается со строчной буквы |
 | [`G732-6.6.3-caption-dot`](G732-6.6.3-caption-dot.md) | 6.6.3 | error | Наименование таблицы заканчивается точкой |
 | [`G732-6.6.3-caption-manual-number`](G732-6.6.3-caption-manual-number.md) | 6.6.3 | error | Номер таблицы вписан в наименование вручную |
