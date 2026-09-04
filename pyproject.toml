@@ -5,7 +5,7 @@ description = "Проверка работ на соответствие ГОС�
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.13.4"
+requires-python = ">=3.11"
 authors = [{ name = "Arkadii Artamonov", email = "artamarkan@gmail.com" }]
 keywords = ["latex", "linter", "gost", "нир", "гост"]
 classifiers = [
@@ -14,6 +14,8 @@ classifiers = [
     "Intended Audience :: Education",
     "Intended Audience :: Science/Research",
     "Natural Language :: Russian",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Text Processing :: Markup :: LaTeX",
     "Typing :: Typed",
@@ -64,7 +66,7 @@ addopts = "-q"
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -93,7 +95,7 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 
 [tool.ty.environment]
-python-version = "3.13"
+python-version = "3.11"
 root = ["src", "tests"]
 
 [tool.ty.src]

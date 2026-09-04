@@ -54,7 +54,8 @@ def plan(findings: Iterable[Finding], overlay: Mapping[Path, str] | None = None)
             try:
                 # newline="" отключает трансляцию переводов строки: иначе правка
                 # молча превратила бы CRLF-файл в LF.
-                original = path.read_text(encoding="utf-8", newline="")
+                with path.open(encoding="utf-8", newline="") as handle:
+                    original = handle.read()
             except (OSError, UnicodeDecodeError):
                 skipped.append(path)
                 continue
@@ -68,7 +69,8 @@ def plan(findings: Iterable[Finding], overlay: Mapping[Path, str] | None = None)
 def write(result: FixResult) -> int:
     """Записать подготовленное содержимое на диск."""
     for edit in result.edits:
-        edit.path.write_text(edit.text, encoding="utf-8", newline="")
+        with edit.path.open("w", encoding="utf-8", newline="") as handle:
+            handle.write(edit.text)
     return result.applied
 
 
@@ -121,7 +123,8 @@ def diff(texts: Mapping[Path, str]) -> str:
     chunks: list[str] = []
     for path, text in sorted(texts.items(), key=lambda item: str(item[0])):
         try:
-            original = path.read_text(encoding="utf-8", newline="")
+            with path.open(encoding="utf-8", newline="") as handle:
+                original = handle.read()
         except (OSError, UnicodeDecodeError):
             continue
         chunks.extend(
