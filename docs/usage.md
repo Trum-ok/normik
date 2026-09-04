@@ -50,7 +50,7 @@ nk check report.tex chapters/method.tex
 
 | Ключ | Назначение |
 |---|---|
-| `--profile PATH` | TOML-профиль; по умолчанию встроенный `base` |
+| `--profile PATH` | TOML-профиль; без ключа профиль [ищется рядом с исходниками](profiles.md#где-лежит-профиль) |
 | `--format {human,agent,json}` | формат вывода, по умолчанию `human` |
 | `--select ID,...` | запустить только указанные правила |
 | `--ignore ID,...` | исключить правила |

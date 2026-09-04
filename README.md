@@ -77,6 +77,9 @@ nk check chapters --format agent
 nk check report.tex --profile profiles/example-university.toml --severity error
 ```
 
+Без ключа профиль ищется рядом с исходниками — `nk.toml`, `.nk.toml` или секция
+`[tool.nk]` в `pyproject.toml`.
+
 Починить то, что чинится механически — сначала посмотреть, потом применить:
 
 ```bash

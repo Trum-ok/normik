@@ -104,13 +104,17 @@ def rules_show(rule_id: str = typer.Argument(..., help="Идентификато
 @profile_app.command("show")
 def profile_show(
     profile_source: str = typer.Option(
-        None, "--profile", "-p", help="Имя встроенного профиля либо путь к TOML."
+        None,
+        "--profile",
+        "-p",
+        help="Имя встроенного профиля либо путь к TOML. Без ключа профиль ищется "
+        "вверх по дереву каталогов от текущего.",
     ),
 ) -> None:
     """Итоговый набор правил после применения профиля."""
     registry = load_rules()
     try:
-        profile = load_profile(profile_source)
+        profile = load_profile(profile_source, search_from=[Path.cwd()])
         validate_profile(profile, registry)
     except ProfileError as error:
         err_console.print(f"Профиль: {error}")
@@ -120,6 +124,7 @@ def profile_show(
     active = {impl.id for impl in select_rules(registry, profile=profile)}
 
     console.print(f"Профиль: [bold]{profile.name}[/bold]")
+    console.print(f"Источник: {_source(profile)}")
     console.print(f"Правил включено: {len(active)} из {len(registry)}")
     if not len(registry):
         return
@@ -146,7 +151,11 @@ def profile_show(
 def check(
     paths: list[Path] = typer.Argument(..., help="Файлы или каталоги с исходниками .tex."),
     profile_source: str = typer.Option(
-        None, "--profile", "-p", help="Имя встроенного профиля либо путь к TOML."
+        None,
+        "--profile",
+        "-p",
+        help="Имя встроенного профиля либо путь к TOML. Без ключа профиль ищется "
+        "вверх по дереву каталогов: nk.toml, .nk.toml, [tool.nk] в pyproject.toml.",
     ),
     output_format: OutputFormat = typer.Option(
         OutputFormat.HUMAN, "--format", "-f", help="Формат вывода."
@@ -181,7 +190,7 @@ def check(
 
     registry = load_rules()
     try:
-        profile = load_profile(profile_source)
+        profile = load_profile(profile_source, search_from=paths)
         validate_profile(profile, registry)
         selected_rules, _ = partition_ids(_split(select))
         ignored_rules, ignored_internal = partition_ids(_split(ignore))
@@ -356,6 +365,16 @@ def _report(result: RunResult, output_format: OutputFormat, limit: int) -> None:
         sys.stdout.write(agent.render(result, command=command, limit=limit))
     else:
         human.render(result, console, command=command)
+
+
+def _source(profile: Profile) -> str:
+    """Откуда взят профиль: путь короче от текущего каталога, если файл лежит внутри."""
+    if profile.source is None:
+        return "встроенный"
+    try:
+        return str(profile.source.relative_to(Path.cwd()))
+    except ValueError:
+        return str(profile.source)
 
 
 def _split(value: str | None) -> list[str] | None:

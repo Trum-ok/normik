@@ -88,4 +88,6 @@ def validate_profile(profile: Profile, registry: RuleRegistry) -> None:
         if rule_id not in registry and rule_id not in INTERNAL
     )
     if unknown:
-        raise ProfileError(f"профиль {profile.name!r} ссылается на неизвестные правила: {unknown}")
+        raise ProfileError(
+            f"профиль {profile.origin!r} ссылается на неизвестные правила: {unknown}"
+        )

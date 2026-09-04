@@ -179,6 +179,7 @@ def test_profile_show_lists_the_active_set() -> None:
 
     assert result.exit_code == EXIT_OK
     assert "Профиль: base" in result.stdout
+    assert "Источник: встроенный" in result.stdout
     assert RULE_ID in result.stdout
 
 

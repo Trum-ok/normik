@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from nk.core.finding import Severity
-from nk.core.profile import Profile, ProfileError, load_profile
+from nk.core.profile import Profile, ProfileError, discover, load_profile
 
 
 def write(tmp_path: Path, name: str, text: str) -> Path:
@@ -234,3 +234,108 @@ def test_resolve_keeps_element_aliases() -> None:
     profile = Profile(element_aliases={"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"})
 
     assert profile.resolve({}).element_aliases == profile.element_aliases
+
+
+def test_discover_finds_nk_toml(tmp_path: Path) -> None:
+    write(tmp_path, "nk.toml", 'name = "Кафедра N"\n')
+    (tmp_path / "chapters").mkdir()
+
+    assert discover([tmp_path / "chapters"]) == tmp_path / "nk.toml"
+
+
+def test_discover_prefers_nk_toml_to_pyproject(tmp_path: Path) -> None:
+    write(tmp_path, "nk.toml", 'name = "Из nk.toml"\n')
+    write(tmp_path, "pyproject.toml", '[tool.nk]\nname = "Из pyproject"\n')
+
+    assert discover([tmp_path]) == tmp_path / "nk.toml"
+
+
+def test_discover_skips_pyproject_without_section(tmp_path: Path) -> None:
+    write(tmp_path, "nk.toml", 'name = "Кафедра N"\n')
+    nested = tmp_path / "работа"
+    nested.mkdir()
+    write(nested, "pyproject.toml", '[project]\nname = "чужой"\n')
+
+    assert discover([nested]) == tmp_path / "nk.toml"
+
+
+def test_discover_starts_from_the_common_root(tmp_path: Path) -> None:
+    write(tmp_path, "nk.toml", 'name = "Общий"\n')
+    for name in ("главы", "приложения"):
+        (tmp_path / name).mkdir()
+    write(tmp_path / "главы", "nk.toml", 'name = "Только главы"\n')
+
+    found = discover([tmp_path / "главы", tmp_path / "приложения"])
+
+    assert found == tmp_path / "nk.toml"
+
+
+def test_discover_starts_from_the_parent_of_a_file(tmp_path: Path) -> None:
+    write(tmp_path, "nk.toml", 'name = "Кафедра N"\n')
+    report = write(tmp_path, "report.tex", "")
+
+    assert discover([report]) == tmp_path / "nk.toml"
+
+
+def test_load_reads_the_pyproject_section(tmp_path: Path) -> None:
+    write(
+        tmp_path,
+        "pyproject.toml",
+        '[project]\nname = "diploma"\n\n[tool.nk]\nname = "Кафедра N"\n'
+        'disable = ["G732-a"]\n\n[tool.nk.rules."G732-b"]\nseverity = "warning"\n',
+    )
+
+    profile = load_profile(search_from=[tmp_path])
+
+    assert profile.name == "Кафедра N"
+    assert profile.disabled == frozenset({"G732-a"})
+    assert profile.severity_for("G732-b", Severity.ERROR) is Severity.WARNING
+    assert profile.source == tmp_path / "pyproject.toml"
+
+
+def test_pyproject_without_section_is_rejected_when_given_explicitly(tmp_path: Path) -> None:
+    path = write(tmp_path, "pyproject.toml", '[project]\nname = "diploma"\n')
+
+    with pytest.raises(ProfileError, match=r"нет секции \[tool.nk\]"):
+        load_profile(path)
+
+
+def test_pyproject_section_extends_a_neighbouring_file(tmp_path: Path) -> None:
+    write(tmp_path, "родитель.toml", 'name = "Родитель"\ndisable = ["G732-a"]\n')
+    write(tmp_path, "pyproject.toml", '[tool.nk]\nextends = "родитель"\ndisable = ["G732-z"]\n')
+
+    profile = load_profile(search_from=[tmp_path])
+
+    assert profile.disabled == frozenset({"G732-a", "G732-z"})
+
+
+def test_explicit_source_wins_over_discovery(tmp_path: Path) -> None:
+    write(tmp_path, "nk.toml", 'name = "Найденный"\n')
+    chosen = write(tmp_path, "кафедра.toml", 'name = "Указанный"\n')
+
+    assert load_profile(chosen, search_from=[tmp_path]).name == "Указанный"
+
+
+def test_builtin_profile_has_no_source() -> None:
+    assert load_profile().source is None
+
+
+def test_unknown_key_inside_the_pyproject_section(tmp_path: Path) -> None:
+    write(tmp_path, "pyproject.toml", '[tool.nk]\ndisabled = ["G732-a"]\n')
+
+    with pytest.raises(ProfileError, match="неизвестные ключи"):
+        load_profile(search_from=[tmp_path])
+
+
+def test_broken_pyproject_is_not_skipped_silently(tmp_path: Path) -> None:
+    write(tmp_path, "pyproject.toml", "[tool.nk]\nname = \n")
+
+    with pytest.raises(ProfileError, match=r"pyproject\.toml"):
+        load_profile(search_from=[tmp_path])
+
+
+def test_origin_names_the_file_when_there_is_one(tmp_path: Path) -> None:
+    path = write(tmp_path, "nk.toml", 'disable = ["G732-a"]\n')
+
+    assert load_profile(path).origin == str(path)
+    assert Profile(name="Кафедра N").origin == "Кафедра N"

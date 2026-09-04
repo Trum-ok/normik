@@ -3,8 +3,9 @@
 Основной механизм расширяемости: кафедра правит профиль, а не форкает репозиторий.
 """
 
+import os
 import tomllib
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from importlib import resources
 from pathlib import Path
@@ -20,6 +21,12 @@ Params = Mapping[str, ParamValue]
 BUILTIN_PACKAGE = "nk.profiles"
 DEFAULT_PROFILE = "base"
 PROFILE_SUFFIX = ".toml"
+
+PYPROJECT = "pyproject.toml"
+PYPROJECT_SECTION = "tool.nk"
+
+#: Имена конфигурационных файлов в порядке предпочтения внутри одного каталога.
+CONFIG_NAMES = ("nk.toml", ".nk.toml", PYPROJECT)
 
 _TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "enable", "rules", "elements"})
 _RULE_KEYS = frozenset({"severity", "params"})
@@ -47,6 +54,14 @@ class Profile:
     params: Mapping[str, Params] = field(default_factory=dict)
     element_aliases: Mapping[str, str] = field(default_factory=dict)
     """Наименования структурных элементов кафедры и канонические наименования стандарта."""
+
+    source: Path | None = None
+    """Файл, из которого прочитан профиль; ``None`` — встроенный."""
+
+    @property
+    def origin(self) -> str:
+        """Как называть профиль в сообщениях: файл точнее имени, которого может и не быть."""
+        return str(self.source) if self.source is not None else self.name
 
     def is_disabled(self, rule_id: str) -> bool:
         return rule_id in self.disabled
@@ -77,26 +92,80 @@ class Profile:
             severities=self.severities,
             params=merged,
             element_aliases=self.element_aliases,
+            source=self.source,
         )
 
 
-def load_profile(source: str | Path | None = None) -> Profile:
+def load_profile(
+    source: str | Path | None = None, *, search_from: Sequence[Path] | None = None
+) -> Profile:
     """Прочитать профиль по имени встроенного либо по пути к файлу.
+
+    Без явного источника профиль ищется по дереву каталогов (``search_from``), а если
+    не найден — берётся встроенный ``base``.
 
     ``extends`` — один уровень: профиль, от которого наследуются, сам наследоваться
     не может. Это исключает циклы без отдельной проверки.
     """
-    child_path, child = _read(source if source is not None else DEFAULT_PROFILE)
+    if source is None:
+        found = discover(search_from) if search_from is not None else None
+        source = found if found is not None else DEFAULT_PROFILE
+
+    child_path, child = _read(source)
     parent_ref = child.get("extends")
     if parent_ref is None:
-        return _build(child)
+        return _build(child, child_path)
 
     _, parent = _read(parent_ref, relative_to=child_path)
     if parent.get("extends") is not None:
         raise ProfileError(
             f"профиль {parent_ref!r} сам наследуется от другого: наследование только на один уровень"
         )
-    return _build(_merge(parent, child))
+    return _build(_merge(parent, child), child_path)
+
+
+def discover(paths: Sequence[Path]) -> Path | None:
+    """Ближайший файл конфигурации вверх по дереву от проверяемых путей.
+
+    Поиск начинается с общего каталога всех путей: профиль на прогон один, поэтому
+    и файл ищется один — иначе части исходников проверялись бы по разным правилам.
+    ``pyproject.toml`` без секции ``[tool.nk]`` не считается конфигурацией: подъём
+    продолжается выше.
+    """
+    root = _common_root(paths)
+    for directory in [root, *root.parents]:
+        for name in CONFIG_NAMES:
+            candidate = directory / name
+            if candidate.is_file() and (name != PYPROJECT or _has_section(candidate)):
+                return candidate
+    return None
+
+
+def _common_root(paths: Sequence[Path]) -> Path:
+    directories = [path if path.is_dir() else path.parent for path in paths]
+    resolved = [str(directory.resolve()) for directory in directories]
+    if not resolved:
+        return Path.cwd().resolve()
+    return Path(os.path.commonpath(resolved))
+
+
+def _has_section(path: Path) -> bool:
+    """Есть ли в ``pyproject.toml`` секция ``[tool.nk]``.
+
+    Недоступный файл не ошибка профиля: поиск идёт дальше вверх. А вот битый TOML
+    разбирается как ошибка — в нём могла быть настройка кафедры, и молчаливый
+    пропуск выключил бы её незаметно.
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as error:
+        raise ProfileError(f"профиль {path}: {error}") from error
+    tool = data.get("tool")
+    return isinstance(tool, dict) and isinstance(tool.get("nk"), dict)
 
 
 def _read(
@@ -110,7 +179,7 @@ def _read(
         text = path.read_text(encoding="utf-8")
     except OSError as error:
         raise ProfileError(f"не удалось прочитать профиль {path}: {error}") from error
-    return path, _parse(text, str(path))
+    return path, _parse(text, str(path), section=path.name == PYPROJECT)
 
 
 def _locate(source: str | Path, relative_to: Path | None) -> Path | None:
@@ -132,11 +201,13 @@ def _builtin_text(name: str) -> str:
     return resource.read_text(encoding="utf-8")
 
 
-def _parse(text: str, origin: str) -> dict[str, Any]:
+def _parse(text: str, origin: str, section: bool = False) -> dict[str, Any]:
     try:
         data = tomllib.loads(text)
     except tomllib.TOMLDecodeError as error:
         raise ProfileError(f"профиль {origin}: {error}") from error
+    if section:
+        data = _section(data, origin)
 
     unknown = data.keys() - _TOP_LEVEL_KEYS
     if unknown:
@@ -159,6 +230,17 @@ def _parse(text: str, origin: str) -> dict[str, Any]:
             f"профиль {origin}: [elements], неизвестные ключи {sorted(unknown_elements)}"
         )
     return data
+
+
+def _section(data: dict[str, Any], origin: str) -> dict[str, Any]:
+    """Профиль внутри ``pyproject.toml`` — секция ``[tool.nk]``."""
+    tool = data.get("tool", {})
+    found = tool.get("nk") if isinstance(tool, dict) else None
+    if found is None:
+        raise ProfileError(f"профиль {origin}: нет секции [{PYPROJECT_SECTION}]")
+    if not isinstance(found, dict):
+        raise ProfileError(f"профиль {origin}: секция [{PYPROJECT_SECTION}] должна быть таблицей")
+    return found
 
 
 def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
@@ -187,7 +269,7 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _build(data: dict[str, Any]) -> Profile:
+def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
     severities: dict[str, Severity] = {}
     params: dict[str, Params] = {}
     for rule_id, section in data.get("rules", {}).items():
@@ -205,6 +287,7 @@ def _build(data: dict[str, Any]) -> Profile:
         severities=severities,
         params=params,
         element_aliases=_aliases(data.get("elements", {}).get("aliases", {})),
+        source=source,
     )
 
 
