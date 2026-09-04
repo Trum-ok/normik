@@ -27,6 +27,11 @@ def test_caret_may_stand_right_after_the_last_character() -> None:
     assert caret_line(make_finding(col=8), "abcdefg") == "       ^"
 
 
+def test_no_caret_under_the_start_of_a_command() -> None:
+    """Нарушение всей записи, а не знака: стрелка слева уже показала строку."""
+    assert caret_line(make_finding(col=2), "\t\\bibitem{bs} BeautifulSoup") is None
+
+
 def test_tabs_are_kept_in_the_indent() -> None:
     """Табуляция занимает не один знак, иначе указатель уезжает."""
     assert caret_line(make_finding(col=3), "\t\tтекст") == "\t\t^"

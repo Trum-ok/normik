@@ -34,7 +34,6 @@ report.tex
       3 | \begin{figure}[h]
       4 |     \includegraphics{plot.png}
     > 5 |     \caption{Зависимость скорости от нагрузки.}
-        |     ^
       6 |     \label{fig:speed}
       7 | \end{figure}
 

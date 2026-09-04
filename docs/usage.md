@@ -81,8 +81,9 @@ nk check report.tex chapters/method.tex
 ### `human`
 
 Разметка для чтения в терминале: находки сгруппированы по файлам, вокруг каждой
-показан контекст, строка с нарушением помечена стрелкой, а место в строке —
-указателем под ней.
+показан контекст, строка с нарушением помечена стрелкой. Если нарушение в
+конкретном знаке — лишнем пробеле, дефисе вместо тире, — под ним ставится
+указатель.
 
 ```console
 $ nk check chapters
@@ -94,7 +95,6 @@ chapters/method.tex
       6 |   \centering
       7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
     > 8 |   \caption{Схема экспериментальной установки.}
-        |   ^
       9 | \end{figure}
 ```
 
@@ -117,7 +117,6 @@ chapters/method.tex:8:3  error  G732-6.5.7-caption-dot
     6 |   \centering
     7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
     8 |   \caption{Схема экспериментальной установки.}
-      |   ^
     9 | \end{figure}
 ```
 

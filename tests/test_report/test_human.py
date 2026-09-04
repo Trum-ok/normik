@@ -1,4 +1,7 @@
+from dataclasses import replace
+
 import pytest
+from helpers import make_finding
 from rich.console import Console
 
 from nk.core.runner import RunResult
@@ -50,7 +53,14 @@ def test_empty_result_prints_only_the_summary(plain: Console) -> None:
     assert "--format json" not in text
 
 
-def test_caret_points_at_the_place_without_colour(plain: Console, result: RunResult) -> None:
-    text = capture(plain, result)
+def test_caret_points_at_the_place_without_colour(plain: Console) -> None:
+    finding = replace(make_finding(lineno=145, col=44), fix=None)
+    text = capture(plain, RunResult(profile="base", findings=(finding,), files_checked=1))
+
     assert "> 145 |   \\caption{Схема экспериментальной установки.}" in text
-    assert "      |   ^" in text
+    assert "      |                                            ^" in text
+
+
+def test_no_caret_under_a_command(plain: Console, result: RunResult) -> None:
+    """Под \\caption указывать нечего: строка помечена стрелкой, а знака там нет."""
+    assert "      |   ^" not in capture(plain, result)

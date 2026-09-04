@@ -16,7 +16,6 @@ chapters/method.tex
       6 |   \centering
       7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
     > 8 |   \caption{Схема экспериментальной установки.}
-        |   ^
       9 | \end{figure}
 ```
 

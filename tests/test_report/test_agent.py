@@ -18,7 +18,6 @@ chapters/01-intro.tex:12:3  info  G732-6.2.4-heading-hyphenation
     10 | \\begin{figure}[h]
     11 |   \\includegraphics{img/setup.png}
     12 |   \\caption{Схема экспериментальной установки.}
-       |   ^
     13 | \\end{figure}
     14 |
 
@@ -30,7 +29,6 @@ chapters/02-method.tex:145:3  error  G732-6.5.7-caption-dot
     143 | \\begin{figure}[h]
     144 |   \\includegraphics{img/setup.png}
     145 |   \\caption{Схема экспериментальной установки.}
-        |   ^
     146 | \\end{figure}
     147 |
 
