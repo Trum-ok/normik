@@ -4,11 +4,10 @@ import re
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.finding import Finding, Fix, Severity
-from nk.core.position import Region
+from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import NBSP
-from nk.rules._text import is_code, prose
+from nk.rules._text import gaps
 
 #: Сокращения со точкой: сведения об объёме реферата, даты, счётные единицы.
 ABBREVIATIONS = "с. кн. рис. табл. ил. источн. прил. шт. экз. руб. тыс. г. гг. в. мин. ч. сут."
@@ -52,17 +51,13 @@ def unit_nbsp(doc: Document) -> Iterable[Finding]:
     Одиночное «с» без точки правило не проверяет: «таблица 2 с результатами»
     от секунд по тексту не отличить.
     """
-    for line in doc.iter_lines():
-        if is_code(doc, line):
-            continue
-        for match in _BEFORE_UNIT.finditer(prose(doc, line)):
-            start, end = match.span(1)
-            yield unit_nbsp.finding(
-                doc,
-                line,
-                message="Между числом и единицей стоит обычный пробел.",
-                requirement="Число и следующую за ним единицу связывают неразрывным пробелом.",
-                suggestion=f"Поставить неразрывный пробел: {NBSP}",
-                col=start + 1,
-                fix=Fix(Region.in_line(line.path, line.lineno, start + 1, end + 1), NBSP),
-            )
+    for gap in gaps(doc, _BEFORE_UNIT):
+        yield unit_nbsp.finding(
+            doc,
+            gap.line,
+            message="Между числом и единицей стоит обычный пробел.",
+            requirement="Число и следующую за ним единицу связывают неразрывным пробелом.",
+            suggestion=f"Поставить неразрывный пробел: {NBSP}",
+            col=gap.col,
+            fix=gap.fix,
+        )

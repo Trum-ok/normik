@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
+from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_findings, one_line
 
 
 @rule(
@@ -28,17 +28,16 @@ def figure_caption_dot(doc: Document) -> Iterable[Finding]:
 
     Убрать точку в конце `\caption`.
     """
-    for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
-        for command in captions(environment):
-            text = caption_text(command)
-            if not text.endswith("."):
-                continue
-            yield figure_caption_dot.finding(
-                doc,
-                command.span,
-                message="Наименование рисунка заканчивается точкой.",
-                requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
-                suggestion=render_caption(command, one_line(text[:-1])),
-                col=command.col,
-                fix=command.region,
-            )
+
+    def check(text: str) -> tuple[str, str] | None:
+        if not text.endswith("."):
+            return None
+        return "Наименование рисунка заканчивается точкой.", one_line(text[:-1])
+
+    return caption_findings(
+        figure_caption_dot,
+        doc,
+        FIGURE_ENVIRONMENTS,
+        requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
+        check=check,
+    )

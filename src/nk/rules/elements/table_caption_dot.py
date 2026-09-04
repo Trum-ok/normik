@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import TABLE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
+from nk.rules._shared import TABLE_ENVIRONMENTS, caption_findings, one_line
 
 
 @rule(
@@ -26,17 +26,16 @@ def table_caption_dot(doc: Document) -> Iterable[Finding]:
 
     Убрать точку в конце `\caption`.
     """
-    for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
-        for command in captions(environment):
-            text = caption_text(command)
-            if not text.endswith("."):
-                continue
-            yield table_caption_dot.finding(
-                doc,
-                command.span,
-                message="Наименование таблицы заканчивается точкой.",
-                requirement="Наименование таблицы приводят с прописной буквы без точки в конце.",
-                suggestion=render_caption(command, one_line(text[:-1])),
-                col=command.col,
-                fix=command.region,
-            )
+
+    def check(text: str) -> tuple[str, str] | None:
+        if not text.endswith("."):
+            return None
+        return "Наименование таблицы заканчивается точкой.", one_line(text[:-1])
+
+    return caption_findings(
+        table_caption_dot,
+        doc,
+        TABLE_ENVIRONMENTS,
+        requirement="Наименование таблицы приводят с прописной буквы без точки в конце.",
+        check=check,
+    )

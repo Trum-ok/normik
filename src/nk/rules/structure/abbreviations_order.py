@@ -6,7 +6,7 @@ from nk.core.document import Document
 from nk.core.elements import ABBREVIATION_ELEMENTS
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import alphabet_key, alphabet_of, listing_entries
+from nk.rules._shared import listing_order
 
 
 @rule(
@@ -31,22 +31,10 @@ def abbreviations_order(doc: Document) -> Iterable[Finding]:
 
     Переставить запись выше — на то место, которое ей отводит алфавит.
     """
-    previous_short = ""
-    previous_key = ""
-    previous_alphabet = ""
-    for line, short in listing_entries(doc, ABBREVIATION_ELEMENTS):
-        key, alphabet = alphabet_key(short), alphabet_of(short)
-        if alphabet != previous_alphabet or key >= previous_key:
-            previous_short, previous_key, previous_alphabet = short, key, alphabet
-            continue
-        yield abbreviations_order.finding(
-            doc,
-            line,
-            message=(
-                f"Сокращение «{short}» стоит после «{previous_short}», "
-                "хотя по алфавиту идёт раньше."
-            ),
-            requirement="Сокращения и обозначения в перечне располагают в алфавитном порядке.",
-            suggestion=f"Переставить запись «{short}» выше записи «{previous_short}».",
-        )
-        previous_short, previous_key, previous_alphabet = short, key, alphabet
+    return listing_order(
+        abbreviations_order,
+        doc,
+        ABBREVIATION_ELEMENTS,
+        noun="Сокращение",
+        requirement="Сокращения и обозначения в перечне располагают в алфавитном порядке.",
+    )

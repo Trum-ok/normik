@@ -4,8 +4,9 @@ from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
-from nk.core.numbering import EQUATION, Scheme
+from nk.core.numbering import EQUATION
 from nk.core.rule import rule
+from nk.rules._shared import appendix_numbering
 
 
 @rule(
@@ -28,19 +29,9 @@ def appendix_formula_numbering(doc: Document) -> Iterable[Finding]:
     Задать схему нумерации в пределах раздела — тогда внутри приложения номер
     складывается из его буквы и порядкового номера.
     """
-    for item in doc.numbering.by_kind(EQUATION):
-        if not item.in_appendix or item.scheme is Scheme.BY_SECTION:
-            continue
-        yield appendix_formula_numbering.finding(
-            doc,
-            item.span,
-            message=(
-                f"{item.title} находится в приложении {item.appendix}, "
-                f"но нумеруется сквозной нумерацией основной части."
-            ),
-            requirement="Формулы каждого приложения нумеруют отдельно, добавляя перед цифрой обозначение приложения.",
-            suggestion=(
-                "Добавить в преамбулу \\counterwithin{equation}{section}: "
-                f"тогда номер станет {item.appendix}.1 и далее."
-            ),
-        )
+    return appendix_numbering(
+        appendix_formula_numbering,
+        doc,
+        EQUATION,
+        "Формулы каждого приложения нумеруют отдельно, добавляя перед цифрой обозначение приложения.",
+    )

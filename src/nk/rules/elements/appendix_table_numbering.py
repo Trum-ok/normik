@@ -4,8 +4,9 @@ from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
-from nk.core.numbering import TABLE, Scheme
+from nk.core.numbering import TABLE
 from nk.core.rule import rule
+from nk.rules._shared import appendix_numbering
 
 
 @rule(
@@ -28,19 +29,9 @@ def appendix_table_numbering(doc: Document) -> Iterable[Finding]:
     Задать схему нумерации в пределах раздела — тогда внутри приложения номер
     складывается из его буквы и порядкового номера.
     """
-    for item in doc.numbering.by_kind(TABLE):
-        if not item.in_appendix or item.scheme is Scheme.BY_SECTION:
-            continue
-        yield appendix_table_numbering.finding(
-            doc,
-            item.span,
-            message=(
-                f"{item.title} находится в приложении {item.appendix}, "
-                f"но нумеруется сквозной нумерацией основной части."
-            ),
-            requirement="Таблицы каждого приложения обозначают отдельной нумерацией с добавлением перед цифрой обозначения приложения.",
-            suggestion=(
-                "Добавить в преамбулу \\counterwithin{table}{section}: "
-                f"тогда номер станет {item.appendix}.1 и далее."
-            ),
-        )
+    return appendix_numbering(
+        appendix_table_numbering,
+        doc,
+        TABLE,
+        "Таблицы каждого приложения обозначают отдельной нумерацией с добавлением перед цифрой обозначения приложения.",
+    )

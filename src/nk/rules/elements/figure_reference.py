@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import FIGURE_ENVIRONMENTS, labels, referenced_labels
+from nk.rules._shared import FIGURE_ENVIRONMENTS, float_no_reference
 
 REQUIREMENT = "На все иллюстрации в отчёте должны быть даны ссылки со словом «рисунок» и номером."
 
@@ -31,24 +31,13 @@ def figure_no_reference(doc: Document) -> Iterable[Finding]:
     Добавить `\label` после `\caption` и сослаться на рисунок в том абзаце,
     который он поясняет.
     """
-    referenced = referenced_labels(doc)
-    for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
-        keys = [command.arg for command in labels(environment) if command.arg]
-        if not keys:
-            yield figure_no_reference.finding(
-                doc,
-                environment.span,
-                message="У рисунка нет метки, сослаться на него в тексте нечем.",
-                requirement=REQUIREMENT,
-                suggestion="Добавить \\label{fig:...} после \\caption и сослаться \\ref{fig:...}.",
-            )
-            continue
-        if any(key in referenced for key in keys):
-            continue
-        yield figure_no_reference.finding(
-            doc,
-            environment.span,
-            message=f"На рисунок с меткой {keys[0]!r} нет ссылки в тексте.",
-            requirement=REQUIREMENT,
-            suggestion=f"Добавить в текст ссылку: на рисунке~\\ref{{{keys[0]}}}.",
-        )
+    return float_no_reference(
+        figure_no_reference,
+        doc,
+        FIGURE_ENVIRONMENTS,
+        requirement=REQUIREMENT,
+        unlabelled="У рисунка нет метки, сослаться на него в тексте нечем.",
+        unlabelled_suggestion="Добавить \\label{fig:...} после \\caption и сослаться \\ref{fig:...}.",
+        missing=lambda key: f"На рисунок с меткой {key!r} нет ссылки в тексте.",
+        missing_suggestion=lambda key: f"Добавить в текст ссылку: на рисунке~\\ref{{{key}}}.",
+    )

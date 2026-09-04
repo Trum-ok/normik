@@ -5,13 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import (
-    TABLE_ENVIRONMENTS,
-    first_outside_reference,
-    is_below,
-    labels,
-    place,
-)
+from nk.rules._shared import TABLE_ENVIRONMENTS, float_position
 
 
 @rule(
@@ -36,26 +30,15 @@ def table_position(doc: Document) -> Iterable[Finding]:
     Перенести окружение `table` ниже абзаца с первой ссылкой либо сослаться
     на таблицу раньше — там, где она по смыслу требуется.
     """
-    for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
-        keys = [command.arg for command in labels(environment) if command.arg]
-        if not keys:
-            continue
-        reference = first_outside_reference(doc, environment, keys)
-        if reference is None or not is_below(doc, reference, environment.span):
-            continue
-        yield table_position.finding(
-            doc,
-            environment.span,
-            message=(
-                f"Таблица с меткой {keys[0]!r} стоит выше первой ссылки на неё "
-                f"({place(reference, environment.span)})."
-            ),
-            requirement=(
-                "Таблицу помещают непосредственно после текста, где она упомянута "
-                "впервые, или на следующей странице."
-            ),
-            suggestion=(
-                f"Перенести окружение {environment.name} ниже абзаца со ссылкой "
-                f"(строка {reference.lineno})."
-            ),
-        )
+    return float_position(
+        table_position,
+        doc,
+        TABLE_ENVIRONMENTS,
+        message=lambda key, where: (
+            f"Таблица с меткой {key!r} стоит выше первой ссылки на неё ({where})."
+        ),
+        requirement=(
+            "Таблицу помещают непосредственно после текста, где она упомянута "
+            "впервые, или на следующей странице."
+        ),
+    )

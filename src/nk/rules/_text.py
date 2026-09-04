@@ -5,8 +5,13 @@
 """
 
 import re
+from collections.abc import Iterator
+from dataclasses import dataclass
 
 from nk.core.document import Document, Line
+from nk.core.finding import Fix
+from nk.core.position import Region
+from nk.rules._shared import NBSP
 
 #: Окружения, содержимое которых типографике не подчиняется.
 CODE_ENVIRONMENTS = frozenset(
@@ -34,6 +39,36 @@ def prose(doc: Document, line: Line) -> str:
         lambda match: match.group(1) + " " * (len(match.group(0)) - len(match.group(1))),
         text,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class Gap:
+    """Разрывный пробел, найденный по шаблону: где он и чем его заменить."""
+
+    line: Line
+    col: int
+    fix: Fix
+    found: str
+    """Текст совпадения без окружающих пробелов — его называют в сообщении."""
+
+
+def gaps(doc: Document, pattern: re.Pattern[str]) -> Iterator[Gap]:
+    """Разрывные пробелы по шаблону: группа 1 — сам пробел, который надо заменить.
+
+    Правила о неразрывном пробеле различаются только шаблоном и формулировками:
+    обход строк, пропуск кода, разбор по прозе и сборка правки у них общие.
+    """
+    for line in doc.iter_lines():
+        if is_code(doc, line):
+            continue
+        for match in pattern.finditer(prose(doc, line)):
+            start, end = match.span(1)
+            yield Gap(
+                line=line,
+                col=start + 1,
+                fix=Fix(Region.in_line(line.path, line.lineno, start + 1, end + 1), NBSP),
+                found=match.group(0).strip(),
+            )
 
 
 def is_code(doc: Document, line: Line) -> bool:

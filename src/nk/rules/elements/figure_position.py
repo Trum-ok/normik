@@ -5,13 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import (
-    FIGURE_ENVIRONMENTS,
-    first_outside_reference,
-    is_below,
-    labels,
-    place,
-)
+from nk.rules._shared import FIGURE_ENVIRONMENTS, float_position
 
 
 @rule(
@@ -36,26 +30,15 @@ def figure_position(doc: Document) -> Iterable[Finding]:
     Перенести окружение `figure` ниже абзаца с первой ссылкой либо сослаться
     на рисунок раньше — там, где он по смыслу требуется.
     """
-    for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
-        keys = [command.arg for command in labels(environment) if command.arg]
-        if not keys:
-            continue
-        reference = first_outside_reference(doc, environment, keys)
-        if reference is None or not is_below(doc, reference, environment.span):
-            continue
-        yield figure_position.finding(
-            doc,
-            environment.span,
-            message=(
-                f"Рисунок с меткой {keys[0]!r} стоит выше первой ссылки на него "
-                f"({place(reference, environment.span)})."
-            ),
-            requirement=(
-                "Иллюстрацию помещают непосредственно после текста, где она упомянута "
-                "впервые, или на следующей странице."
-            ),
-            suggestion=(
-                f"Перенести окружение {environment.name} ниже абзаца со ссылкой "
-                f"(строка {reference.lineno})."
-            ),
-        )
+    return float_position(
+        figure_position,
+        doc,
+        FIGURE_ENVIRONMENTS,
+        message=lambda key, where: (
+            f"Рисунок с меткой {key!r} стоит выше первой ссылки на него ({where})."
+        ),
+        requirement=(
+            "Иллюстрацию помещают непосредственно после текста, где она упомянута "
+            "впервые, или на следующей странице."
+        ),
+    )

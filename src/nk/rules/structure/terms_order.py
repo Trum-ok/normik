@@ -6,7 +6,7 @@ from nk.core.document import Document
 from nk.core.elements import TERMS_ELEMENTS
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import alphabet_key, alphabet_of, listing_entries
+from nk.rules._shared import listing_order
 
 
 @rule(
@@ -31,19 +31,10 @@ def terms_order(doc: Document) -> Iterable[Finding]:
 
     Переставить запись выше — на то место, которое ей отводит алфавит.
     """
-    previous_term = ""
-    previous_key = ""
-    previous_alphabet = ""
-    for line, term in listing_entries(doc, TERMS_ELEMENTS):
-        key, alphabet = alphabet_key(term), alphabet_of(term)
-        if alphabet != previous_alphabet or key >= previous_key:
-            previous_term, previous_key, previous_alphabet = term, key, alphabet
-            continue
-        yield terms_order.finding(
-            doc,
-            line,
-            message=f"Термин «{term}» стоит после «{previous_term}», хотя по алфавиту идёт раньше.",
-            requirement="Термины в перечне располагают в алфавитном порядке.",
-            suggestion=f"Переставить запись «{term}» выше записи «{previous_term}».",
-        )
-        previous_term, previous_key, previous_alphabet = term, key, alphabet
+    return listing_order(
+        terms_order,
+        doc,
+        TERMS_ELEMENTS,
+        noun="Термин",
+        requirement="Термины в перечне располагают в алфавитном порядке.",
+    )

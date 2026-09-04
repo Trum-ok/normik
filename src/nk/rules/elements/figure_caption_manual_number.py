@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
+from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_findings, one_line
 
 #: «Рисунок 1 — », «Рис. 2.1 -», «Рисунок А.3.»
 MANUAL_NUMBER = re.compile(r"^\s*(?:Рисунок|Рис\.)\s*[0-9А-ЯA-Z][0-9.]*\s*[-–—:.]?\s*")
@@ -34,22 +34,23 @@ def figure_caption_manual_number(doc: Document) -> Iterable[Finding]:
     Оставить в `\caption` только текст наименования, а ссылаться на рисунок
     через метку.
     """
-    for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
-        for command in captions(environment):
-            text = caption_text(command)
-            match = MANUAL_NUMBER.match(text)
-            if match is None:
-                continue
-            rest = one_line(text[match.end() :])
-            yield figure_caption_manual_number.finding(
-                doc,
-                command.span,
-                message=f"Наименование начинается с «{one_line(match.group(0))}» — номер вписан вручную.",
-                requirement=(
-                    "Слово «Рисунок», номер и тире формирует класс документа; "
-                    "в наименовании оставляют только сам текст."
-                ),
-                suggestion=render_caption(command, rest),
-                col=command.col,
-                fix=command.region,
-            )
+
+    def check(text: str) -> tuple[str, str] | None:
+        match = MANUAL_NUMBER.match(text)
+        if match is None:
+            return None
+        found = one_line(match.group(0))
+        return f"Наименование начинается с «{found}» — номер вписан вручную.", one_line(
+            text[match.end() :]
+        )
+
+    return caption_findings(
+        figure_caption_manual_number,
+        doc,
+        FIGURE_ENVIRONMENTS,
+        requirement=(
+            "Слово «Рисунок», номер и тире формирует класс документа; "
+            "в наименовании оставляют только сам текст."
+        ),
+        check=check,
+    )

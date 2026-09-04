@@ -5,12 +5,15 @@
 """
 
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 
 from nk.core.document import Command, Document, Environment, Line, Span
 from nk.core.elements import canonical_element, normalize_element
-from nk.core.finding import Fix
+from nk.core.finding import Finding, Fix
 from nk.core.headings import PAGE_BREAK_COMMANDS, is_heading_call
+from nk.core.numbering import Scheme
+from nk.core.position import Region
+from nk.core.rule import RuleImpl
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
@@ -80,6 +83,38 @@ def _caption_argument(command: Command) -> str:
     return args[0] if args else ""
 
 
+def caption_findings(
+    impl: RuleImpl,
+    doc: Document,
+    environments: frozenset[str],
+    *,
+    requirement: str,
+    check: Callable[[str], tuple[str, str] | None],
+) -> Iterator[Finding]:
+    """Находки по наименованиям объектов.
+
+    Правила о наименовании различаются только проверкой текста: обход окружений,
+    сборка новой подписи и границы правки у них общие. ``check`` получает текст
+    наименования и возвращает сообщение вместе с исправленным текстом либо
+    ``None``, если нарушения нет.
+    """
+    for environment in doc.structure.find_environments(*environments):
+        for command in captions(environment):
+            found = check(caption_text(command))
+            if found is None:
+                continue
+            message, corrected = found
+            yield impl.finding(
+                doc,
+                command.span,
+                message=message,
+                requirement=requirement,
+                suggestion=render_caption(command, corrected),
+                col=command.col,
+                fix=command.region,
+            )
+
+
 def referenced_labels(doc: Document) -> set[str]:
     """Метки, на которые в документе есть ссылка."""
     found: set[str] = set()
@@ -142,6 +177,105 @@ def place(command: Command, span: Span) -> str:
     return f"{command.path.name}, строка {command.lineno}"
 
 
+def float_position(
+    impl: RuleImpl,
+    doc: Document,
+    environments: frozenset[str],
+    *,
+    message: Callable[[str, str], str],
+    requirement: str,
+) -> Iterator[Finding]:
+    """Объекты, целиком стоящие выше первой ссылки на них.
+
+    Объект без метки пропускается: о нём сообщает правило о ссылках.
+    ``message`` получает метку объекта и место ссылки.
+    """
+    for environment in doc.structure.find_environments(*environments):
+        keys = [command.arg for command in labels(environment) if command.arg]
+        if not keys:
+            continue
+        reference = first_outside_reference(doc, environment, keys)
+        if reference is None or not is_below(doc, reference, environment.span):
+            continue
+        yield impl.finding(
+            doc,
+            environment.span,
+            message=message(keys[0], place(reference, environment.span)),
+            requirement=requirement,
+            suggestion=(
+                f"Перенести окружение {environment.name} ниже абзаца со ссылкой "
+                f"(строка {reference.lineno})."
+            ),
+        )
+
+
+def float_no_reference(
+    impl: RuleImpl,
+    doc: Document,
+    environments: frozenset[str],
+    *,
+    requirement: str,
+    unlabelled: str,
+    unlabelled_suggestion: str,
+    missing: Callable[[str], str],
+    missing_suggestion: Callable[[str], str],
+) -> Iterator[Finding]:
+    """Объекты, на которые в тексте не сослались.
+
+    Объект без метки — та же находка: сослаться на него нечем. ``missing``
+    и ``missing_suggestion`` получают метку объекта.
+    """
+    referenced = referenced_labels(doc)
+    for environment in doc.structure.find_environments(*environments):
+        keys = [command.arg for command in labels(environment) if command.arg]
+        if not keys:
+            yield impl.finding(
+                doc,
+                environment.span,
+                message=unlabelled,
+                requirement=requirement,
+                suggestion=unlabelled_suggestion,
+            )
+            continue
+        if any(key in referenced for key in keys):
+            continue
+        yield impl.finding(
+            doc,
+            environment.span,
+            message=missing(keys[0]),
+            requirement=requirement,
+            suggestion=missing_suggestion(keys[0]),
+        )
+
+
+def reference_abbreviation(
+    impl: RuleImpl,
+    doc: Document,
+    pattern: re.Pattern[str],
+    *,
+    message: str,
+    requirement: str,
+    suggestion: str,
+) -> Iterator[Finding]:
+    """Сокращение вместо полного слова в ссылке на объект.
+
+    Сообщают об одной находке на строку: сокращение в ссылке правят по всему
+    абзацу разом, и второй указатель на той же строке ничего не добавляет.
+    """
+    for line in doc.iter_lines():
+        match = pattern.search(line.stripped)
+        if match is None:
+            continue
+        yield impl.finding(
+            doc,
+            line,
+            message=message,
+            requirement=requirement,
+            suggestion=suggestion,
+            col=match.start() + 1,
+        )
+
+
 #: Точка переноса, заданная в исходнике вручную.
 HYPHENATION_MARKER = "\\-"
 
@@ -179,6 +313,32 @@ def first_tabular_line(environment: Environment) -> int | None:
         child.span.start for child in environment.walk() if child.name in TABULAR_ENVIRONMENTS
     ]
     return min(starts) if starts else None
+
+
+def appendix_numbering(
+    impl: RuleImpl, doc: Document, kind: str, requirement: str
+) -> Iterator[Finding]:
+    """Объекты приложения, пронумерованные сквозной нумерацией основной части.
+
+    Требование одно и то же для иллюстраций, таблиц и формул, а счётчик LaTeX
+    называется так же, как сам вид объекта.
+    """
+    for item in doc.numbering.by_kind(kind):
+        if not item.in_appendix or item.scheme is Scheme.BY_SECTION:
+            continue
+        yield impl.finding(
+            doc,
+            item.span,
+            message=(
+                f"{item.title} находится в приложении {item.appendix}, "
+                f"но нумеруется сквозной нумерацией основной части."
+            ),
+            requirement=requirement,
+            suggestion=(
+                f"Добавить в преамбулу \\counterwithin{{{kind}}}{{section}}: "
+                f"тогда номер станет {item.appendix}.1 и далее."
+            ),
+        )
 
 
 def headings(doc: Document) -> Iterator[Command]:
@@ -328,6 +488,33 @@ def listing_entries(doc: Document, elements: frozenset[str]) -> Iterator[tuple[L
                 yield line, left
 
 
+#: Дефис между пробелами на месте тире: «СИ - система измерений».
+_LISTING_HYPHEN = re.compile(r"\S( - )\S")
+
+
+def listing_dash(
+    impl: RuleImpl, doc: Document, elements: frozenset[str], requirement: str
+) -> Iterator[Finding]:
+    """Дефис вместо тире в записях перечня."""
+    for command, element in structural_headings(doc):
+        if element not in elements:
+            continue
+        for line in section_lines(doc, command):
+            match = _LISTING_HYPHEN.search(line.stripped)
+            if match is None:
+                continue
+            start, end = match.span(1)
+            yield impl.finding(
+                doc,
+                line,
+                message="Расшифровка отделена дефисом, а не тире.",
+                requirement=requirement,
+                suggestion=f"Заменить дефис на тире: {DASH}",
+                col=start + 2,
+                fix=Fix(Region.in_line(line.path, line.lineno, start + 2, end), DASH),
+            )
+
+
 ITEM_COMMAND = "item"
 
 #: Обозначение элемента перечисления: буква или число, за которыми может стоять
@@ -358,6 +545,32 @@ def alphabet_of(text: str) -> str:
         if char.isalpha():
             return "latin" if char.isascii() else "cyrillic"
     return ""
+
+
+def listing_order(
+    impl: RuleImpl, doc: Document, elements: frozenset[str], *, noun: str, requirement: str
+) -> Iterator[Finding]:
+    """Записи перечня, нарушающие алфавитный порядок.
+
+    Сравнивается только соседняя пара: запись сопоставляется с предыдущей, а не
+    со всем перечнем, — иначе одна переставленная запись обвиняла бы весь хвост.
+    """
+    previous = ""
+    previous_key = ""
+    previous_alphabet = ""
+    for line, entry in listing_entries(doc, elements):
+        key, alphabet = alphabet_key(entry), alphabet_of(entry)
+        if alphabet != previous_alphabet or key >= previous_key:
+            previous, previous_key, previous_alphabet = entry, key, alphabet
+            continue
+        yield impl.finding(
+            doc,
+            line,
+            message=f"{noun} «{entry}» стоит после «{previous}», хотя по алфавиту идёт раньше.",
+            requirement=requirement,
+            suggestion=f"Переставить запись «{entry}» выше записи «{previous}».",
+        )
+        previous, previous_key, previous_alphabet = entry, key, alphabet
 
 
 def capitalize_first(text: str) -> str:

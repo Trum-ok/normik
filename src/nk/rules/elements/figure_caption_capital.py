@@ -5,14 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import (
-    FIGURE_ENVIRONMENTS,
-    capitalize_first,
-    caption_text,
-    captions,
-    first_letter,
-    render_caption,
-)
+from nk.rules._shared import FIGURE_ENVIRONMENTS, capitalize_first, caption_findings, first_letter
 
 
 @rule(
@@ -34,18 +27,18 @@ def figure_caption_capital(doc: Document) -> Iterable[Finding]:
 
     Начать наименование с прописной буквы.
     """
-    for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
-        for command in captions(environment):
-            text = caption_text(command)
-            letter = first_letter(text)
-            if not letter or not letter.islower():
-                continue
-            yield figure_caption_capital.finding(
-                doc,
-                command.span,
-                message=f"Наименование рисунка начинается со строчной буквы «{letter}».",
-                requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
-                suggestion=render_caption(command, capitalize_first(text)),
-                col=command.col,
-                fix=command.region,
-            )
+
+    def check(text: str) -> tuple[str, str] | None:
+        letter = first_letter(text)
+        if not letter or not letter.islower():
+            return None
+        message = f"Наименование рисунка начинается со строчной буквы «{letter}»."
+        return message, capitalize_first(text)
+
+    return caption_findings(
+        figure_caption_capital,
+        doc,
+        FIGURE_ENVIRONMENTS,
+        requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
+        check=check,
+    )

@@ -4,11 +4,10 @@ import re
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.finding import Finding, Fix, Severity
-from nk.core.position import Region
+from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import NBSP
-from nk.rules._text import is_code, prose
+from nk.rules._text import gaps
 
 #: Частицы, примыкающие к предыдущему слову.
 ENCLITICS = ("же", "бы", "ли")
@@ -36,20 +35,16 @@ def particle_nbsp(doc: Document) -> Iterable[Finding]:
 
     Поставить неразрывный пробел слева: `отличался~бы`, `так~ли`.
     """
-    for line in doc.iter_lines():
-        if is_code(doc, line):
-            continue
-        for match in _ENCLITIC.finditer(prose(doc, line)):
-            start, end = match.span(1)
-            yield particle_nbsp.finding(
-                doc,
-                line,
-                message=f"Частица «{match.group(0).strip()}» оторвана от предыдущего слова.",
-                requirement=(
-                    "Частицы «же», «бы» и «ли» примыкают к предыдущему слову: "
-                    "неразрывный пробел ставят перед ними."
-                ),
-                suggestion=f"Поставить неразрывный пробел перед частицей: {NBSP}",
-                col=start + 1,
-                fix=Fix(Region.in_line(line.path, line.lineno, start + 1, end + 1), NBSP),
-            )
+    for gap in gaps(doc, _ENCLITIC):
+        yield particle_nbsp.finding(
+            doc,
+            gap.line,
+            message=f"Частица «{gap.found}» оторвана от предыдущего слова.",
+            requirement=(
+                "Частицы «же», «бы» и «ли» примыкают к предыдущему слову: "
+                "неразрывный пробел ставят перед ними."
+            ),
+            suggestion=f"Поставить неразрывный пробел перед частицей: {NBSP}",
+            col=gap.col,
+            fix=gap.fix,
+        )

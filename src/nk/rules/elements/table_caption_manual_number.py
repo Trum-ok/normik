@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import TABLE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
+from nk.rules._shared import TABLE_ENVIRONMENTS, caption_findings, one_line
 
 #: «Таблица 1 — », «Табл. 2.3 -», «Таблица А.1»
 MANUAL_NUMBER = re.compile(r"^\s*(?:Таблица|Табл\.)\s*[0-9А-ЯA-Z][0-9.]*\s*[-–—:.]?\s*")
@@ -32,22 +32,23 @@ def table_caption_manual_number(doc: Document) -> Iterable[Finding]:
 
     Оставить в `\caption` только текст наименования.
     """
-    for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
-        for command in captions(environment):
-            text = caption_text(command)
-            match = MANUAL_NUMBER.match(text)
-            if match is None:
-                continue
-            rest = one_line(text[match.end() :])
-            yield table_caption_manual_number.finding(
-                doc,
-                command.span,
-                message=f"Наименование начинается с «{one_line(match.group(0))}» — номер вписан вручную.",
-                requirement=(
-                    "Слово «Таблица», номер и тире формирует класс документа; "
-                    "в наименовании оставляют только сам текст."
-                ),
-                suggestion=render_caption(command, rest),
-                col=command.col,
-                fix=command.region,
-            )
+
+    def check(text: str) -> tuple[str, str] | None:
+        match = MANUAL_NUMBER.match(text)
+        if match is None:
+            return None
+        found = one_line(match.group(0))
+        return f"Наименование начинается с «{found}» — номер вписан вручную.", one_line(
+            text[match.end() :]
+        )
+
+    return caption_findings(
+        table_caption_manual_number,
+        doc,
+        TABLE_ENVIRONMENTS,
+        requirement=(
+            "Слово «Таблица», номер и тире формирует класс документа; "
+            "в наименовании оставляют только сам текст."
+        ),
+        check=check,
+    )
