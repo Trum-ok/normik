@@ -590,6 +590,7 @@ SECTION_LEVEL = 1
 
 #: Команды разрыва страницы в том виде, в каком они встречаются в строке.
 PAGE_BREAKS = tuple(f"\\{name}" for name in sorted(PAGE_BREAK_COMMANDS))
+PAGE_BREAK = "\\newpage"
 
 
 def previous_content(doc: Document, command: Command) -> str | None:
@@ -606,8 +607,32 @@ def previous_content(doc: Document, command: Command) -> str | None:
 
 
 def starts_page(previous: str) -> bool:
-    """Начинает ли рубрика после этой строки новую страницу."""
-    return any(previous.startswith(mark) for mark in PAGE_BREAKS)
+    """Начинает ли рубрика после этой строки новую страницу.
+
+    Разрыв считается только последним на строке: после «\\newpage Текст»
+    рубрика идёт уже за текстом, то есть посреди страницы.
+    """
+    return any(previous.rstrip().endswith(mark) for mark in PAGE_BREAKS)
+
+
+def leading_text(doc: Document, command: Command) -> str:
+    """Текст слева от команды в её строке.
+
+    Он печатается перед рубрикой, поэтому разрыв страницы выше по файлу
+    рубрику уже не открывает: разрыв нужен между этим текстом и ею.
+    """
+    line = doc.line_at(command.path, command.lineno)
+    return "" if line is None else line.stripped[: command.col - 1].strip()
+
+
+def page_break_fix(doc: Document, command: Command) -> Fix:
+    """Правка, вставляющая разрыв страницы вплотную перед рубрикой.
+
+    Рубрика посреди строки получает разрыв там же, где стоит сама: вставка
+    в начало строки унесла бы на новую страницу и хвост предыдущего абзаца.
+    """
+    col = command.col if leading_text(doc, command) else 1
+    return Fix(Region.at(command.path, command.lineno, col), f"{PAGE_BREAK}\n")
 
 
 def appendix_spans(doc: Document) -> list[tuple[Command, str, Span]]:

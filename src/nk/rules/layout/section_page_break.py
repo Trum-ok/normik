@@ -3,16 +3,17 @@
 from collections.abc import Iterable
 
 from nk.core.document import Command, Document
-from nk.core.finding import Finding, Fix, Severity
-from nk.core.position import Region
+from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
     APPENDIX_DESIGNATION,
     SECTION_LEVEL,
     heading_level,
     heading_text,
+    leading_text,
     normalize_heading,
     ordered_headings,
+    page_break_fix,
     previous_content,
     starts_page,
 )
@@ -60,8 +61,9 @@ def section_page_break(doc: Document) -> Iterable[Finding]:
             continue
         if APPENDIX_DESIGNATION.match(normalize_heading(heading_text(command))):
             continue
+        leading = leading_text(doc, command)
         previous = previous_content(doc, command)
-        if previous is None or starts_page(previous) or previous.startswith(PAGE_STARTS):
+        if starts_page(leading) if leading else _opens_page(previous):
             continue
         yield section_page_break.finding(
             doc,
@@ -73,8 +75,13 @@ def section_page_break(doc: Document) -> Iterable[Finding]:
             ),
             suggestion="\\newpage",
             col=command.col,
-            fix=Fix(Region.at(command.path, command.lineno, 1), "\\newpage\n"),
+            fix=page_break_fix(doc, command),
         )
+
+
+def _opens_page(previous: str | None) -> bool:
+    """Открыта ли новая страница тем, что стоит выше рубрики."""
+    return previous is None or starts_page(previous) or previous.startswith(PAGE_STARTS)
 
 
 def _breaks_itself(command: Command, breaking: tuple[str, ...]) -> bool:

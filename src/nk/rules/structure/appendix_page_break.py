@@ -3,10 +3,15 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.finding import Finding, Fix, Severity
-from nk.core.position import Region
+from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import appendix_spans, previous_content, starts_page
+from nk.rules._shared import (
+    appendix_spans,
+    leading_text,
+    page_break_fix,
+    previous_content,
+    starts_page,
+)
 
 
 @rule(
@@ -30,8 +35,9 @@ def appendix_page_break(doc: Document) -> Iterable[Finding]:
     Добавить `\\newpage` перед заголовком приложения.
     """
     for command, letter, _ in appendix_spans(doc):
+        leading = leading_text(doc, command)
         previous = previous_content(doc, command)
-        if previous is None or starts_page(previous):
+        if starts_page(leading) if leading else previous is None or starts_page(previous):
             continue
         yield appendix_page_break.finding(
             doc,
@@ -40,5 +46,5 @@ def appendix_page_break(doc: Document) -> Iterable[Finding]:
             requirement="Каждое приложение размещают с новой страницы.",
             suggestion="\\newpage",
             col=command.col,
-            fix=Fix(Region.at(command.path, command.lineno, 1), "\\newpage\n"),
+            fix=page_break_fix(doc, command),
         )
