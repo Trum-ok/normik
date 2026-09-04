@@ -57,7 +57,9 @@
 | [`G732-6.12.2-keywords-final-dot`](G732-6.12.2-keywords-final-dot.md) | 6.12.2 | error | Перечень ключевых слов заканчивается точкой |
 | [`G732-6.12.2-keywords-uppercase`](G732-6.12.2-keywords-uppercase.md) | 6.12.2 | error | Ключевые слова набраны не прописными буквами |
 | [`G732-6.14-terms-dash`](G732-6.14-terms-dash.md) | 6.14 | warning | В перечне терминов определение отделено дефисом |
+| [`G732-6.14-terms-order`](G732-6.14-terms-order.md) | 6.14 | error | Термины в перечне идут не по алфавиту |
 | [`G732-6.15-abbreviations-dash`](G732-6.15-abbreviations-dash.md) | 6.15 | warning | В перечне сокращений расшифровка отделена дефисом |
+| [`G732-6.15-abbreviations-order`](G732-6.15-abbreviations-order.md) | 6.15 | error | Сокращения в перечне идут не по алфавиту |
 | [`G732-6.16-bibitem-uncited`](G732-6.16-bibitem-uncited.md) | 6.16 | warning | На запись списка источников нет ссылок в тексте |
 | [`G732-6.16-bibliography-order`](G732-6.16-bibliography-order.md) | 6.16 | error | Записи списка источников идут не в порядке появления ссылок |
 | [`G732-6.16-bibtex-order-unverifiable`](G732-6.16-bibtex-order-unverifiable.md) | 6.16 | info | Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется |
