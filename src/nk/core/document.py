@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from nk.core.finding import truncate_excerpt
+from nk.core.position import Position, Region
 from nk.core.profile import Profile
 
 CONTEXT_RADIUS = 2
@@ -64,10 +65,16 @@ class Command:
     """Содержимое групп в фигурных скобках."""
 
     span: Span
+    region: Region | None = None
+    """Точные границы команды вместе с аргументами — основа машинной правки."""
 
     @property
     def arg(self) -> str:
         return self.args[0] if self.args else ""
+
+    @property
+    def start(self) -> Position:
+        return Position(self.lineno, self.col)
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,6 +181,21 @@ class Document:
     def excerpt(self, path: Path, lineno: int) -> str | None:
         line = self.line_at(path, lineno)
         return truncate_excerpt(line.raw) if line is not None else None
+
+    def slice(self, region: Region) -> str:
+        """Исходный текст под регионом — основа правок, меняющих фрагмент точечно."""
+        lines = self.lines_of(region.path)
+        if not lines:
+            return ""
+        first, last = region.start.lineno, region.end.lineno
+        if not (1 <= first <= len(lines) and 1 <= last <= len(lines)):
+            return ""
+        if first == last:
+            return lines[first - 1].raw[region.start.col - 1 : region.end.col - 1]
+        parts = [lines[first - 1].raw[region.start.col - 1 :]]
+        parts.extend(line.raw for line in lines[first : last - 1])
+        parts.append(lines[last - 1].raw[: region.end.col - 1])
+        return "\n".join(parts)
 
     def context(self, path: Path, lineno: int, radius: int = CONTEXT_RADIUS) -> tuple[str, ...]:
         """Соседние строки вокруг позиции, включая саму строку нарушения."""

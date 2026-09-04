@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+from nk.core.position import Region
+
 MAX_EXCERPT_LENGTH = 120
 
 
@@ -46,6 +48,19 @@ def truncate_excerpt(text: str, limit: int = MAX_EXCERPT_LENGTH) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class Fix:
+    """Машинная правка: чем заменить фрагмент исходника.
+
+    Отличается от ``suggestion`` тем, что применима без участия человека:
+    ``suggestion`` может быть указанием («перенести ниже»), ``Fix`` — всегда
+    готовый текст с точными границами.
+    """
+
+    region: Region
+    replacement: str
+
+
+@dataclass(frozen=True, slots=True)
 class Finding:
     """Одно нарушение: где, что нарушено, что сделать.
 
@@ -73,6 +88,9 @@ class Finding:
 
     suggestion: str | None = None
     """Конкретное действие для исправления."""
+
+    fix: Fix | None = None
+    """Правка, применимая ключом ``--fix``. Есть не у всякой находки."""
 
     @property
     def sort_key(self) -> tuple[str, int, int, str]:

@@ -13,6 +13,7 @@ from nk.rules._shared import heading_text, headings, is_numbered, structural_ele
     clause="6.2.1",
     severity=Severity.ERROR,
     title="Заголовок структурного элемента пронумерован",
+    fixable=True,
 )
 def structural_heading_numbered(doc: Document) -> Iterable[Finding]:
     """Ищет заголовки структурных элементов, заданные нумерованной формой команды
@@ -44,4 +45,5 @@ def structural_heading_numbered(doc: Document) -> Iterable[Finding]:
             ),
             suggestion=f"\\{command.name}*{{{text}}}",
             col=command.col,
+            fix=command.region,
         )

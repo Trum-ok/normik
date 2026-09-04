@@ -24,6 +24,7 @@ MAX_PLAIN_DIGITS = 2
     clause="6.4.1",
     severity=Severity.ERROR,
     title="Номер раздела вписан в заголовок вручную",
+    fixable=True,
 )
 def manual_section_number(doc: Document) -> Iterable[Finding]:
     """Ищет заголовки, начинающиеся с номера, вписанного руками: «1 Введение»,
@@ -66,4 +67,5 @@ def manual_section_number(doc: Document) -> Iterable[Finding]:
             ),
             suggestion=f"\\{command.name}{{{one_line(text[match.end() :])}}}",
             col=command.col,
+            fix=command.region,
         )

@@ -17,6 +17,7 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Рисунок|Рис\.)\s*[0-9А-ЯA-Z][0-9
     clause="6.5.7",
     severity=Severity.ERROR,
     title="Номер рисунка вписан в наименование вручную",
+    fixable=True,
 )
 def figure_caption_manual_number(doc: Document) -> Iterable[Finding]:
     r"""Ищет наименования, начинающиеся со слова «Рисунок» или сокращения «Рис.»
@@ -50,4 +51,5 @@ def figure_caption_manual_number(doc: Document) -> Iterable[Finding]:
                 ),
                 suggestion=f"\\{command.name}{{{rest}}}",
                 col=command.col,
+                fix=command.region,
             )

@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from nk.core.document import Command, Environment, Line, Span, Structure
+from nk.core.position import Position, Region
 from nk.parse.issues import (
     ENVIRONMENT_ORPHAN_END,
     ENVIRONMENT_UNCLOSED,
@@ -115,7 +116,7 @@ def _scan_file(path: Path, lines: Sequence[Line]) -> tuple[Structure, list[Parse
         elif name == "end":
             i = _close_environment(source, stack, groups, end, lineno, col, issues)
         else:
-            end_lineno, _ = source.position(max(end - 1, i))
+            end_lineno, end_col = source.position(end)
             stack[-1].commands.append(
                 Command(
                     name=name,
@@ -124,7 +125,10 @@ def _scan_file(path: Path, lines: Sequence[Line]) -> tuple[Structure, list[Parse
                     col=col,
                     options=_of_kind(groups, "["),
                     args=_of_kind(groups, "{"),
-                    span=Span(path, lineno, end_lineno),
+                    span=Span(
+                        path, lineno, max(lineno, end_lineno if end_col > 1 else end_lineno - 1)
+                    ),
+                    region=Region(path, Position(lineno, col), Position(end_lineno, end_col)),
                 )
             )
             i = end

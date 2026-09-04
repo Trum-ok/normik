@@ -108,6 +108,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
         f"| Уровень по умолчанию | `{impl.severity.value}` |",
         f"| Объявлено в | `{impl.module}` |",
         f"| Фикстуры | `tests/fixtures/{impl.id}/` |",
+        f"| Автоисправление | {'да, ключом `--fix`' if impl.fixable else 'нет'} |",
         "",
     ]
     if impl.description:

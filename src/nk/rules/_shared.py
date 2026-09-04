@@ -279,3 +279,19 @@ def keyword_lists(doc: Document) -> Iterator[tuple[Line, list[str]]]:
             parts.append(following.stripped)
         text = visible_text(" ".join(parts))
         yield line, [word.strip() for word in text.split(",") if word.strip()]
+
+
+def capitalize_first(text: str) -> str:
+    """Поднять первую видимую букву в регистре, пропуская имена команд."""
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            index += 1
+            while index < len(text) and text[index].isalpha():
+                index += 1
+            continue
+        if char.isalpha():
+            return text[:index] + char.upper() + text[index + 1 :]
+        index += 1
+    return text

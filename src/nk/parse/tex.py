@@ -5,7 +5,7 @@
 """
 
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -50,9 +50,18 @@ def strip_comment(raw: str) -> str:
     return raw
 
 
-def read_file(path: Path) -> tuple[tuple[Line, ...], tuple[ParseIssue, ...]]:
-    """Прочитать один файл в строки со снятыми комментариями."""
+def read_file(
+    path: Path, overlay: Mapping[Path, str] | None = None
+) -> tuple[tuple[Line, ...], tuple[ParseIssue, ...]]:
+    """Прочитать один файл в строки со снятыми комментариями.
+
+    ``overlay`` подменяет содержимое файла, не трогая диск: так ключ ``--diff``
+    прогоняет несколько проходов правок, ничего не записывая.
+    """
     issues: list[ParseIssue] = []
+    if overlay is not None and path in overlay:
+        return _to_lines(path, overlay[path]), ()
+
     data = path.read_bytes()
     try:
         text = data.decode("utf-8")
@@ -69,6 +78,10 @@ def read_file(path: Path) -> tuple[tuple[Line, ...], tuple[ParseIssue, ...]]:
             )
         )
 
+    return _to_lines(path, text), tuple(issues)
+
+
+def _to_lines(path: Path, text: str) -> tuple[Line, ...]:
     lines: list[Line] = []
     verbatim: str | None = None
     for lineno, raw in enumerate(text.splitlines(), start=1):
@@ -84,7 +97,7 @@ def read_file(path: Path) -> tuple[tuple[Line, ...], tuple[ParseIssue, ...]]:
                 verbatim = begin.group(1)
         lines.append(Line(path=path, lineno=lineno, raw=raw, stripped=stripped))
 
-    return tuple(lines), tuple(issues)
+    return tuple(lines)
 
 
 def collect_sources(paths: Iterable[Path]) -> list[Path]:
@@ -98,7 +111,11 @@ def collect_sources(paths: Iterable[Path]) -> list[Path]:
     return found
 
 
-def parse(paths: Sequence[Path], profile: Profile | None = None) -> ParseResult:
+def parse(
+    paths: Sequence[Path],
+    profile: Profile | None = None,
+    overlay: Mapping[Path, str] | None = None,
+) -> ParseResult:
     """Прочитать исходники, развернуть включения и собрать структуру."""
     roots = collect_sources(paths)
     base = roots[0].parent if roots else Path()
@@ -109,7 +126,7 @@ def parse(paths: Sequence[Path], profile: Profile | None = None) -> ParseResult:
     visited: set[Path] = set()
 
     for root in roots:
-        _expand(root, base, lines, issues, files, visited, stack=())
+        _expand(root, base, lines, issues, files, visited, stack=(), overlay=overlay)
 
     structure, structure_issues = build_structure(lines)
     issues.extend(structure_issues)
@@ -148,13 +165,14 @@ def _expand(
     files: list[Path],
     visited: set[Path],
     stack: tuple[Path, ...],
+    overlay: Mapping[Path, str] | None = None,
 ) -> None:
     resolved = _identity(path)
     if resolved in visited:
         return
     visited.add(resolved)
 
-    file_lines, file_issues = read_file(path)
+    file_lines, file_issues = read_file(path, overlay)
     issues.extend(file_issues)
     lines.extend(file_lines)
     files.append(path)
@@ -169,7 +187,9 @@ def _expand(
             if _identity(target) in {_identity(item) for item in (*stack, path)}:
                 issues.append(_input_cycle(path, line.lineno, col, target))
                 continue
-            _expand(target, base, lines, issues, files, visited, stack=(*stack, path))
+            _expand(
+                target, base, lines, issues, files, visited, stack=(*stack, path), overlay=overlay
+            )
 
 
 def _resolve(argument: str, base: Path, including: Path) -> Path | None:

@@ -13,6 +13,7 @@ from nk.rules._shared import heading_text, headings, one_line
     clause="6.2.3",
     severity=Severity.ERROR,
     title="Заголовок заканчивается точкой",
+    fixable=True,
 )
 def heading_dot(doc: Document) -> Iterable[Finding]:
     """Проверяет заголовки разделов, подразделов и структурных элементов на точку
@@ -42,4 +43,5 @@ def heading_dot(doc: Document) -> Iterable[Finding]:
             ),
             suggestion=f"\\{command.name}{{{one_line(text.rstrip('.'))}}}",
             col=command.col,
+            fix=command.region,
         )

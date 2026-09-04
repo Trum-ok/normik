@@ -4,7 +4,8 @@ import re
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.finding import Finding, Severity
+from nk.core.finding import Finding, Fix, Severity
+from nk.core.position import Region
 from nk.core.rule import rule
 
 WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
@@ -15,6 +16,7 @@ WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
     clause="6.8.2",
     severity=Severity.ERROR,
     title="Пояснение к формуле начинается со слова «где» с двоеточием",
+    fixable=True,
 )
 def formula_where_colon(doc: Document) -> Iterable[Finding]:
     """Ищет строку, начинающуюся со слова «где» с двоеточием.
@@ -32,11 +34,13 @@ def formula_where_colon(doc: Document) -> Iterable[Finding]:
         match = WHERE_WITH_COLON.match(line.stripped)
         if match is None:
             continue
+        colon = match.end()
         yield formula_where_colon.finding(
             doc,
             line,
             message="После слова «где» стоит двоеточие.",
             requirement="Первую строку пояснения к формуле начинают со слова «где» без двоеточия.",
             suggestion="Убрать двоеточие после «где».",
-            col=match.end() - 1 + 1,
+            col=colon,
+            fix=Fix(Region.in_line(line.path, line.lineno, colon, colon + 1), ""),
         )

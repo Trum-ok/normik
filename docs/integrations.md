@@ -40,6 +40,15 @@ jobs:
 nk check chapters --format json > findings.json
 ```
 
+## Автоисправление перед коммитом
+
+```bash
+nk check chapters --fix
+```
+
+В CI ключ не нужен: сборка должна падать на нарушениях, а не переписывать
+исходники за автора.
+
 ## Локальный хук
 
 `.git/hooks/pre-commit`:

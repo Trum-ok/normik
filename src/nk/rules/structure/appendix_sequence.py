@@ -22,6 +22,7 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
     clause="6.17.4",
     severity=Severity.ERROR,
     title="В обозначениях приложений пропущена буква",
+    fixable=True,
 )
 def appendix_sequence(doc: Document) -> Iterable[Finding]:
     """Идёт по заголовкам приложений в порядке следования и сверяет букву с ожидаемой:
@@ -60,5 +61,6 @@ def appendix_sequence(doc: Document) -> Iterable[Finding]:
             ),
             suggestion=f"\\{command.name}{{ПРИЛОЖЕНИЕ {expected}}}",
             col=command.col,
+            fix=command.region,
         )
         position = APPENDIX_LETTERS.index(letter) + 1

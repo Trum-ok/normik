@@ -1,6 +1,7 @@
 """Команды CLI. Вся логика — в ядре; здесь только разбор аргументов и вывод."""
 
 import sys
+from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
@@ -12,9 +13,10 @@ from nk import __version__
 from nk.core.baseline import Baseline, BaselineError
 from nk.core.diagnostics import INTERNAL
 from nk.core.finding import Severity
-from nk.core.profile import ProfileError, load_profile
+from nk.core.fixer import diff, plan, write
+from nk.core.profile import Profile, ProfileError, load_profile
 from nk.core.registry import load_rules, partition_ids, select_rules, validate_profile
-from nk.core.rule import UnknownRuleError
+from nk.core.rule import RuleImpl, UnknownRuleError
 from nk.core.runner import RunResult, run
 from nk.parse.tex import parse, parse_findings
 from nk.report import agent, examples, human, rules_docs
@@ -37,6 +39,9 @@ err_console = Console(stderr=True)
 EXIT_OK = 0
 EXIT_FOUND_ERRORS = 1
 EXIT_INTERNAL_ERROR = 2
+
+#: Сколько раз перепроверять исходники, применяя найденные правки.
+FIX_PASSES = 5
 
 
 class OutputFormat(StrEnum):
@@ -156,6 +161,10 @@ def check(
     limit: int = typer.Option(
         agent.DEFAULT_LIMIT, "--limit", help="Предел числа находок в выводе; 0 — без предела."
     ),
+    fix: bool = typer.Option(False, "--fix", help="Применить правки к исходникам."),
+    show_diff: bool = typer.Option(
+        False, "--diff", help="Показать правки как diff, ничего не записывая."
+    ),
     baseline_path: Path = typer.Option(
         None, "--baseline", help="Снимок известных нарушений: показывать только новые."
     ),
@@ -187,27 +196,95 @@ def check(
         err_console.print(str(error))
         raise typer.Exit(EXIT_INTERNAL_ERROR) from None
 
-    parsed = parse(paths, profile.resolve(registry.default_params()))
-    result = run(
-        parsed.document,
-        rules,
-        extra_findings=parse_findings(parsed),
-        # Снимок фиксируется по всем находкам: иначе его содержимое зависело бы
-        # от ключа --severity, с которым его записали.
-        threshold=Severity.INFO if write_baseline is not None else severity,
-        suppressions=parsed.suppressions,
+    check_run = _Check(
+        paths=paths,
+        rules=rules,
+        profile=profile.resolve(registry.default_params()),
         baseline=baseline,
         ignored=ignored_internal | (profile.disabled & frozenset(INTERNAL)),
         known_ids=frozenset(impl.id for impl in registry) | frozenset(INTERNAL),
+        # Снимок фиксируется по всем находкам: иначе его содержимое зависело бы
+        # от ключа --severity, с которым его записали.
+        threshold=Severity.INFO if write_baseline is not None else severity,
     )
+    result = check_run()
 
     if write_baseline is not None:
         _write_baseline(write_baseline, result)
         raise typer.Exit(EXIT_OK)
 
+    if show_diff:
+        sys.stdout.write(_diff(check_run, result))
+        raise typer.Exit(EXIT_OK)
+
+    if fix:
+        result = _apply_fixes(check_run, result)
+
     if not quiet:
         _report(result, output_format, limit)
     raise typer.Exit(EXIT_FOUND_ERRORS if result.has_errors else EXIT_OK)
+
+
+@dataclass(frozen=True, slots=True)
+class _Check:
+    """Один прогон проверки. Ключ ``--fix`` повторяет его после каждой правки."""
+
+    paths: list[Path]
+    rules: tuple[RuleImpl, ...]
+    profile: Profile
+    baseline: Baseline | None
+    ignored: frozenset[str]
+    known_ids: frozenset[str]
+    threshold: Severity
+
+    def __call__(self, overlay: dict[Path, str] | None = None) -> RunResult:
+        parsed = parse(self.paths, self.profile, overlay)
+        return run(
+            parsed.document,
+            self.rules,
+            extra_findings=parse_findings(parsed),
+            threshold=self.threshold,
+            suppressions=parsed.suppressions,
+            baseline=self.baseline,
+            ignored=self.ignored,
+            known_ids=self.known_ids,
+        )
+
+
+def _diff(check_run: _Check, result: RunResult) -> str:
+    """Показать всё, что сделал бы ``--fix``, ничего не записывая."""
+    overlay: dict[Path, str] = {}
+    for _ in range(FIX_PASSES):
+        prepared = plan(result.findings, overlay)
+        if not prepared.applied:
+            break
+        overlay.update({edit.path: edit.text for edit in prepared.edits})
+        result = check_run(overlay)
+    return diff(overlay)
+
+
+def _apply_fixes(check_run: _Check, result: RunResult) -> RunResult:
+    """Применять правки, пока они находятся, и перепроверять исходники.
+
+    Проходов несколько: пересекающиеся правки в один проход не применяются,
+    а исправленное место может открыть следующее нарушение.
+    """
+    applied = 0
+    reported: set[Path] = set()
+    for _ in range(FIX_PASSES):
+        prepared = plan(result.findings)
+        for path in prepared.skipped:
+            if path not in reported:
+                reported.add(path)
+                err_console.print(f"Не удалось прочитать как UTF-8, пропущен: {path}")
+        if not prepared.applied:
+            break
+        applied += write(prepared)
+        result = check_run()
+
+    if applied:
+        console.print(f"Исправлено находок: {applied}.")
+    return result
 
 
 def _write_baseline(path: Path, result: RunResult) -> None:

@@ -13,6 +13,7 @@ from nk.rules._shared import heading_text, headings, structural_element, visible
     clause="6.2.1",
     severity=Severity.ERROR,
     title="Заголовок структурного элемента набран не прописными буквами",
+    fixable=True,
 )
 def structural_heading_case(doc: Document) -> Iterable[Finding]:
     r"""Проверяет регистр заголовков структурных элементов — реферата, содержания,
@@ -47,4 +48,5 @@ def structural_heading_case(doc: Document) -> Iterable[Finding]:
             ),
             suggestion=f"\\{command.name}{{{visible.upper()}}}",
             col=command.col,
+            fix=command.region,
         )

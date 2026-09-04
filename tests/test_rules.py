@@ -1,7 +1,10 @@
 from support import BAD, GOOD, RuleFixture, fixture_directories
 
+from nk.core.fixer import plan
 from nk.core.registry import load_rules
 from nk.parse.tex import parse
+
+FIX_PASSES = 5
 
 
 def findings_for(rule_fixture: RuleFixture, name: str) -> list:
@@ -59,3 +62,46 @@ def test_fixture_directories_are_complete() -> None:
         if not (path / BAD).is_file() or not (path / GOOD).is_file()
     ]
     assert incomplete == [], f"в каталогах фикстур не хватает {BAD} или {GOOD}: {incomplete}"
+
+
+def test_fixable_flag_matches_reality(rule_fixture: RuleFixture) -> None:
+    findings = findings_for(rule_fixture, BAD)
+    produces_fixes = any(finding.fix is not None for finding in findings)
+    assert produces_fixes == rule_fixture.rule.fixable, (
+        f"{rule_fixture.rule.id}: fixable={rule_fixture.rule.fixable}, "
+        f"а правки {'есть' if produces_fixes else 'отсутствуют'}"
+    )
+
+
+def test_fixes_actually_remove_the_violation(rule_fixture: RuleFixture, tmp_path) -> None:
+    """Применённая правка обязана убирать нарушение и не создавать новых.
+
+    Правило может не давать правок вовсе либо давать их части находок —
+    например номер формулы, вписанный цифрой, в скобки автоматически не берётся.
+    """
+    source = tmp_path / BAD
+    source.write_text(rule_fixture.bad.read_text(encoding="utf-8"), encoding="utf-8")
+
+    result = parse([source])
+    findings = list(rule_fixture.rule(result.document))
+    fixable = [finding for finding in findings if finding.fix is not None]
+    if not fixable:
+        return
+
+    for _ in range(FIX_PASSES):
+        parsed = parse([source])
+        remaining = [f for f in rule_fixture.rule(parsed.document) if f.fix is not None]
+        if not remaining:
+            break
+        applied = plan(remaining)
+        assert applied.applied, f"правки {rule_fixture.rule.id} не применились"
+        for edit in applied.edits:
+            edit.path.write_text(edit.text, encoding="utf-8")
+
+    left = list(rule_fixture.rule(parse([source]).document))
+    assert [f for f in left if f.fix is not None] == [], (
+        f"правки {rule_fixture.rule.id} не сходятся: после применения находка с правкой осталась"
+    )
+    assert len(left) <= len(findings) - len(fixable), (
+        f"правки {rule_fixture.rule.id} породили новые нарушения"
+    )

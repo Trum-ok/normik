@@ -2,12 +2,12 @@
 
 from collections.abc import Iterable
 
-from nk.core.document import Document
-from nk.core.finding import Finding, Severity
+from nk.core.document import Command, Document
+from nk.core.finding import Finding, Fix, Severity
 from nk.core.rule import rule
 from nk.rules._shared import heading_text, headings
 
-HYPHENATION_MARKER = "\\-"
+MARKER = "\\-"
 
 
 @rule(
@@ -15,6 +15,7 @@ HYPHENATION_MARKER = "\\-"
     clause="6.2.4",
     severity=Severity.ERROR,
     title="В заголовке задан перенос слова",
+    fixable=True,
 )
 def heading_hyphenation(doc: Document) -> Iterable[Finding]:
     r"""Ищет в заголовке заданную вручную точку переноса `\-`.
@@ -30,7 +31,7 @@ def heading_hyphenation(doc: Document) -> Iterable[Finding]:
     разбить его командой разрыва строки по границе слова.
     """
     for command in headings(doc):
-        if HYPHENATION_MARKER not in heading_text(command):
+        if MARKER not in heading_text(command):
             continue
         yield heading_hyphenation.finding(
             doc,
@@ -39,4 +40,12 @@ def heading_hyphenation(doc: Document) -> Iterable[Finding]:
             requirement="Переносы слов в заголовках не допускаются.",
             suggestion="Убрать «\\-» из заголовка.",
             col=command.col,
+            fix=_without_hyphenation(doc, command),
         )
+
+
+def _without_hyphenation(doc: Document, command: Command) -> Fix | None:
+    """Тот же фрагмент исходника, но без точек переноса."""
+    if command.region is None:
+        return None
+    return Fix(region=command.region, replacement=doc.slice(command.region).replace(MARKER, ""))

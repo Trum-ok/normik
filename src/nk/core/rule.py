@@ -10,7 +10,8 @@ from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
 from nk.core.document import Document, Line, Span
-from nk.core.finding import Finding, Severity
+from nk.core.finding import Finding, Fix, Severity
+from nk.core.position import Region
 from nk.core.profile import Params
 
 
@@ -65,6 +66,9 @@ class RuleImpl:
     allow_missing_suggestion: bool = False
     """Разрешить находки без ``suggestion`` — только если исправление принципиально неоднозначно."""
 
+    fixable: bool = False
+    """Правило умеет чинить нарушение ключом ``--fix``. Проверяется на фикстурах."""
+
     def __call__(self, doc: Document) -> Iterator[Finding]:
         yield from self.func(doc)
 
@@ -85,8 +89,16 @@ class RuleImpl:
         requirement: str,
         suggestion: str | None = None,
         col: int | None = None,
+        fix: Region | Fix | None = None,
     ) -> Finding:
-        """Собрать находку по позиции в документе."""
+        """Собрать находку по позиции в документе.
+
+        ``fix`` — регион, который целиком заменяется текстом ``suggestion``;
+        так оформляется частый случай, когда ``suggestion`` и есть готовая
+        замена. Если замена отличается от текста подсказки — например подсказка
+        говорит «убрать двоеточие», а заменять нужно один символ на пустую
+        строку, — передаётся готовый :class:`~nk.core.finding.Fix`.
+        """
         lineno = at.lineno if isinstance(at, Line) else at.start
         return Finding(
             rule_id=self.id,
@@ -100,6 +112,7 @@ class RuleImpl:
             excerpt=doc.excerpt(at.path, lineno),
             context=doc.context(at.path, lineno),
             suggestion=suggestion,
+            fix=_fix(fix, suggestion),
         )
 
 
@@ -160,6 +173,7 @@ def rule(
     title: str,
     params: Params | None = None,
     allow_missing_suggestion: bool = False,
+    fixable: bool = False,
     registry: RuleRegistry | None = None,
 ) -> Callable[[RuleCallable], RuleImpl]:
     """Объявить правило::
@@ -189,9 +203,18 @@ def rule(
             description=inspect.cleandoc(func.__doc__ or ""),
             default_params=params or {},
             allow_missing_suggestion=allow_missing_suggestion,
+            fixable=fixable,
         )
         # Явное сравнение с None: пустой реестр ложен из-за __len__.
         target = REGISTRY if registry is None else registry
         return target.register(impl)
 
     return decorate
+
+
+def _fix(fix: Region | Fix | None, suggestion: str | None) -> Fix | None:
+    if fix is None or isinstance(fix, Fix):
+        return fix
+    if suggestion is None:
+        raise ValueError("правка объявлена без suggestion: заменять регион нечем")
+    return Fix(region=fix, replacement=suggestion)

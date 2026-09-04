@@ -228,3 +228,82 @@ def test_broken_baseline_exits_two(report: Path, tmp_path: Path) -> None:
     result = runner.invoke(app, ["check", str(report), "--baseline", str(snapshot)])
 
     assert result.exit_code == EXIT_INTERNAL_ERROR
+
+
+def test_fix_rewrites_the_source(report: Path) -> None:
+    result = runner.invoke(app, ["check", str(report), "--fix"])
+
+    assert result.exit_code == EXIT_OK
+    assert "Исправлено находок: 1." in result.stdout
+    assert "\\caption{Схема установки}" in report.read_text(encoding="utf-8")
+
+
+def test_fix_converges_over_several_passes(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_text(
+        "Схема приведена на рисунке~\\ref{fig:a}.\n\n"
+        "\\begin{figure}\n"
+        "  \\includegraphics{img/a.png}\n"
+        "  \\caption{Рисунок 1 — схема экспе\\-риментальной установки.}\n"
+        "  \\label{fig:a}\n"
+        "\\end{figure}\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["check", str(path), "--fix"])
+
+    assert result.exit_code == EXIT_OK
+    assert "\\caption{Схема экспериментальной установки}" in path.read_text(encoding="utf-8")
+
+
+def test_diff_leaves_the_source_alone(report: Path) -> None:
+    before = report.read_text(encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(report), "--diff"])
+
+    assert result.exit_code == EXIT_OK
+    assert "-  \\caption{Схема установки.}" in result.stdout
+    assert "+  \\caption{Схема установки}" in result.stdout
+    assert report.read_text(encoding="utf-8") == before
+
+
+def test_diff_shows_every_pass(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_text("\\section{1. Методика проведения работы.}\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(path), "--diff"])
+
+    assert "+\\section{Методика проведения работы}" in result.stdout
+
+
+def test_fix_leaves_unfixable_findings(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_text(
+        "\\begin{figure}\n  \\includegraphics{img/a.png}\n"
+        "  \\caption{Схема установки.}\n\\end{figure}\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["check", str(path), "--fix", "--format", "agent"])
+
+    assert result.exit_code == EXIT_FOUND_ERRORS
+    assert "G732-6.5.1-figure-no-reference" in result.stdout
+    assert "\\caption{Схема установки}" in path.read_text(encoding="utf-8")
+
+
+def test_fix_respects_suppressions(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    original = (
+        "Схема приведена на рисунке~\\ref{fig:a}.\n\n"
+        "\\begin{figure}\n"
+        "  \\includegraphics{img/a.png}\n"
+        "  \\caption{Схема установки.} % nk: ignore G732-6.5.7-caption-dot\n"
+        "  \\label{fig:a}\n"
+        "\\end{figure}\n"
+    )
+    path.write_text(original, encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(path), "--fix"])
+
+    assert result.exit_code == EXIT_OK
+    assert path.read_text(encoding="utf-8") == original

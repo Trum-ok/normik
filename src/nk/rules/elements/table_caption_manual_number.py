@@ -17,6 +17,7 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Таблица|Табл\.)\s*[0-9А-ЯA-Z][0
     clause="6.6.3",
     severity=Severity.ERROR,
     title="Номер таблицы вписан в наименование вручную",
+    fixable=True,
 )
 def table_caption_manual_number(doc: Document) -> Iterable[Finding]:
     r"""Ищет наименования, начинающиеся со слова «Таблица» или сокращения «Табл.»
@@ -48,4 +49,5 @@ def table_caption_manual_number(doc: Document) -> Iterable[Finding]:
                 ),
                 suggestion=f"\\{command.name}{{{rest}}}",
                 col=command.col,
+                fix=command.region,
             )

@@ -13,6 +13,7 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_li
     clause="6.5.7",
     severity=Severity.ERROR,
     title="Наименование рисунка заканчивается точкой",
+    fixable=True,
 )
 def figure_caption_dot(doc: Document) -> Iterable[Finding]:
     r"""Проверяет наименование рисунка на точку в конце. Точка внутри наименования
@@ -39,4 +40,5 @@ def figure_caption_dot(doc: Document) -> Iterable[Finding]:
                 requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
                 suggestion=f"\\{command.name}{{{one_line(text[:-1])}}}",
                 col=command.col,
+                fix=command.region,
             )

@@ -13,6 +13,7 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, caption_text, captions, one_lin
     clause="6.6.3",
     severity=Severity.ERROR,
     title="Наименование таблицы заканчивается точкой",
+    fixable=True,
 )
 def table_caption_dot(doc: Document) -> Iterable[Finding]:
     r"""Проверяет наименование таблицы на точку в конце.
@@ -37,4 +38,5 @@ def table_caption_dot(doc: Document) -> Iterable[Finding]:
                 requirement="Наименование таблицы приводят с прописной буквы без точки в конце.",
                 suggestion=f"\\{command.name}{{{one_line(text[:-1])}}}",
                 col=command.col,
+                fix=command.region,
             )
