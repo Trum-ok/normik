@@ -24,6 +24,7 @@ import re
 
 from nk.core.document import Document
 from nk.core.headings import CHAPTER, PAGE_BREAK_COMMANDS, Heading, Headings, base_headings
+from nk.parse.structure import read_balanced
 
 #: Формы объявления макроса: ``\newcommand{\ssr}``, ``\def\ssr``.
 _DEFINITION = re.compile(
@@ -111,27 +112,9 @@ def _body(text: str, start: int) -> str:
 
 
 def _group(text: str, start: int) -> tuple[str, int]:
-    """Группа в фигурных скобках с учётом вложенности и экранирования.
-
-    Возвращает содержимое и позицию сразу за группой — по ней читают следующую.
-    """
-    if start >= len(text) or text[start] != "{":
-        return "", start
-    depth = 0
-    index = start
-    while index < len(text):
-        char = text[index]
-        if char == "\\":
-            index += 2
-            continue
-        if char == "{":
-            depth += 1
-        elif char == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start + 1 : index], index + 1
-        index += 1
-    return "", start
+    """Группа в фигурных скобках; незакрытая или отсутствующая — пустая на месте."""
+    content, end = read_balanced(text, start)
+    return (content, end) if end is not None else ("", start)
 
 
 def _resolve(definitions: dict[str, str]) -> dict[str, str]:

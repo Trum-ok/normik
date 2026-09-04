@@ -302,7 +302,7 @@ def _read_groups(text: str, start: int) -> tuple[list[tuple[str, str]], int, boo
         if cursor >= len(text) or text[cursor] not in "[{":
             break
         open_ch = text[cursor]
-        content, end = _read_balanced(text, cursor, open_ch, "]" if open_ch == "[" else "}")
+        content, end = read_balanced(text, cursor, open_ch, "]" if open_ch == "[" else "}")
         if end is None:
             return groups, position, True
         groups.append((open_ch, content))
@@ -310,27 +310,28 @@ def _read_groups(text: str, start: int) -> tuple[list[tuple[str, str]], int, boo
     return groups, position, False
 
 
-def _read_balanced(text: str, start: int, open_ch: str, close_ch: str) -> tuple[str, int | None]:
+def read_balanced(
+    text: str, start: int, open_ch: str = "{", close_ch: str = "}"
+) -> tuple[str, int | None]:
+    """Группа, открывающаяся в ``start``, с учётом вложенности и экранирования.
+
+    Возвращает содержимое и позицию сразу за группой — по ней читают следующую.
+    Если в ``start`` не открывающая скобка или группа не закрыта — ``("", None)``.
+    """
+    if start >= len(text) or text[start] != open_ch:
+        return "", None
     depth = 0
-    buffer: list[str] = []
-    i = start
-    while i < len(text):
-        char = text[i]
-        if char == "\\" and i + 1 < len(text):
-            if depth > 0:
-                buffer.append(text[i : i + 2])
-            i += 2
+    index = start
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            index += 2
             continue
         if char == open_ch:
             depth += 1
-            if depth > 1:
-                buffer.append(char)
         elif char == close_ch:
             depth -= 1
             if depth == 0:
-                return "".join(buffer), i + 1
-            buffer.append(char)
-        elif depth > 0:
-            buffer.append(char)
-        i += 1
+                return text[start + 1 : index], index + 1
+        index += 1
     return "", None
