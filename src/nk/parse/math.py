@@ -106,10 +106,12 @@ def _add(
     end_col: int,
     lines: Sequence[Line],
 ) -> None:
-    """Отметить формулу от места открытия до места закрытия, строка за строкой."""
-    for line in lines:
-        if not (opened.lineno <= line.lineno <= end_lineno):
-            continue
+    """Отметить формулу от места открытия до места закрытия, строка за строкой.
+
+    Строки файла идут подряд с первой, поэтому диапазон берётся срезом, а не
+    перебором всего файла на каждую формулу.
+    """
+    for line in lines[opened.lineno - 1 : end_lineno]:
         start = opened.col if line.lineno == opened.lineno else 1
         end = end_col if line.lineno == end_lineno else len(line.raw) + 1
         intervals.setdefault((path, line.lineno), []).append((start, end))
