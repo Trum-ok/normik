@@ -23,7 +23,7 @@
 import re
 
 from nk.core.document import Document
-from nk.core.headings import CHAPTER, Heading, Headings, base_headings
+from nk.core.headings import CHAPTER, PAGE_BREAK_COMMANDS, Heading, Headings, base_headings
 
 #: Формы объявления макроса: ``\newcommand{\ssr}``, ``\def\ssr``.
 _DEFINITION = re.compile(
@@ -58,9 +58,37 @@ def build_headings(doc: Document) -> Headings:
             continue
         base = commands[target]
         commands[name] = Heading(
-            name=name, depth=base.depth, numbered=base.numbered, alias_of=target
+            name=name,
+            depth=base.depth,
+            numbered=base.numbered,
+            alias_of=target,
+            breaks_page=base.breaks_page or _breaks_page(name, definitions, aliases),
         )
     return Headings(commands)
+
+
+def _breaks_page(name: str, definitions: dict[str, str], aliases: dict[str, str]) -> bool:
+    """Ставит ли макрос разрыв страницы сам.
+
+    Шаблон кафедры обычно прячет ``\\newpage`` внутрь макроса заголовка, и тогда
+    требовать разрыв перед вызовом макроса не за что. Цепочка вызовов проходится
+    на ту же глубину, что и при разрешении псевдонимов.
+    """
+    seen: set[str] = set()
+    pending = [name]
+    for _ in range(MAX_ALIAS_PASSES):
+        if not pending:
+            break
+        current = pending.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        body = definitions.get(current, "")
+        called = {match.group(1) for match in _COMMAND.finditer(body)}
+        if called & PAGE_BREAK_COMMANDS:
+            return True
+        pending.extend(item for item in called if item in aliases or item in definitions)
+    return False
 
 
 def _definitions(doc: Document) -> list[tuple[str, str]]:

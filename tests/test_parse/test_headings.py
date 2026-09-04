@@ -29,6 +29,29 @@ def test_newcommand_alias_becomes_a_heading(tmp_path: Path) -> None:
     assert not scheme.is_numbered("ssr")
 
 
+def test_macro_with_a_page_break_starts_a_page(tmp_path: Path) -> None:
+    """Шаблон кафедры прячет разрыв внутрь макроса: требовать его снаружи не за что."""
+    scheme = headings(
+        tmp_path,
+        "\\newcommand{\\ssr}[1]{\\newpage\\section*{\\centering #1}}\n\\ssr{ВВЕДЕНИЕ}\n",
+    )
+
+    assert scheme.breaks_page("ssr")
+    assert not scheme.breaks_page("section*")
+    assert scheme.breaks_page("chapter")
+
+
+def test_page_break_is_seen_through_a_chain_of_macros(tmp_path: Path) -> None:
+    scheme = headings(
+        tmp_path,
+        "\\newcommand{\\page}{\\clearpage}\n"
+        "\\newcommand{\\ssr}[1]{\\page\\section*{#1}}\n"
+        "\\ssr{ВВЕДЕНИЕ}\n",
+    )
+
+    assert scheme.breaks_page("ssr")
+
+
 def test_def_alias_becomes_a_heading(tmp_path: Path) -> None:
     scheme = headings(tmp_path, "\\def\\subsec#1{\\subsection{#1}}\n\\subsec{Методика}\n")
 

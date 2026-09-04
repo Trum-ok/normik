@@ -29,6 +29,9 @@ BASE_DEPTH: Mapping[str, int] = {
     "subparagraph*": 5,
 }
 
+#: Команды, начинающие новую страницу.
+PAGE_BREAK_COMMANDS = frozenset({"newpage", "clearpage", "cleardoublepage", "pagebreak"})
+
 #: Уровень команды, которая рубрикацией не является.
 NOT_A_HEADING = 0
 
@@ -47,6 +50,9 @@ class Heading:
     alias_of: str = ""
     """Команда рубрикации, к которой сводится макрос, либо пустая строка."""
 
+    breaks_page: bool = False
+    """Начинает ли рубрика новую страницу сама, без ``\\newpage`` перед ней."""
+
 
 def base_headings(shifted: bool = False) -> dict[str, Heading]:
     """Собственные команды рубрикации LaTeX.
@@ -56,7 +62,12 @@ def base_headings(shifted: bool = False) -> dict[str, Heading]:
     commands: dict[str, Heading] = {}
     for name, depth in BASE_DEPTH.items():
         level = depth + 1 if shifted and not name.startswith(CHAPTER) else depth
-        commands[name] = Heading(name=name, depth=level, numbered=not name.endswith("*"))
+        commands[name] = Heading(
+            name=name,
+            depth=level,
+            numbered=not name.endswith("*"),
+            breaks_page=name.startswith(CHAPTER),
+        )
     return commands
 
 
@@ -80,6 +91,11 @@ class Headings:
     def is_numbered(self, name: str) -> bool:
         heading = self.commands.get(name)
         return heading.numbered if heading is not None else False
+
+    def breaks_page(self, name: str) -> bool:
+        """Открывает ли рубрика новую страницу сама: глава либо макрос с разрывом внутри."""
+        heading = self.commands.get(name)
+        return heading.breaks_page if heading is not None else False
 
     def alias_of(self, name: str) -> str:
         heading = self.commands.get(name)
