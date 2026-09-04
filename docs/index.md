@@ -13,10 +13,11 @@ chapters/method.tex
     Нарушение: Наименование рисунка заканчивается точкой.
     Требуется: Наименование рисунка приводят с прописной буквы без точки в конце.
     Исправить: \caption{Схема экспериментальной установки}
-        6 |   \centering
-        7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
-      > 8 |   \caption{Схема экспериментальной установки.}
-        9 | \end{figure}
+      6 |   \centering
+      7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
+    > 8 |   \caption{Схема экспериментальной установки.}
+        |   ^
+      9 | \end{figure}
 ```
 
 ## Что проверяется

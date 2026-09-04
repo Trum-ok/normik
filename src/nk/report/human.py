@@ -11,6 +11,7 @@ from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
     SEVERITY_LABELS,
+    caret_line,
     context_start,
     field_lines,
     group_by_file,
@@ -78,4 +79,12 @@ def _print_finding(console: Console, finding: Finding) -> None:
             no_wrap=True,
             overflow="ellipsis",
         )
+        caret = caret_line(finding, text) if hit else None
+        if caret is not None:
+            console.print(
+                Text(f"{INDENT * 2}  {'':>{width}} | {caret}"),
+                style=style,
+                no_wrap=True,
+                overflow="ellipsis",
+            )
     console.print()

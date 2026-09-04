@@ -30,6 +30,29 @@ def context_start(finding: Finding) -> int:
     return max(1, finding.lineno - CONTEXT_RADIUS)
 
 
+#: Чем помечают место нарушения под строкой исходника.
+CARET = "^"
+
+
+def caret_line(finding: Finding, text: str) -> str | None:
+    """Указатель под местом нарушения либо ``None``, если место вне показанного текста.
+
+    Указатель всегда в один знак: правило знает точку нарушения, а не его границы.
+    Область машинной правки шире — под ``\\caption{…}`` она заняла бы всю строку
+    и показывала бы не то место, где нарушение.
+
+    Позиция в строке есть не у всякой находки, а фрагмент строки в выводе урезан
+    по длине: указывать в пустоту хуже, чем не указывать вовсе.
+    """
+    col = finding.col
+    if col is None or col < 1 or col > len(text) + 1:
+        return None
+    # Табуляция занимает не один знак: чтобы указатель попал под нужный символ,
+    # отступ повторяет исходные пробельные знаки.
+    prefix = "".join("\t" if char == "\t" else " " for char in text[: col - 1])
+    return prefix + CARET
+
+
 def summary_line(counts: dict[Severity, int]) -> str:
     return ", ".join(f"{counts[level]} {SEVERITY_LABELS[level]}" for level in Severity)
 

@@ -48,3 +48,9 @@ def test_empty_result_prints_only_the_summary(plain: Console) -> None:
     text = capture(plain, RunResult(profile="base", findings=(), files_checked=3))
     assert "Итого: 0 error, 0 warning, 0 info." in text
     assert "--format json" not in text
+
+
+def test_caret_points_at_the_place_without_colour(plain: Console, result: RunResult) -> None:
+    text = capture(plain, result)
+    assert "> 145 |   \\caption{Схема экспериментальной установки.}" in text
+    assert "      |   ^" in text

@@ -81,7 +81,8 @@ nk check report.tex chapters/method.tex
 ### `human`
 
 Разметка для чтения в терминале: находки сгруппированы по файлам, вокруг каждой
-показан контекст, строка с нарушением помечена стрелкой.
+показан контекст, строка с нарушением помечена стрелкой, а место в строке —
+указателем под ней.
 
 ```console
 $ nk check chapters
@@ -90,10 +91,11 @@ chapters/method.tex
     Нарушение: Наименование рисунка заканчивается точкой.
     Требуется: Наименование рисунка приводят с прописной буквы без точки в конце.
     Исправить: \caption{Схема экспериментальной установки}
-        6 |   \centering
-        7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
-      > 8 |   \caption{Схема экспериментальной установки.}
-        9 | \end{figure}
+      6 |   \centering
+      7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
+    > 8 |   \caption{Схема экспериментальной установки.}
+        |   ^
+      9 | \end{figure}
 ```
 
 ### `agent`
@@ -112,10 +114,11 @@ chapters/method.tex:8:3  error  G732-6.5.7-caption-dot
   Требуется: Наименование рисунка приводят с прописной буквы без точки в конце.
   Исправить: \caption{Схема экспериментальной установки}
   Контекст:
-     6 |   \centering
-     7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
-     8 |   \caption{Схема экспериментальной установки.}
-     9 | \end{figure}
+    6 |   \centering
+    7 |   \includegraphics[width=0.8\textwidth]{img/setup.png}
+    8 |   \caption{Схема экспериментальной установки.}
+      |   ^
+    9 | \end{figure}
 ```
 
 Число находок в этом формате ограничено: длинный вывод вытесняет из контекста

@@ -10,6 +10,7 @@ from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
     SEVERITY_LABELS,
+    caret_line,
     context_start,
     field_lines,
     group_by_file,
@@ -62,7 +63,11 @@ def _render_finding(path: Path, finding: Finding) -> list[str]:
         start = context_start(finding)
         width = len(str(start + len(finding.context) - 1))
         for offset, text in enumerate(finding.context):
-            lines.append(f"    {start + offset:>{width}} | {text}")
+            lineno = start + offset
+            lines.append(f"    {lineno:>{width}} | {text}")
+            caret = caret_line(finding, text) if lineno == finding.lineno else None
+            if caret is not None:
+                lines.append(f"    {'':>{width}} | {caret}")
     return lines
 
 
