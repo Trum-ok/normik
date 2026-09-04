@@ -13,19 +13,22 @@ CODE_ENVIRONMENTS = frozenset(
     {"verbatim", "Verbatim", "lstlisting", "minted", "alltt", "tabular", "tabular*", "tabularx"}
 )
 
-_INLINE_MATH = re.compile(r"\$[^$]*\$|\\\([^)]*\\\)")
 _COMMAND_ARG = re.compile(
     r"(\\(?:label|ref|eqref|autoref|cite\w*|input|include|includegraphics|url|href))\s*\{[^{}]*\}"
 )
 
 
-def prose(line: Line) -> str:
+def prose(doc: Document, line: Line) -> str:
     """Строка без формул и технических аргументов, с сохранением длины.
+
+    Формула типографике не подчиняется: дефис в ней знак вычитания, кавычки —
+    штрихи. Границы формул размечены при разборе, поэтому строчной и выключной
+    математики здесь не остаётся ни в каком виде.
 
     Позиции находок считаются по исходной строке, поэтому вырезанное
     заменяется пробелами, а не удаляется.
     """
-    text = _INLINE_MATH.sub(lambda match: " " * len(match.group(0)), line.stripped)
+    text = doc.math.mask(line.path, line.lineno, line.stripped)
     # Имя команды сохраняется: для типографики важно, что идёт после пробела.
     return _COMMAND_ARG.sub(
         lambda match: match.group(1) + " " * (len(match.group(0)) - len(match.group(1))),

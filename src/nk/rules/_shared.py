@@ -143,27 +143,6 @@ def is_numbered(doc: Document, command: Command) -> bool:
     return doc.headings.is_numbered(command.name)
 
 
-#: Окружения выключных формул.
-MATH_ENVIRONMENTS = frozenset(
-    {
-        "equation",
-        "equation*",
-        "align",
-        "align*",
-        "gather",
-        "gather*",
-        "multline",
-        "multline*",
-        "displaymath",
-        "eqnarray",
-        "eqnarray*",
-        "alignat",
-        "alignat*",
-        "flalign",
-        "flalign*",
-    }
-)
-
 BIBLIOGRAPHY_ENVIRONMENT = "thebibliography"
 BIBITEM_COMMAND = "bibitem"
 BIBTEX_COMMANDS = frozenset({"bibliography", "addbibresource", "printbibliography"})

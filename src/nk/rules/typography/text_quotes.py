@@ -38,7 +38,7 @@ def text_quotes(doc: Document) -> Iterable[Finding]:
     for line in doc.iter_lines():
         if is_code(doc, line):
             continue
-        text = prose(line)
+        text = prose(doc, line)
         positions = [index for index, char in enumerate(text) if char == STRAIGHT]
         if not positions:
             continue

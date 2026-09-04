@@ -42,7 +42,7 @@ def initials_nbsp(doc: Document) -> Iterable[Finding]:
     for line in doc.iter_lines():
         if is_code(doc, line):
             continue
-        text = prose(line)
+        text = prose(doc, line)
         for match in INITIALS.finditer(text):
             for start, end in _spaces(text, match):
                 yield initials_nbsp.finding(

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from nk.core.finding import truncate_excerpt
 from nk.core.headings import Headings
+from nk.core.math import Math
 from nk.core.position import Position, Region
 from nk.core.profile import Profile
 
@@ -162,6 +163,9 @@ class Document:
     numbering: "Numbering" = field(default_factory=lambda: _empty_numbering())
     headings: Headings = field(default_factory=Headings)
     """Команды рубрикации отчёта, включая макросы шаблона кафедры."""
+
+    math: Math = field(default_factory=Math)
+    """Участки формул: правила типографики работают по тексту без них."""
 
     _index: dict[Path, tuple[Line, ...]] = field(
         init=False, repr=False, compare=False, default_factory=dict

@@ -4,9 +4,9 @@ from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
+from nk.core.math import MATH_ENVIRONMENTS
 from nk.core.rule import rule
 from nk.rules._shared import (
-    MATH_ENVIRONMENTS,
     is_numbered_environment,
     labels,
     referenced_labels,

@@ -63,7 +63,7 @@ def preposition_nbsp(doc: Document) -> Iterable[Finding]:
     for line in doc.iter_lines():
         if is_code(doc, line):
             continue
-        for match in _PROCLITIC.finditer(prose(line)):
+        for match in _PROCLITIC.finditer(prose(doc, line)):
             start, end = match.span(1)
             yield preposition_nbsp.finding(
                 doc,

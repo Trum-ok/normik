@@ -45,13 +45,14 @@ def text_dash(doc: Document) -> Iterable[Finding]:
     ## Как исправить
 
     Заменить дефис на тире. Последовательности `--` и `---` LaTeX превращает
-    в тире сам, их правило не трогает.
+    в тире сам, их правило не трогает. В формулах, листингах и таблицах дефис
+    не проверяется: там это знак вычитания или содержимое ячейки.
     """
     dedicated = _dedicated_lines(doc)
     for line in doc.iter_lines():
         if is_code(doc, line) or (line.path, line.lineno) in dedicated:
             continue
-        text = prose(line)
+        text = prose(doc, line)
         for match in LONELY_HYPHEN.finditer(text):
             if match.start() == 0 or text[match.start() - 1] != " ":
                 continue

@@ -15,6 +15,7 @@ from nk.core.profile import Profile
 from nk.core.suppressions import Suppressions
 from nk.parse.headings import build_headings
 from nk.parse.issues import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING, ParseIssue
+from nk.parse.math import build_math
 from nk.parse.numbering import build_numbering
 from nk.parse.structure import VERBATIM_ENVIRONMENTS, build_structure
 from nk.parse.suppressions import collect
@@ -142,7 +143,7 @@ def parse(
         profile=profile or Profile(),
         structure=structure,
     )
-    document = replace(document, headings=build_headings(document))
+    document = replace(document, headings=build_headings(document), math=build_math(document))
     document = replace(document, numbering=build_numbering(document))
     return ParseResult(
         document=document,
