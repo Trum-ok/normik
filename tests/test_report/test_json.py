@@ -1,11 +1,12 @@
 import json as stdlib_json
 
+from nk import __version__
 from nk.core.runner import RunResult
 from nk.report import json as json_report
 
 EXPECTED = {
     "schema_version": "1.2",
-    "tool": {"name": "nk", "version": "0.1.0"},
+    "tool": {"name": "nk", "version": __version__},
     "profile": "base",
     "summary": {"error": 1, "warning": 1, "info": 1, "files_checked": 12, "fixable": 0},
     "suppressed": {"inline": 0, "baseline": 0},
