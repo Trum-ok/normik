@@ -69,12 +69,6 @@ class Numbering:
     items: tuple[Numbered, ...] = ()
     changes: tuple[SchemeChange, ...] = ()
 
-    def of(self, span: Span) -> Numbered | None:
-        for item in self.items:
-            if item.span == span:
-                return item
-        return None
-
     def by_kind(self, kind: str) -> tuple[Numbered, ...]:
         return tuple(item for item in self.items if item.kind == kind)
 

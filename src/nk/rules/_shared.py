@@ -290,12 +290,6 @@ def without_hyphenation(doc: Document, command: Command) -> Fix | None:
     )
 
 
-def has_graphic(environment: Environment) -> bool:
-    return any(command.name in GRAPHIC_COMMANDS for command in environment.all_commands()) or any(
-        child.name in GRAPHIC_ENVIRONMENTS for child in environment.walk()
-    )
-
-
 def first_graphic_line(environment: Environment) -> int | None:
     """Номер строки, с которой начинается изображение."""
     candidates = [
