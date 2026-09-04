@@ -1,4 +1,4 @@
-"""Наименования структурных элементов, принятые кафедрой вместо стандартных."""
+"""Настройка состава и наименований структурных элементов профилем."""
 
 from pathlib import Path
 
@@ -48,3 +48,27 @@ def test_alias_makes_the_element_count(tmp_path: Path) -> None:
 
 def test_alias_also_gives_the_element_its_place_in_the_order(tmp_path: Path) -> None:
     assert messages(tmp_path, ORDER, Profile(element_aliases=ALIASES)) == []
+
+
+def test_excluded_drops_an_element_from_the_required_set(tmp_path: Path) -> None:
+    text = REPORT.replace("\\section*{РЕФЕРАТ}\nОтчёт 45 с., 3 рис.\n", "")
+    profile = Profile(params={MISSING: {"excluded": ["Реферат"]}}, element_aliases=ALIASES)
+
+    assert messages(tmp_path, MISSING, profile, text) == []
+
+
+def test_required_replaces_the_set_entirely(tmp_path: Path) -> None:
+    profile = Profile(params={MISSING: {"required": ["ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ"]}})
+
+    assert messages(tmp_path, MISSING, profile) == [
+        "В отчёте нет структурного элемента «ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ»."
+    ]
+
+
+def test_unknown_name_in_required_is_reported_not_ignored(tmp_path: Path) -> None:
+    """Опечатка в профиле обязана быть заметной, а не выключать проверку молча."""
+    profile = Profile(params={MISSING: {"required": ["ЗАКЛЮЧЕНЕИ"]}})
+
+    assert messages(tmp_path, MISSING, profile) == [
+        "В отчёте нет структурного элемента «ЗАКЛЮЧЕНЕИ»."
+    ]

@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import normalize_element
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
@@ -12,6 +13,18 @@ from nk.rules._shared import (
     is_full_document,
     structural_headings,
 )
+
+
+def _element(doc: Document, name: object) -> str:
+    """Наименование из профиля в том виде, в каком его знает документ.
+
+    Синоним кафедры разворачивается в наименование стандарта; наименование,
+    которого стандарт не знает, остаётся как есть и даёт находку об отсутствии —
+    опечатка в профиле заметна, а не выключает проверку.
+    """
+    normalized = normalize_element(str(name))
+    return doc.profile.element_aliases.get(normalized, normalized)
+
 
 #: Обязательные элементы, обнаружимые по исходникам. Титульный лист и основная
 #: часть заголовка структурного элемента не имеют и сюда не входят.
@@ -32,6 +45,7 @@ BIBLIOGRAPHY = "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
     clause="4",
     severity=Severity.ERROR,
     title="Отсутствует обязательный структурный элемент",
+    params={"required": list(REQUIRED), "excluded": []},
 )
 def required_element_missing(doc: Document) -> Iterable[Finding]:
     """Проверяет наличие структурных элементов, обнаружимых по исходникам: реферата,
@@ -40,6 +54,10 @@ def required_element_missing(doc: Document) -> Iterable[Finding]:
     библиографии: заголовок ему во многих шаблонах печатает сам класс документа.
     Титульный лист и основная часть заголовка структурного элемента не имеют
     и не проверяются. Правило работает только на полном документе.
+
+    Состав задаётся параметрами: `required` — весь перечень целиком, `excluded` —
+    что выбросить из него, не переписывая остальное. Опечатка в наименовании
+    оставляет лишнюю находку, а не отключает проверку молча.
 
     ## Почему это нарушение
 
@@ -54,6 +72,14 @@ def required_element_missing(doc: Document) -> Iterable[Finding]:
     if not is_full_document(doc):
         return
 
+    params = required_element_missing.params(doc)
+    excluded = {_element(doc, item) for item in params["excluded"]}
+    required = [
+        name
+        for name in (_element(doc, item) for item in params["required"])
+        if name not in excluded
+    ]
+
     present = {element for _, element in structural_headings(doc)}
     if any(doc.structure.find_commands(CONTENTS_COMMAND)):
         present.add(CONTENTS)
@@ -64,7 +90,7 @@ def required_element_missing(doc: Document) -> Iterable[Finding]:
 
     start = doc.structure.find_environments("document")
     anchor = next(iter(start))
-    for element in REQUIRED:
+    for element in required:
         if element in present:
             continue
         yield required_element_missing.finding(
