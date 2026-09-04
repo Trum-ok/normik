@@ -52,6 +52,7 @@
     * [G732-6.16-bibliography-order](G732-6.16-bibliography-order.md)
     * [G732-6.16-bibtex-order-unverifiable](G732-6.16-bibtex-order-unverifiable.md)
     * [G732-6.17.2-appendix-no-reference](G732-6.17.2-appendix-no-reference.md)
+    * [G732-6.17.2-appendix-order](G732-6.17.2-appendix-order.md)
     * [G732-6.17.3-appendix-page-break](G732-6.17.3-appendix-page-break.md)
     * [G732-6.17.4-appendix-letter](G732-6.17.4-appendix-letter.md)
     * [G732-6.17.4-appendix-sequence](G732-6.17.4-appendix-sequence.md)

@@ -62,6 +62,7 @@
 | [`G732-6.16-bibliography-order`](G732-6.16-bibliography-order.md) | 6.16 | error | Записи списка источников идут не в порядке появления ссылок |
 | [`G732-6.16-bibtex-order-unverifiable`](G732-6.16-bibtex-order-unverifiable.md) | 6.16 | info | Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется |
 | [`G732-6.17.2-appendix-no-reference`](G732-6.17.2-appendix-no-reference.md) | 6.17.2 | error | На приложение нет ссылки в тексте |
+| [`G732-6.17.2-appendix-order`](G732-6.17.2-appendix-order.md) | 6.17.2 | error | Приложения идут не в порядке ссылок на них |
 | [`G732-6.17.3-appendix-page-break`](G732-6.17.3-appendix-page-break.md) | 6.17.3 | error | Приложение не начинается с новой страницы |
 | [`G732-6.17.4-appendix-letter`](G732-6.17.4-appendix-letter.md) | 6.17.4 | error | Приложение обозначено недопустимой буквой |
 | [`G732-6.17.4-appendix-sequence`](G732-6.17.4-appendix-sequence.md) | 6.17.4 | error | В обозначениях приложений пропущена буква |
