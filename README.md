@@ -2,6 +2,8 @@
 
 [![ci](https://github.com/Trum-ok/normik/actions/workflows/ci.yaml/badge.svg)](https://github.com/Trum-ok/normik/actions/workflows/ci.yaml)
 [![pypi](https://img.shields.io/pypi/v/normik)](https://pypi.org/project/normik/)
+[![python](https://img.shields.io/pypi/pyversions/normik)](https://pypi.org/project/normik/)
+[![license](https://img.shields.io/github/license/Trum-ok/normik)](LICENSE)
 
 `nk` — линтер оформления отчёта о НИР по ГОСТ 7.32-2017 для исходников LaTeX.
 
