@@ -50,7 +50,9 @@
     * [G732-6.17.4-appendix-sequence](G732-6.17.4-appendix-sequence.md)
 * Типографика
     * [NK-STYLE-dash](NK-STYLE-dash.md)
+    * [NK-STYLE-initials-nbsp](NK-STYLE-initials-nbsp.md)
     * [NK-STYLE-particle-nbsp](NK-STYLE-particle-nbsp.md)
     * [NK-STYLE-preposition-nbsp](NK-STYLE-preposition-nbsp.md)
     * [NK-STYLE-quotes](NK-STYLE-quotes.md)
     * [NK-STYLE-reference-nbsp](NK-STYLE-reference-nbsp.md)
+    * [NK-STYLE-unit-nbsp](NK-STYLE-unit-nbsp.md)
