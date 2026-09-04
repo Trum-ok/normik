@@ -41,7 +41,9 @@ def clean_report(tmp_path: Path) -> Path:
     return path
 
 
-def test_failed_rule_exits_two(clean_report: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.fixture
+def failing_rule(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Реестр из одного правила, которое падает с исключением."""
     registry = RuleRegistry()
 
     @rule(
@@ -56,10 +58,32 @@ def test_failed_rule_exits_two(clean_report: Path, monkeypatch: pytest.MonkeyPat
 
     monkeypatch.setattr("nk.cli.load_rules", lambda: registry)
 
+
+@pytest.mark.usefixtures("failing_rule")
+def test_failed_rule_exits_two(clean_report: Path) -> None:
     result = runner.invoke(app, ["check", str(clean_report)])
 
     assert result.exit_code == EXIT_INTERNAL_ERROR
     assert "G732-6.5.7-падает упало и пропущено" in result.stdout
+
+
+@pytest.mark.usefixtures("failing_rule")
+def test_failed_rule_blocks_baseline(clean_report: Path, tmp_path: Path) -> None:
+    snapshot = tmp_path / "baseline.json"
+
+    result = runner.invoke(app, ["check", str(clean_report), "--write-baseline", str(snapshot)])
+
+    assert result.exit_code == EXIT_INTERNAL_ERROR
+    assert not snapshot.exists()
+    assert "G732-6.5.7-падает упало и пропущено" in result.output
+
+
+@pytest.mark.usefixtures("failing_rule")
+def test_failed_rule_exits_two_with_diff(clean_report: Path) -> None:
+    result = runner.invoke(app, ["check", str(clean_report), "--diff"])
+
+    assert result.exit_code == EXIT_INTERNAL_ERROR
+    assert "G732-6.5.7-падает упало и пропущено" in result.output
 
 
 def test_clean_report_exits_zero(clean_report: Path) -> None:

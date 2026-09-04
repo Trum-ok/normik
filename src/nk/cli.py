@@ -209,13 +209,20 @@ def check(
     )
     result = check_run()
 
+    # Упавшее правило — внутренняя ошибка: часть проверок не выполнилась,
+    # и зелёный прогон в CI говорил бы неправду. Снимок с пропущенными
+    # проверками не записывается: он скрыл бы их находки навсегда.
     if write_baseline is not None:
+        if result.failed_rules:
+            _report_failures(result)
+            raise typer.Exit(EXIT_INTERNAL_ERROR)
         _write_baseline(write_baseline, result)
         raise typer.Exit(EXIT_OK)
 
     if show_diff:
         sys.stdout.write(_diff(check_run, result))
-        raise typer.Exit(EXIT_OK)
+        _report_failures(result)
+        raise typer.Exit(EXIT_INTERNAL_ERROR if result.failed_rules else EXIT_OK)
 
     if fix:
         result = _apply_fixes(check_run, result)
@@ -226,11 +233,15 @@ def check(
 
 
 def _exit_code(result: RunResult) -> int:
-    # Упавшее правило — внутренняя ошибка: часть проверок не выполнилась,
-    # и зелёный прогон в CI говорил бы неправду.
     if result.failed_rules:
         return EXIT_INTERNAL_ERROR
     return EXIT_FOUND_ERRORS if result.has_errors else EXIT_OK
+
+
+def _report_failures(result: RunResult) -> None:
+    # В stderr: stdout в этих ветках занят diff-ом или молчит.
+    for failed in result.failed_rules:
+        err_console.print(f"Правило {failed.rule_id} упало и пропущено: {failed.error}")
 
 
 @dataclass(frozen=True, slots=True)
