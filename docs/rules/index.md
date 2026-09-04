@@ -58,6 +58,7 @@
 | [`G732-6.12.1-abstract-volume-inline`](G732-6.12.1-abstract-volume-inline.md) | 6.12.1 | error | Сведения об объёме реферата приведены не в строку |
 | [`G732-6.12.2-keywords-final-dot`](G732-6.12.2-keywords-final-dot.md) | 6.12.2 | error | Перечень ключевых слов заканчивается точкой |
 | [`G732-6.12.2-keywords-uppercase`](G732-6.12.2-keywords-uppercase.md) | 6.12.2 | error | Ключевые слова набраны не прописными буквами |
+| [`G732-6.12.3-abstract-text-position`](G732-6.12.3-abstract-text-position.md) | 6.12.3 | error | Текст реферата начинается до перечня ключевых слов |
 | [`G732-6.14-terms-dash`](G732-6.14-terms-dash.md) | 6.14 | warning | В перечне терминов определение отделено дефисом |
 | [`G732-6.14-terms-order`](G732-6.14-terms-order.md) | 6.14 | error | Термины в перечне идут не по алфавиту |
 | [`G732-6.15-abbreviations-dash`](G732-6.15-abbreviations-dash.md) | 6.15 | warning | В перечне сокращений расшифровка отделена дефисом |

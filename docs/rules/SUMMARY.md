@@ -48,6 +48,7 @@
     * [G732-6.12.1-abstract-volume-inline](G732-6.12.1-abstract-volume-inline.md)
     * [G732-6.12.2-keywords-final-dot](G732-6.12.2-keywords-final-dot.md)
     * [G732-6.12.2-keywords-uppercase](G732-6.12.2-keywords-uppercase.md)
+    * [G732-6.12.3-abstract-text-position](G732-6.12.3-abstract-text-position.md)
     * [G732-6.14-terms-dash](G732-6.14-terms-dash.md)
     * [G732-6.14-terms-order](G732-6.14-terms-order.md)
     * [G732-6.15-abbreviations-dash](G732-6.15-abbreviations-dash.md)
