@@ -3,8 +3,9 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.finding import Finding, Severity
+from nk.core.finding import Finding, Fix, Severity
 from nk.core.math import MATH_ENVIRONMENTS
+from nk.core.position import Region
 from nk.core.rule import rule
 
 REQUIREMENT = "Выше и ниже каждой формулы оставляют не менее одной свободной строки."
@@ -15,6 +16,7 @@ REQUIREMENT = "Выше и ниже каждой формулы оставляю
     clause="6.8.1",
     severity=Severity.ERROR,
     title="Формула не отделена свободной строкой",
+    fixable=True,
 )
 def formula_blank_lines(doc: Document) -> Iterable[Finding]:
     """Проверяет строки непосредственно выше и ниже выключной формулы. Формула,
@@ -47,6 +49,7 @@ def formula_blank_lines(doc: Document) -> Iterable[Finding]:
                 message="Выше формулы нет свободной строки.",
                 requirement=REQUIREMENT,
                 suggestion=f"Вставить пустую строку перед строкой {environment.span.start}.",
+                fix=Fix(Region.at(environment.path, environment.span.start), "\n"),
             )
         if (
             below is not None
@@ -59,4 +62,5 @@ def formula_blank_lines(doc: Document) -> Iterable[Finding]:
                 message="Ниже формулы нет свободной строки.",
                 requirement=REQUIREMENT,
                 suggestion=f"Вставить пустую строку после строки {environment.span.end}.",
+                fix=Fix(Region.at(environment.path, environment.span.end + 1), "\n"),
             )
