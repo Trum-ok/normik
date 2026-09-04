@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import TABLE_ENVIRONMENTS, caption_text, captions, one_line
+from nk.rules._shared import TABLE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
 
 #: «Таблица 1 — », «Табл. 2.3 -», «Таблица А.1»
 MANUAL_NUMBER = re.compile(r"^\s*(?:Таблица|Табл\.)\s*[0-9А-ЯA-Z][0-9.]*\s*[-–—:.]?\s*")
@@ -47,7 +47,7 @@ def table_caption_manual_number(doc: Document) -> Iterable[Finding]:
                     "Слово «Таблица», номер и тире формирует класс документа; "
                     "в наименовании оставляют только сам текст."
                 ),
-                suggestion=f"\\{command.name}{{{rest}}}",
+                suggestion=render_caption(command, rest),
                 col=command.col,
                 fix=command.region,
             )

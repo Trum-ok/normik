@@ -20,13 +20,13 @@ jobs:
       - uses: ./.github/actions/setup
 
       - name: ruff format
-        run: uv run ruff format --check src tests
+        run: uv run ruff format --check src tests hooks
 
       - name: ruff check
-        run: uv run ruff check src tests
+        run: uv run ruff check src tests hooks
 
       - name: ty
-        run: uv run ty check src tests
+        run: uv run ty check src tests hooks
 
   # Нижняя граница requires-python и всё, что выше: линтер обещает работать
   # на каждой из этих версий, значит на каждой и проверяется.

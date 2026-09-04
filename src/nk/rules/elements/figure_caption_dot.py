@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_line
+from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
 
 
 @rule(
@@ -38,7 +38,7 @@ def figure_caption_dot(doc: Document) -> Iterable[Finding]:
                 command.span,
                 message="Наименование рисунка заканчивается точкой.",
                 requirement="Наименование рисунка приводят с прописной буквы без точки в конце.",
-                suggestion=f"\\{command.name}{{{one_line(text[:-1])}}}",
+                suggestion=render_caption(command, one_line(text[:-1])),
                 col=command.col,
                 fix=command.region,
             )

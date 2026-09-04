@@ -41,6 +41,10 @@ theme:
         icon: material/weather-sunny
         name: Светлая тема
 
+# Версии пакета и схемы JSON в тексте документации подставляются из кода.
+hooks:
+  - hooks/versions.py
+
 plugins:
   - search:
       lang: ru

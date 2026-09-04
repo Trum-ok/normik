@@ -55,7 +55,7 @@ nk check report.tex chapters/method.tex
 | `--select ID,...` | запустить только указанные правила |
 | `--ignore ID,...` | исключить правила |
 | `--severity LEVEL` | не показывать находки ниже уровня |
-| `--limit N` | предел числа находок в выводе; `0` — без предела |
+| `--limit N` | предел числа находок в выводе; по умолчанию {{ agent_limit }}, `0` — без предела |
 | `--fix` | применить правки к исходникам |
 | `--diff` | показать правки как diff, ничего не записывая |
 | `--baseline PATH` | снимок известных нарушений: показывать только новые |
@@ -144,12 +144,13 @@ chapters/method.tex:8:3  error  G732-6.5.7-caption-dot
 ```console
 $ nk check chapters --format json
 {
-  "schema_version": "1.2",
-  "tool": { "name": "nk", "version": "0.1.0" },
+  "schema_version": "{{ json_schema_version }}",
+  "tool": { "name": "nk", "version": "{{ nk_version }}" },
   "profile": "base",
   "summary": { "error": 4, "warning": 0, "info": 0, "files_checked": 12, "fixable": 3 },
   "suppressed": { "inline": 3, "baseline": 12 },
-  "findings": [ ... ]
+  "findings": [ ... ],
+  "failed_rules": []
 }
 ```
 
@@ -264,16 +265,7 @@ nk check chapters --baseline .nk-baseline.json
 Кроме правил линтер выдаёт собственные замечания: они не проверяют требований
 стандарта, не имеют пункта и начинаются с `NK-`.
 
-| Код | Когда |
-|---|---|
-| `NK-PARSE-001` | включаемый файл не найден |
-| `NK-PARSE-002` | циклическое включение файла |
-| `NK-PARSE-003` | окружение не закрыто |
-| `NK-PARSE-004` | `\end` без парного `\begin` |
-| `NK-PARSE-005` | не закрыта скобка аргумента |
-| `NK-PARSE-006` | файл не в UTF-8 |
-| `NK-IGNORE-001` | подавление ничего не подавило |
-| `NK-IGNORE-002` | подавление ссылается на неизвестное правило |
+{{ diagnostics_table }}
 
 Отключаются как обычные правила — ключом `--ignore` или в `disable` профиля.
 

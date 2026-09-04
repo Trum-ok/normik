@@ -13,11 +13,11 @@ jobs:
   nk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
 
       - name: nk check
-        run: uvx --from git+https://github.com/Trum-ok/normik.git nk check chapters
+        run: uvx --from normik nk check chapters
 ```
 
 Сборка падает на находках уровня `error`. Чтобы падала и на предупреждениях,
@@ -30,7 +30,7 @@ jobs:
 ```yaml
       - name: nk check
         run: >-
-          uvx --from git+https://github.com/Trum-ok/normik.git
+          uvx --from normik
           nk check chapters --baseline .nk-baseline.json
 ```
 
@@ -68,12 +68,13 @@ uv run nk check chapters --quiet || {
 требование и готовое исправление.
 
 ```bash
-uv run nk check chapters --format agent
+nk check chapters --format agent
 ```
 
 Число находок в выводе ограничено по умолчанию — длинный список вытесняет из
 контекста агента сам отчёт. Разумный порядок работы: исправить показанное,
 запустить снова. Снять предел — `--limit 0`.
 
-Правила формулируют исправление, но файлов не правят: что именно применить,
-решает человек или агент.
+Часть находок чинится машинно — их применяет сам `nk` по ключу `--fix`.
+Остальные остаются предложением текстом: замена в них неоднозначна, и что
+именно применить, решает человек или агент.

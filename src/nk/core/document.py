@@ -7,7 +7,7 @@
 from collections.abc import Callable, Hashable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from nk.core.finding import truncate_excerpt
 from nk.core.headings import Headings
@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from nk.core.numbering import Numbering
 
 CONTEXT_RADIUS = 2
+
+T = TypeVar("T")
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,7 +214,7 @@ class Document:
         """
         return self._order.get(path, len(self.files))
 
-    def memo(self, key: Hashable, build: "Callable[[], T]") -> "T":
+    def memo(self, key: Hashable, build: Callable[[], T]) -> T:
         """Значение, вычисляемое один раз на документ.
 
         Помощники правил вызываются на каждый заголовок или строку; без кэша
@@ -220,7 +222,8 @@ class Document:
         """
         if key not in self._memo:
             self._memo[key] = build()
-        return self._memo[key]  # type: ignore[return-value]
+        # Хранилище общее на все ключи, поэтому тип значения восстанавливается приведением.
+        return cast(T, self._memo[key])
 
     def ordered_commands(self) -> tuple[Command, ...]:
         """Все команды в порядке следования по отчёту, а не по дереву окружений.
@@ -281,9 +284,6 @@ class Document:
         if start > end:
             return ()
         return tuple(truncate_excerpt(item.raw) for item in lines[start - 1 : end])
-
-
-T = TypeVar("T")
 
 
 def _empty_numbering() -> "Numbering":

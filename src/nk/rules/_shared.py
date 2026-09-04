@@ -24,6 +24,7 @@ CITE_COMMANDS = frozenset({"cite", "citep", "citet", "citealp", "citeauthor", "n
 
 _COMMAND = re.compile(r"\\[A-Za-z]+\*?")
 _BRACES = re.compile(r"[{}$~]")
+_LABEL = re.compile(r"\\label\s*\{[^{}]*\}")
 
 
 def captions(environment: Environment) -> Iterator[Command]:
@@ -39,11 +40,39 @@ def labels(environment: Environment) -> Iterator[Command]:
 
 
 def caption_text(command: Command) -> str:
-    """Текст наименования: у ``\\captionof`` первый аргумент — тип плавающего объекта."""
+    """Текст наименования без меток.
+
+    ``\\label`` внутри подписи — распространённая форма, и проверять точку или
+    регистр надо по самому тексту, а не по хвосту с меткой.
+    """
+    return _LABEL.sub("", _caption_argument(command)).strip()
+
+
+def caption_labels(command: Command) -> tuple[str, ...]:
+    """Метки, записанные внутри подписи, как есть."""
+    return tuple(_LABEL.findall(_caption_argument(command)))
+
+
+def render_caption(command: Command, text: str) -> str:
+    """Команда подписи с новым текстом наименования.
+
+    Тип объекта у ``\\captionof``, краткая форма в квадратных скобках и метки
+    внутри подписи сохраняются: правка меняет только текст.
+    """
+    parts = [f"\\{command.name}"]
+    if command.name == "captionof" and command.args:
+        parts.append(f"{{{command.args[0]}}}")
+    parts.extend(f"[{option}]" for option in command.options)
+    parts.append("{" + text + "".join(caption_labels(command)) + "}")
+    return "".join(parts)
+
+
+def _caption_argument(command: Command) -> str:
+    """Аргумент с наименованием: у ``\\captionof`` первый аргумент — тип объекта."""
     args = command.args
     if command.name == "captionof" and len(args) > 1:
-        return args[1].strip()
-    return args[0].strip() if args else ""
+        return args[1]
+    return args[0] if args else ""
 
 
 def referenced_labels(doc: Document) -> set[str]:

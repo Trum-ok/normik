@@ -107,7 +107,7 @@ skip-magic-trailing-comma = false
 
 [tool.ty.environment]
 python-version = "3.11"
-root = ["src", "tests"]
+root = ["src", "tests", "hooks"]
 
 [tool.ty.src]
-include = ["src", "tests"]
+include = ["src", "tests", "hooks"]

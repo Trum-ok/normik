@@ -11,6 +11,7 @@ from nk.rules._shared import (
     caption_text,
     captions,
     first_letter,
+    render_caption,
 )
 
 
@@ -43,7 +44,7 @@ def table_caption_capital(doc: Document) -> Iterable[Finding]:
                 command.span,
                 message=f"Наименование таблицы начинается со строчной буквы «{letter}».",
                 requirement="Наименование таблицы приводят с прописной буквы без точки в конце.",
-                suggestion=f"\\{command.name}{{{capitalize_first(text)}}}",
+                suggestion=render_caption(command, capitalize_first(text)),
                 col=command.col,
                 fix=command.region,
             )

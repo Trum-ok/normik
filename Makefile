@@ -1,6 +1,6 @@
 .PHONY: lint format test coverage check docs docs-serve
 
-package ?= src tests
+package ?= src tests hooks
 
 lint:
 	uv run ruff check $(package)

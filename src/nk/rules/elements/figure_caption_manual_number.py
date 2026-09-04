@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_line
+from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_line, render_caption
 
 #: «Рисунок 1 — », «Рис. 2.1 -», «Рисунок А.3.»
 MANUAL_NUMBER = re.compile(r"^\s*(?:Рисунок|Рис\.)\s*[0-9А-ЯA-Z][0-9.]*\s*[-–—:.]?\s*")
@@ -49,7 +49,7 @@ def figure_caption_manual_number(doc: Document) -> Iterable[Finding]:
                     "Слово «Рисунок», номер и тире формирует класс документа; "
                     "в наименовании оставляют только сам текст."
                 ),
-                suggestion=f"\\{command.name}{{{rest}}}",
+                suggestion=render_caption(command, rest),
                 col=command.col,
                 fix=command.region,
             )
