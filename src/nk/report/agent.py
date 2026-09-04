@@ -14,6 +14,7 @@ from nk.report.common import (
     field_lines,
     group_by_file,
     summary_line,
+    suppressed_line,
 )
 
 #: Сколько находок показывать по умолчанию. Простыня на тысячу строк бесполезна.
@@ -34,6 +35,9 @@ def render(result: RunResult, *, command: str, limit: int = DEFAULT_LIMIT) -> st
 
     lines.append("")
     lines.append(f"Итого: {summary_line(result.summary)}.")
+    hidden_by_config = suppressed_line(result.suppressed)
+    if hidden_by_config:
+        lines.append(hidden_by_config)
     if hidden:
         lines.append(f"Скрыто находок: {hidden}. Показать все: --limit 0.")
     for failed in result.failed_rules:

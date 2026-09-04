@@ -15,6 +15,7 @@ from nk.report.common import (
     field_lines,
     group_by_file,
     summary_line,
+    suppressed_line,
 )
 
 SEVERITY_STYLES: dict[Severity, str] = {
@@ -36,6 +37,9 @@ def render(result: RunResult, console: Console) -> None:
 
     console.print()
     console.print(f"Итого: {summary_line(result.summary)}.")
+    hidden = suppressed_line(result.suppressed)
+    if hidden:
+        console.print(Text(hidden, style="dim"))
     for failed in result.failed_rules:
         console.print(
             Text(f"Правило {failed.rule_id} упало и пропущено: {failed.error}", style="yellow")

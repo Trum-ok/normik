@@ -7,17 +7,27 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from nk.core.diagnostics import (
+    ENCODING_FALLBACK,
+    ENVIRONMENT_ORPHAN_END,
+    ENVIRONMENT_UNCLOSED,
+    GROUP_UNCLOSED,
+    INPUT_CYCLE,
+    INPUT_MISSING,
+    NO_CLAUSE,
+)
 from nk.core.finding import Finding, Severity
 
-#: Замечания парсера не ссылаются на пункт стандарта.
-NO_CLAUSE = ""
-
-INPUT_MISSING = "NK-PARSE-001"
-INPUT_CYCLE = "NK-PARSE-002"
-ENVIRONMENT_UNCLOSED = "NK-PARSE-003"
-ENVIRONMENT_ORPHAN_END = "NK-PARSE-004"
-GROUP_UNCLOSED = "NK-PARSE-005"
-ENCODING_FALLBACK = "NK-PARSE-006"
+__all__ = [
+    "ENCODING_FALLBACK",
+    "ENVIRONMENT_ORPHAN_END",
+    "ENVIRONMENT_UNCLOSED",
+    "GROUP_UNCLOSED",
+    "INPUT_CYCLE",
+    "INPUT_MISSING",
+    "NO_CLAUSE",
+    "ParseIssue",
+]
 
 
 @dataclass(frozen=True, slots=True)

@@ -9,9 +9,11 @@ from rich.console import Console
 from rich.table import Table
 
 from nk import __version__
+from nk.core.baseline import Baseline, BaselineError
+from nk.core.diagnostics import INTERNAL
 from nk.core.finding import Severity
 from nk.core.profile import ProfileError, load_profile
-from nk.core.registry import load_rules, select_rules, validate_profile
+from nk.core.registry import load_rules, partition_ids, select_rules, validate_profile
 from nk.core.rule import UnknownRuleError
 from nk.core.runner import RunResult, run
 from nk.parse.tex import parse, parse_findings
@@ -154,6 +156,12 @@ def check(
     limit: int = typer.Option(
         agent.DEFAULT_LIMIT, "--limit", help="Предел числа находок в выводе; 0 — без предела."
     ),
+    baseline_path: Path = typer.Option(
+        None, "--baseline", help="Снимок известных нарушений: показывать только новые."
+    ),
+    write_baseline: Path = typer.Option(
+        None, "--write-baseline", help="Записать снимок текущих находок и выйти."
+    ),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Только код возврата."),
 ) -> None:
     """Проверить исходники отчёта на соответствие ГОСТ 7.32-2017."""
@@ -166,13 +174,16 @@ def check(
     try:
         profile = load_profile(profile_source)
         validate_profile(profile, registry)
+        selected_rules, _ = partition_ids(_split(select))
+        ignored_rules, ignored_internal = partition_ids(_split(ignore))
         rules = select_rules(
             registry,
             profile=profile,
-            select=_split(select),
-            ignore=_split(ignore),
+            select=selected_rules,
+            ignore=ignored_rules,
         )
-    except (ProfileError, UnknownRuleError) as error:
+        baseline = Baseline.load(baseline_path) if baseline_path is not None else None
+    except (ProfileError, UnknownRuleError, BaselineError) as error:
         err_console.print(str(error))
         raise typer.Exit(EXIT_INTERNAL_ERROR) from None
 
@@ -181,12 +192,29 @@ def check(
         parsed.document,
         rules,
         extra_findings=parse_findings(parsed),
-        threshold=severity,
+        # Снимок фиксируется по всем находкам: иначе его содержимое зависело бы
+        # от ключа --severity, с которым его записали.
+        threshold=Severity.INFO if write_baseline is not None else severity,
+        suppressions=parsed.suppressions,
+        baseline=baseline,
+        ignored=ignored_internal | (profile.disabled & frozenset(INTERNAL)),
+        known_ids=frozenset(impl.id for impl in registry) | frozenset(INTERNAL),
     )
+
+    if write_baseline is not None:
+        _write_baseline(write_baseline, result)
+        raise typer.Exit(EXIT_OK)
 
     if not quiet:
         _report(result, output_format, limit)
     raise typer.Exit(EXIT_FOUND_ERRORS if result.has_errors else EXIT_OK)
+
+
+def _write_baseline(path: Path, result: RunResult) -> None:
+    snapshot = Baseline.of(result.findings)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(snapshot.dumps(__version__), encoding="utf-8")
+    console.print(f"Записано находок в снимок: {len(result.findings)} → {path}")
 
 
 def _report(result: RunResult, output_format: OutputFormat, limit: int) -> None:

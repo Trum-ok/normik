@@ -8,6 +8,7 @@ import importlib
 import pkgutil
 from collections.abc import Iterable
 
+from nk.core.diagnostics import INTERNAL
 from nk.core.profile import Profile, ProfileError
 from nk.core.rule import REGISTRY, RuleImpl, RuleRegistry, UnknownRuleError
 
@@ -52,6 +53,17 @@ def select_rules(
     return tuple(sorted((impl for impl in chosen if impl.id not in excluded), key=lambda r: r.id))
 
 
+def partition_ids(values: Iterable[str] | None) -> tuple[list[str] | None, frozenset[str]]:
+    """Разделить перечень идентификаторов на правила и внутренние диагностики."""
+    if values is None:
+        return None, frozenset()
+    listed = list(values)
+    return (
+        [item for item in listed if item not in INTERNAL],
+        frozenset(item for item in listed if item in INTERNAL),
+    )
+
+
 def _require(registry: RuleRegistry, rule_id: str) -> RuleImpl:
     try:
         return registry.get(rule_id)
@@ -64,6 +76,10 @@ def validate_profile(profile: Profile, registry: RuleRegistry) -> None:
 
     Опечатка в идентификаторе иначе молча выключает проверку или теряет параметр.
     """
-    unknown = sorted(rule_id for rule_id in profile.mentioned_rules() if rule_id not in registry)
+    unknown = sorted(
+        rule_id
+        for rule_id in profile.mentioned_rules()
+        if rule_id not in registry and rule_id not in INTERNAL
+    )
     if unknown:
         raise ProfileError(f"профиль {profile.name!r} ссылается на неизвестные правила: {unknown}")

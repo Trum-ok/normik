@@ -103,7 +103,7 @@ def test_json_output_is_parseable(report: Path) -> None:
     result = runner.invoke(app, ["check", str(report), "--format", "json"])
 
     payload = json.loads(result.stdout)
-    assert payload["schema_version"] == "1.0"
+    assert payload["schema_version"] == "1.1"
     assert payload["summary"]["error"] == 1
     assert payload["findings"][0]["rule_id"] == RULE_ID
     assert payload["findings"][0]["clause"] == "6.5.7"
@@ -130,3 +130,101 @@ def test_profile_show_lists_the_active_set() -> None:
     assert result.exit_code == EXIT_OK
     assert "Профиль: base" in result.stdout
     assert RULE_ID in result.stdout
+
+
+def test_inline_suppression_lowers_exit_code(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_text(FIGURE % "." + "% nk: ignore-file " + RULE_ID + "\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(path), "--format", "agent"])
+
+    assert result.exit_code == EXIT_OK
+    assert "Скрыто подавлениями в исходниках: 1." in result.stdout
+
+
+def test_unused_suppression_is_warned_about(clean_report: Path, tmp_path: Path) -> None:
+    path = tmp_path / "unused.tex"
+    path.write_text(clean_report.read_text(encoding="utf-8") + f"% nk: ignore {RULE_ID}\n", "utf-8")
+
+    result = runner.invoke(app, ["check", str(path), "--format", "agent"])
+
+    assert result.exit_code == EXIT_OK
+    assert "NK-IGNORE-001" in result.stdout
+
+
+def test_internal_code_can_be_ignored(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_text("\\input{нет-такого}\n", encoding="utf-8")
+
+    with_code = runner.invoke(app, ["check", str(path), "--format", "agent"])
+    without_code = runner.invoke(
+        app, ["check", str(path), "--format", "agent", "--ignore", "NK-PARSE-001"]
+    )
+
+    assert "NK-PARSE-001" in with_code.stdout
+    assert "NK-PARSE-001" not in without_code.stdout
+
+
+def test_profile_can_disable_an_internal_code(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_text("\\input{нет-такого}\n", encoding="utf-8")
+    profile = tmp_path / "кафедра.toml"
+    profile.write_text('disable = ["NK-PARSE-001"]\n', encoding="utf-8")
+
+    result = runner.invoke(
+        app, ["check", str(path), "--profile", str(profile), "--format", "agent"]
+    )
+
+    assert result.exit_code == EXIT_OK
+    assert "NK-PARSE-001" not in result.stdout
+
+
+def test_baseline_round_trip(report: Path, tmp_path: Path) -> None:
+    snapshot = tmp_path / ".nk-baseline.json"
+
+    written = runner.invoke(app, ["check", str(report), "--write-baseline", str(snapshot)])
+    assert written.exit_code == EXIT_OK
+    assert snapshot.is_file()
+
+    filtered = runner.invoke(
+        app, ["check", str(report), "--baseline", str(snapshot), "--format", "agent"]
+    )
+    assert filtered.exit_code == EXIT_OK
+    assert "Скрыто" in filtered.stdout
+    assert RULE_ID not in filtered.stdout
+
+
+def test_baseline_survives_a_line_shift(report: Path, tmp_path: Path) -> None:
+    snapshot = tmp_path / ".nk-baseline.json"
+    runner.invoke(app, ["check", str(report), "--write-baseline", str(snapshot)])
+    report.write_text("Вводный абзац.\n\n" + report.read_text(encoding="utf-8"), encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(report), "--baseline", str(snapshot)])
+
+    assert result.exit_code == EXIT_OK
+
+
+def test_baseline_reports_a_new_violation(report: Path, tmp_path: Path) -> None:
+    snapshot = tmp_path / ".nk-baseline.json"
+    runner.invoke(app, ["check", str(report), "--write-baseline", str(snapshot)])
+    report.write_text(
+        report.read_text(encoding="utf-8")
+        + "\n\\begin{figure}\n  \\includegraphics{img/p.png}\n  \\caption{Новая подпись.}\n\\end{figure}\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app, ["check", str(report), "--baseline", str(snapshot), "--format", "agent"]
+    )
+
+    assert result.exit_code == EXIT_FOUND_ERRORS
+    assert "Новая подпись" in result.stdout
+
+
+def test_broken_baseline_exits_two(report: Path, tmp_path: Path) -> None:
+    snapshot = tmp_path / "битый.json"
+    snapshot.write_text("{не json", encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(report), "--baseline", str(snapshot)])
+
+    assert result.exit_code == EXIT_INTERNAL_ERROR

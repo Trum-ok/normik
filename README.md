@@ -39,6 +39,14 @@ uv run nk check chapters --format agent
 uv run nk check report.tex --profile profiles/example-university.toml --severity error
 ```
 
+Включить линтер на готовой работе: зафиксировать текущие нарушения снимком
+и дальше видеть только новые:
+
+```bash
+uv run nk check chapters --write-baseline .nk-baseline.json
+uv run nk check chapters --baseline .nk-baseline.json
+```
+
 ## Команды
 
 | Команда | Назначение |
@@ -56,7 +64,7 @@ uv run nk check report.tex --profile profiles/example-university.toml --severity
 
 | Страница | О чём |
 |---|---|
-| [Использование](https://trum-ok.github.io/normik/usage/) | команды, ключи, форматы вывода, коды возврата |
+| [Использование](https://trum-ok.github.io/normik/usage/) | команды, ключи, форматы вывода, коды возврата, подавления, снимок |
 | [Профили](https://trum-ok.github.io/normik/profiles/) | подстройка набора правил под кафедру |
 | [Правила](https://trum-ok.github.io/normik/rules/) | страница на каждое правило: почему, пример, настройка |
 | [Интеграции](https://trum-ok.github.io/normik/integrations/) | CI, хук, передача вывода агенту |

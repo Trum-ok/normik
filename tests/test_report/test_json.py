@@ -4,10 +4,11 @@ from nk.core.runner import RunResult
 from nk.report import json as json_report
 
 EXPECTED = {
-    "schema_version": "1.0",
+    "schema_version": "1.1",
     "tool": {"name": "nk", "version": "0.1.0"},
     "profile": "base",
     "summary": {"error": 1, "warning": 1, "info": 1, "files_checked": 12},
+    "suppressed": {"inline": 0, "baseline": 0},
     "findings": [
         {
             "rule_id": "G732-6.2.4-heading-hyphenation",

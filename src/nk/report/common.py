@@ -6,6 +6,7 @@ from pathlib import Path
 
 from nk.core.document import CONTEXT_RADIUS
 from nk.core.finding import Finding, Severity
+from nk.core.runner import Suppressed
 
 SEVERITY_LABELS: dict[Severity, str] = {
     Severity.ERROR: "error",
@@ -42,3 +43,15 @@ def field_lines(label: str, value: str, indent: str) -> list[str]:
     if "\n" not in value:
         return [f"{indent}{label}: {value}"]
     return [f"{indent}{label}:", *(f"{indent}  {line.strip()}" for line in value.splitlines())]
+
+
+def suppressed_line(suppressed: Suppressed) -> str | None:
+    """Строка о скрытых находках либо ``None``, если ничего не скрыто."""
+    if not suppressed.total:
+        return None
+    parts = []
+    if suppressed.inline:
+        parts.append(f"подавлениями в исходниках: {suppressed.inline}")
+    if suppressed.baseline:
+        parts.append(f"снимком: {suppressed.baseline}")
+    return "Скрыто " + ", ".join(parts) + "."

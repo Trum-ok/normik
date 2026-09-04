@@ -2,6 +2,8 @@
 
 Стабильный контракт: изменение схемы — отдельное осознанное решение,
 поэтому версия схемы вынесена в поле ``schema_version``.
+
+1.1 — добавлено поле ``suppressed`` со счётчиками скрытых находок.
 """
 
 import json
@@ -10,7 +12,7 @@ from typing import Any
 from nk.core.finding import Finding
 from nk.core.runner import RunResult
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 TOOL_NAME = "nk"
 
 
@@ -24,6 +26,10 @@ def render(result: RunResult) -> str:
         "summary": {
             **{level.value: count for level, count in result.summary.items()},
             "files_checked": result.files_checked,
+        },
+        "suppressed": {
+            "inline": result.suppressed.inline,
+            "baseline": result.suppressed.baseline,
         },
         "findings": [_finding(finding) for finding in result.findings],
         "failed_rules": [

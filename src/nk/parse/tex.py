@@ -6,14 +6,16 @@
 
 import re
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from nk.core.document import Document, Line
 from nk.core.finding import Finding
 from nk.core.profile import Profile
+from nk.core.suppressions import Suppressions
 from nk.parse.issues import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING, ParseIssue
 from nk.parse.structure import VERBATIM_ENVIRONMENTS, build_structure
+from nk.parse.suppressions import collect
 
 TEX_SUFFIX = ".tex"
 FALLBACK_ENCODING = "cp1251"
@@ -27,6 +29,7 @@ _END = re.compile(r"\\end\s*\{([^{}]*)\}")
 class ParseResult:
     document: Document
     issues: tuple[ParseIssue, ...]
+    suppressions: Suppressions = field(default_factory=Suppressions)
 
 
 def strip_comment(raw: str) -> str:
@@ -118,7 +121,11 @@ def parse(paths: Sequence[Path], profile: Profile | None = None) -> ParseResult:
         profile=profile or Profile(),
         structure=structure,
     )
-    return ParseResult(document=document, issues=tuple(issues))
+    return ParseResult(
+        document=document,
+        issues=tuple(issues),
+        suppressions=collect(document.lines),
+    )
 
 
 def parse_findings(result: ParseResult) -> tuple[Finding, ...]:
