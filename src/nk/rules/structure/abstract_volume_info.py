@@ -9,8 +9,8 @@ from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import section_lines, structural_headings
 
-#: «Отчёт 45 с.», «45 с.,»
-VOLUME = re.compile(r"\d+\s*с\.")
+#: «Отчёт 45 с.», «45~с.» — неразрывный пробел ставит сюда правка типографики.
+VOLUME = re.compile(r"\d+\s*~?\s*с\.")
 
 
 @rule(
