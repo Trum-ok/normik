@@ -15,6 +15,16 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, caption_text, captions, first_l
     title="Наименование таблицы начинается со строчной буквы",
 )
 def table_caption_capital(doc: Document) -> Iterable[Finding]:
+    """Проверяет первую букву наименования таблицы.
+
+    ## Почему это нарушение
+
+    Наименование таблицы приводят с прописной буквы без точки в конце.
+
+    ## Как исправить
+
+    Начать наименование с прописной буквы.
+    """
     for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
         for command in captions(environment):
             letter = first_letter(caption_text(command))

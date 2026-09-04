@@ -1,4 +1,4 @@
-.PHONY: lint format test check
+.PHONY: lint format test check docs docs-serve
 
 package ?= src tests
 
@@ -15,3 +15,11 @@ test:
 	uv run pytest
 
 check: lint test
+
+docs:
+	uv run nk rules docs
+	uv run --group docs properdocs build --strict
+
+docs-serve:
+	uv run nk rules docs
+	uv run --group docs properdocs serve

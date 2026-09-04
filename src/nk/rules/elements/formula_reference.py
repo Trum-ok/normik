@@ -22,6 +22,18 @@ REQUIREMENT = "Порядковый номер присваивают форму
     title="Формула пронумерована, но ссылки на неё нет",
 )
 def formula_no_reference(doc: Document) -> Iterable[Finding]:
+    """Ищет формулы в нумерующих окружениях, на которые в тексте нет ссылки.
+
+    ## Почему это нарушение
+
+    Порядковый номер присваивают формулам, на которые в тексте есть ссылки.
+    Нумерация всех подряд формул сдвигает номера тех, на которые ссылаются.
+
+    ## Как исправить
+
+    Сослаться на формулу либо снять с неё нумерацию — использовать вариант
+    окружения со звёздочкой.
+    """
     referenced = referenced_labels(doc)
     for environment in doc.structure.find_environments(*MATH_ENVIRONMENTS):
         if not is_numbered_environment(environment.name):

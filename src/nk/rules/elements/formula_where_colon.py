@@ -17,6 +17,17 @@ WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
     title="Пояснение к формуле начинается со слова «где» с двоеточием",
 )
 def formula_where_colon(doc: Document) -> Iterable[Finding]:
+    """Ищет строку, начинающуюся со слова «где» с двоеточием.
+
+    ## Почему это нарушение
+
+    Первую строку пояснения к формуле начинают со слова «где» без двоеточия,
+    далее идут обозначения с расшифровкой.
+
+    ## Как исправить
+
+    Убрать двоеточие после «где».
+    """
     for line in doc.iter_lines():
         match = WHERE_WITH_COLON.match(line.stripped)
         if match is None:

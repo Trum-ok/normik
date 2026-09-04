@@ -15,6 +15,18 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_text, captions, one_li
     title="Наименование рисунка заканчивается точкой",
 )
 def figure_caption_dot(doc: Document) -> Iterable[Finding]:
+    r"""Проверяет наименование рисунка на точку в конце. Точка внутри наименования
+    нарушением не является.
+
+    ## Почему это нарушение
+
+    Наименование рисунка приводят с прописной буквы без точки в конце: оно
+    образует с номером единую подпись, а не предложение.
+
+    ## Как исправить
+
+    Убрать точку в конце `\caption`.
+    """
     for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
         for command in captions(environment):
             text = caption_text(command)

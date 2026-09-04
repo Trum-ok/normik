@@ -18,6 +18,19 @@ BARE_REFERENCE = re.compile(r"формул\w*\s*~?\s*(?:\d|\\ref\b)", re.IGNOREC
     title="Номер формулы в ссылке приведён без скобок",
 )
 def formula_reference_format(doc: Document) -> Iterable[Finding]:
+    r"""Ищет ссылки на номер формулы, приведённые без скобок: «в формуле 1»,
+    «по формуле~\ref{eq:x}».
+
+    ## Почему это нарушение
+
+    Ссылки на порядковые номера формул приводят в скобках: в формуле (1).
+    Номер без скобок сливается с текстом и не отличается от номера раздела.
+
+    ## Как исправить
+
+    Взять номер в скобки. В LaTeX для этого есть `\eqref`: он подставляет
+    скобки сам.
+    """
     for line in doc.iter_lines():
         match = BARE_REFERENCE.search(line.stripped)
         if match is None:

@@ -4,6 +4,7 @@
 файлов помимо того, что уже в документе.
 """
 
+import inspect
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
@@ -58,6 +59,8 @@ class RuleImpl:
     severity: Severity
     title: str
     func: RuleCallable
+    description: str = ""
+    """Развёрнутое описание на Markdown: докстринг функции правила, источник страницы в документации."""
     default_params: Params = field(default_factory=dict)
     allow_missing_suggestion: bool = False
     """Разрешить находки без ``suggestion`` — только если исправление принципиально неоднозначно."""
@@ -183,6 +186,7 @@ def rule(
             severity=severity,
             title=title,
             func=func,
+            description=inspect.cleandoc(func.__doc__ or ""),
             default_params=params or {},
             allow_missing_suggestion=allow_missing_suggestion,
         )

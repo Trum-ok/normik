@@ -1,0 +1,59 @@
+# Интеграции
+
+## GitHub Actions
+
+Проверка исходников отчёта на каждый push и pull request:
+
+```yaml
+name: gost
+
+on: [push, pull_request]
+
+jobs:
+  nk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+
+      - name: nk check
+        run: uvx --from git+https://github.com/Trum-ok/normik.git nk check chapters
+```
+
+Сборка падает на находках уровня `error`. Чтобы падала и на предупреждениях,
+поднимите им уровень в [профиле](profiles.md).
+
+Машинный вывод для своих аннотаций:
+
+```bash
+nk check chapters --format json > findings.json
+```
+
+## Локальный хук
+
+`.git/hooks/pre-commit`:
+
+```bash
+#!/bin/sh
+uv run nk check chapters --quiet || {
+  echo "nk: в исходниках есть нарушения, запустите: uv run nk check chapters"
+  exit 1
+}
+```
+
+## Передача агенту
+
+Формат `agent` рассчитан на то, что вывод копируется в Claude Code целиком,
+без пояснений: каждая находка содержит путь, строку, суть нарушения,
+требование и готовое исправление.
+
+```bash
+uv run nk check chapters --format agent
+```
+
+Число находок в выводе ограничено по умолчанию — длинный список вытесняет из
+контекста агента сам отчёт. Разумный порядок работы: исправить показанное,
+запустить снова. Снять предел — `--limit 0`.
+
+Правила формулируют исправление, но файлов не правят: что именно применить,
+решает человек или агент.

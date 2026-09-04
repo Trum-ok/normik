@@ -17,6 +17,18 @@ REQUIREMENT = "На все таблицы в отчёте должны быть 
     title="На таблицу нет ссылки в тексте",
 )
 def table_no_reference(doc: Document) -> Iterable[Finding]:
+    r"""Собирает метки таблиц и ссылки на них в тексте. Находка выдаётся на таблицу
+    без ссылки, а также на таблицу без метки.
+
+    ## Почему это нарушение
+
+    На все таблицы в отчёте должны быть ссылки со словом «таблица» и её номером.
+    Таблица, на которую нет ссылки, не связана с изложением.
+
+    ## Как исправить
+
+    Добавить `\label` после `\caption` и сослаться на таблицу в тексте.
+    """
     referenced = referenced_labels(doc)
     for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
         keys = [command.arg for command in labels(environment) if command.arg]

@@ -17,6 +17,16 @@ HYPHENATION_MARKER = "\\-"
     title="В наименовании рисунка задан перенос слова",
 )
 def figure_caption_hyphenation(doc: Document) -> Iterable[Finding]:
+    r"""Ищет в наименовании рисунка заданную вручную точку переноса `\-`.
+
+    ## Почему это нарушение
+
+    Перенос слов в наименовании графического материала не допускается.
+
+    ## Как исправить
+
+    Убрать `\-`. Длинное наименование сокращают либо переносят по границе слова.
+    """
     for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
         for command in captions(environment):
             if HYPHENATION_MARKER not in caption_text(command):

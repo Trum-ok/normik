@@ -19,6 +19,18 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Таблица|Табл\.)\s*[0-9А-ЯA-Z][0
     title="Номер таблицы вписан в наименование вручную",
 )
 def table_caption_manual_number(doc: Document) -> Iterable[Finding]:
+    r"""Ищет наименования, начинающиеся со слова «Таблица» или сокращения «Табл.»
+    с номером.
+
+    ## Почему это нарушение
+
+    Слово «Таблица», номер и тире подставляются автоматически. Вписанный руками
+    номер удваивает подпись и расходится с автоматической нумерацией.
+
+    ## Как исправить
+
+    Оставить в `\caption` только текст наименования.
+    """
     for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
         for command in captions(environment):
             text = caption_text(command)

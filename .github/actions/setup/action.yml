@@ -1,6 +1,12 @@
 name: setup
 description: uv и синхронизация зависимостей
 
+inputs:
+  groups:
+    description: Дополнительные группы зависимостей, через пробел
+    required: false
+    default: ""
+
 runs:
   using: composite
   steps:
@@ -11,4 +17,11 @@ runs:
 
     - name: Sync deps
       shell: bash
-      run: uv sync --frozen
+      env:
+        GROUPS: ${{ inputs.groups }}
+      run: |
+        extra=""
+        for group in $GROUPS; do
+          extra="$extra --group $group"
+        done
+        uv sync --frozen $extra

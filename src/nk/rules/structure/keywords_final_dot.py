@@ -15,6 +15,17 @@ from nk.rules._shared import keyword_lists
     title="Перечень ключевых слов заканчивается точкой",
 )
 def keywords_final_dot(doc: Document) -> Iterable[Finding]:
+    """Проверяет последний элемент перечня ключевых слов на точку в конце.
+
+    ## Почему это нарушение
+
+    Перечень ключевых слов — не предложение: слова идут в строку через запятые,
+    и точка в конце не ставится.
+
+    ## Как исправить
+
+    Убрать точку после последнего ключевого слова.
+    """
     for line, keywords in keyword_lists(doc):
         if not keywords or not keywords[-1].endswith("."):
             continue

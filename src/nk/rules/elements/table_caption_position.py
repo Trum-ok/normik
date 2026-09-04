@@ -15,6 +15,17 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, captions, first_tabular_line
     title="Наименование таблицы расположено ниже самой таблицы",
 )
 def table_caption_position(doc: Document) -> Iterable[Finding]:
+    r"""Сравнивает положение `\caption` с началом самой таблицы внутри окружения.
+
+    ## Почему это нарушение
+
+    Наименование помещают над таблицей слева, без абзацного отступа: читающий
+    должен понять, что перед ним, до того как начнёт разбирать головку.
+
+    ## Как исправить
+
+    Перенести `\caption` выше начала таблицы.
+    """
     for environment in doc.structure.find_environments(*TABLE_ENVIRONMENTS):
         tabular = first_tabular_line(environment)
         if tabular is None:

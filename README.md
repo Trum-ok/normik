@@ -1,6 +1,10 @@
 # normik
 
+[![ci](https://github.com/Trum-ok/normik/actions/workflows/ci.yaml/badge.svg)](https://github.com/Trum-ok/normik/actions/workflows/ci.yaml)
+
 `nk` — линтер оформления отчёта о НИР по ГОСТ 7.32-2017 для исходников LaTeX.
+
+**Документация: <https://trum-ok.github.io/normik/>**
 
 Принимает `.tex` и выдаёт список нарушений с указанием пункта стандарта, файла
 и строки. Инструмент детерминированный: одни и те же входные данные всегда дают
@@ -42,54 +46,30 @@ uv run nk check report.tex --profile profiles/example-university.toml --severity
 | `nk check PATH...` | проверить исходники |
 | `nk rules list` | перечень правил |
 | `nk rules show RULE_ID` | подробности по правилу |
-| `nk rules docs` | сгенерировать `docs/RULES.md` |
+| `nk rules docs` | пересобрать страницы правил в `docs/rules/` |
 | `nk profile show` | итоговый набор правил после применения профиля |
 
-Ключи `check`:
-
-| Ключ | Назначение |
-|---|---|
-| `--profile PATH` | TOML-профиль; по умолчанию встроенный `base` |
-| `--format {human,agent,json}` | формат вывода, по умолчанию `human` |
-| `--select ID,...` | запустить только указанные правила |
-| `--ignore ID,...` | исключить правила |
-| `--severity LEVEL` | не показывать находки ниже уровня |
-| `--limit N` | предел числа находок в выводе; `0` — без предела |
-| `--quiet` | только код возврата |
-
-Коды возврата: `0` — находок уровня `error` нет, `1` — есть, `2` — внутренняя
-ошибка (не найден файл, битый профиль).
-
-## Профили
-
-Профиль адаптирует набор правил под требования кафедры без форка репозитория:
-отключает правила, меняет уровень, задаёт параметры. Пример —
-[`profiles/example-university.toml`](profiles/example-university.toml).
-
-```toml
-name = "Кафедра N"
-extends = "base"
-
-disable = ["G732-6.5.1-reference-word"]
-
-[rules."G732-6.4.5-heading-depth"]
-severity = "info"
-
-[rules."G732-5.3.2.1-keywords-count".params]
-keywords_max = 20
-```
+Ключи `check`, коды возврата и форматы вывода — на странице
+[Использование](https://trum-ok.github.io/normik/usage/).
 
 ## Документация
 
-- [`docs/RULES.md`](docs/RULES.md) — перечень правил, генерируется командой.
-- [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) — как добавить правило.
+| Страница | О чём |
+|---|---|
+| [Использование](https://trum-ok.github.io/normik/usage/) | команды, ключи, форматы вывода, коды возврата |
+| [Профили](https://trum-ok.github.io/normik/profiles/) | подстройка набора правил под кафедру |
+| [Правила](https://trum-ok.github.io/normik/rules/) | страница на каждое правило: почему, пример, настройка |
+| [Интеграции](https://trum-ok.github.io/normik/integrations/) | CI, хук, передача вывода агенту |
+| [Как добавить правило](https://trum-ok.github.io/normik/contributing/) | руководство для соавторов |
+
+Исходники документации — в каталоге [`docs/`](docs); каталог
+[`docs/rules/`](docs/rules) генерируется командой `uv run nk rules docs`
+и руками не редактируется.
 
 ## Разработка
 
 ```bash
-make check
+make check      # ruff, ty, pytest
+make docs       # перегенерировать правила и собрать сайт
+make docs-serve # локальный просмотр на http://127.0.0.1:8000
 ```
-
-## Лицензия
-
-MIT — см. [`LICENSE`](LICENSE).

@@ -37,6 +37,28 @@ jobs:
       - name: pytest
         run: uv run pytest
 
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          groups: docs
+
+      - name: Страницы правил не разошлись с реестром
+        run: |
+          uv run nk rules docs
+          # --porcelain, а не diff: новая страница правила приходит как untracked.
+          changed=$(git status --porcelain -- docs/rules)
+          if [ -n "$changed" ]; then
+            echo "$changed"
+            echo "docs/rules устарел — перегенерируйте: uv run nk rules docs"
+            exit 1
+          fi
+
+      - name: properdocs build
+        run: uv run --group docs properdocs build --strict
+
   # Единственный required-чек ветки: агрегирует остальные job'ы, чтобы при
   # добавлении новой проверки не править список в настройках репозитория.
   ci:
@@ -44,6 +66,7 @@ jobs:
     needs:
       - lint
       - test
+      - docs
     runs-on: ubuntu-latest
     steps:
       - name: Итог

@@ -17,6 +17,16 @@ SHORT_FORM = re.compile(r"\bтабл\.\s*~?\s*(?:\d|\\(?:ref|autoref|cref))", re
     title="В ссылке на таблицу использовано сокращение «табл.»",
 )
 def table_reference_word(doc: Document) -> Iterable[Finding]:
+    """Ищет в тексте сокращение «табл.» перед номером или ссылкой.
+
+    ## Почему это нарушение
+
+    При ссылке пишут слово «таблица» полностью и её номер.
+
+    ## Как исправить
+
+    Заменить «табл.» на «таблица» в нужном падеже.
+    """
     for line in doc.iter_lines():
         match = SHORT_FORM.search(line.stripped)
         if match is None:

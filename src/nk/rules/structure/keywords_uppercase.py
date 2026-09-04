@@ -15,6 +15,18 @@ from nk.rules._shared import keyword_lists
     title="Ключевые слова набраны не прописными буквами",
 )
 def keywords_uppercase(doc: Document) -> Iterable[Finding]:
+    r"""Проверяет, что каждое ключевое слово набрано прописными буквами.
+
+    ## Почему это нарушение
+
+    Ключевые слова приводят в именительном падеже прописными буквами, в строку,
+    через запятые — так они отделяются от остального текста реферата.
+
+    ## Как исправить
+
+    Записать перечень прописными буквами. Регистр задаётся текстом, а не командой
+    оформления: `\MakeUppercase` в исходнике правило не увидит.
+    """
     for line, keywords in keyword_lists(doc):
         lowercase = [word for word in keywords if word != word.upper()]
         if not lowercase:

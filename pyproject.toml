@@ -26,6 +26,12 @@ dev = [
     "ruff>=0.16.5",
     "ty>=0.0.78",
 ]
+docs = [
+    # ProperDocs — продолжение MkDocs 1.x: MkDocs 2 несовместим с темой и плагинами.
+    "properdocs>=1.6.7",
+    "mkdocs-material>=9.7.0",
+    "mkdocs-literate-nav>=0.6.3",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

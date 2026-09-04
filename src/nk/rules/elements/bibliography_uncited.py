@@ -15,6 +15,18 @@ from nk.rules._shared import BIBITEM_COMMAND, BIBLIOGRAPHY_ENVIRONMENT, cited_ke
     title="На запись списка источников нет ссылок в тексте",
 )
 def bibitem_uncited(doc: Document) -> Iterable[Finding]:
+    """Ищет записи списка источников, на которые в тексте нет ни одной ссылки.
+
+    ## Почему это нарушение
+
+    Список содержит источники, использованные при составлении отчёта. Запись,
+    на которую нет ссылки, использованной не является и к тому же ломает
+    нумерацию по порядку упоминания.
+
+    ## Как исправить
+
+    Сослаться на источник в тексте либо убрать запись из списка.
+    """
     cited = cited_keys(doc)
     for bibliography in doc.structure.find_environments(BIBLIOGRAPHY_ENVIRONMENT):
         for command in bibliography.all_commands():

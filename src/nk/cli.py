@@ -15,7 +15,7 @@ from nk.core.registry import load_rules, select_rules, validate_profile
 from nk.core.rule import UnknownRuleError
 from nk.core.runner import RunResult, run
 from nk.parse.tex import parse, parse_findings
-from nk.report import agent, human, rules_docs
+from nk.report import agent, examples, human, rules_docs
 from nk.report import json as json_report
 
 app = typer.Typer(
@@ -84,6 +84,10 @@ def rules_show(rule_id: str = typer.Argument(..., help="Идентификато
     console.print(f"Пункт ГОСТ 7.32-2017: {impl.clause}")
     console.print(f"Уровень по умолчанию: {impl.severity.value}")
     console.print(f"Объявлено в: {impl.module}")
+    if impl.description:
+        console.print("")
+        console.print(impl.description)
+        console.print("")
     if impl.default_params:
         console.print("Параметры по умолчанию:")
         for name, value in sorted(impl.default_params.items()):
@@ -206,11 +210,17 @@ def _split(value: str | None) -> list[str] | None:
 @rules_app.command("docs")
 def rules_docs_command(
     output: Path = typer.Option(
-        Path("docs/RULES.md"), "--output", "-o", help="Куда записать перечень правил."
+        Path("docs/rules"), "--output", "-o", help="Каталог, куда записать страницы правил."
+    ),
+    fixtures: Path = typer.Option(
+        examples.DEFAULT_FIXTURES_ROOT,
+        "--fixtures",
+        help="Каталог фикстур, из которых берутся примеры.",
     ),
 ) -> None:
-    """Сгенерировать перечень правил в Markdown."""
+    """Сгенерировать страницы документации по правилам."""
     registry = load_rules()
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(rules_docs.render(registry), encoding="utf-8")
-    console.print(f"Записано правил: {len(registry)} → {output}")
+    written, removed = rules_docs.write_pages(registry, output, fixtures_root=fixtures)
+    console.print(f"Записано страниц: {written} → {output}")
+    if removed:
+        console.print(f"Удалено устаревших: {removed}")

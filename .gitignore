@@ -21,6 +21,9 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Собранный сайт документации
+site/
+
 # Build
 build/
 dist/

@@ -15,6 +15,19 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, captions, first_graphic_line
     title="Наименование рисунка расположено выше изображения",
 )
 def figure_caption_position(doc: Document) -> Iterable[Finding]:
+    r"""Сравнивает положение `\caption` с первой строкой, вставляющей изображение,
+    внутри окружения рисунка.
+
+    ## Почему это нарушение
+
+    Слово «Рисунок», номер и наименование помещают под рисунком. Подпись сверху
+    читается как заголовок раздела и отрывается от иллюстрации при переносе на
+    другую страницу.
+
+    ## Как исправить
+
+    Перенести `\caption` ниже команды вставки изображения, вместе с `\label`.
+    """
     for environment in doc.structure.find_environments(*FIGURE_ENVIRONMENTS):
         graphic = first_graphic_line(environment)
         if graphic is None:
