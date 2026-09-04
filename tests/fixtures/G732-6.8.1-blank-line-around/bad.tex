@@ -12,3 +12,13 @@
   c = d
 \end{equation}
 Текст после формул.
+
+Формула в аргументе команды правится вручную.\footnote{Сноска с формулой:
+\begin{equation} % EXPECT
+  e = mc^2
+\end{equation}
+конец сноски.}
+
+Формула в строке с текстом: \begin{equation} % EXPECT
+  s = vt
+\end{equation} и продолжение той же строки.
