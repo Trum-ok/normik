@@ -42,12 +42,16 @@
 | [`G732-6.6.3-caption-manual-number`](G732-6.6.3-caption-manual-number.md) | 6.6.3 | error | Номер таблицы вписан в наименование вручную |
 | [`G732-6.6.3-caption-position`](G732-6.6.3-caption-position.md) | 6.6.3 | error | Наименование таблицы расположено ниже самой таблицы |
 | [`G732-6.6.4-appendix-numbering`](G732-6.6.4-appendix-numbering.md) | 6.6.4 | error | Таблица приложения нумеруется без его обозначения |
+| [`G732-6.7.2-note-capital`](G732-6.7.2-note-capital.md) | 6.7.2 | error | Слово «Примечание» набрано со строчной буквы |
+| [`G732-6.7.3-note-dash`](G732-6.7.3-note-dash.md) | 6.7.3 | error | После слова «Примечание» стоит не тире |
+| [`G732-6.7.4-footnote-space`](G732-6.7.4-footnote-space.md) | 6.7.4 | error | Знак сноски отделён пробелом от поясняемого слова |
 | [`G732-6.8.1-blank-line-around`](G732-6.8.1-blank-line-around.md) | 6.8.1 | error | Формула не отделена свободной строкой |
 | [`G732-6.8.2-where-colon`](G732-6.8.2-where-colon.md) | 6.8.2 | error | Пояснение к формуле начинается со слова «где» с двоеточием |
 | [`G732-6.8.3-formula-no-reference`](G732-6.8.3-formula-no-reference.md) | 6.8.3 | warning | Формула пронумерована, но ссылки на неё нет |
 | [`G732-6.8.4-formula-reference-format`](G732-6.8.4-formula-reference-format.md) | 6.8.4 | error | Номер формулы в ссылке приведён без скобок |
 | [`G732-6.8.5-appendix-numbering`](G732-6.8.5-appendix-numbering.md) | 6.8.5 | error | Формула приложения нумеруется без обозначения приложения |
 | [`G732-6.9.1-cite-unresolved`](G732-6.9.1-cite-unresolved.md) | 6.9.1 | error | Ссылка указывает на отсутствующую запись списка источников |
+| [`G732-6.12.1-abstract-volume-inline`](G732-6.12.1-abstract-volume-inline.md) | 6.12.1 | error | Сведения об объёме реферата приведены не в строку |
 | [`G732-6.12.2-keywords-final-dot`](G732-6.12.2-keywords-final-dot.md) | 6.12.2 | error | Перечень ключевых слов заканчивается точкой |
 | [`G732-6.12.2-keywords-uppercase`](G732-6.12.2-keywords-uppercase.md) | 6.12.2 | error | Ключевые слова набраны не прописными буквами |
 | [`G732-6.14-terms-dash`](G732-6.14-terms-dash.md) | 6.14 | warning | В перечне терминов определение отделено дефисом |
@@ -56,8 +60,10 @@
 | [`G732-6.16-bibliography-order`](G732-6.16-bibliography-order.md) | 6.16 | error | Записи списка источников идут не в порядке появления ссылок |
 | [`G732-6.16-bibtex-order-unverifiable`](G732-6.16-bibtex-order-unverifiable.md) | 6.16 | info | Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется |
 | [`G732-6.17.2-appendix-no-reference`](G732-6.17.2-appendix-no-reference.md) | 6.17.2 | error | На приложение нет ссылки в тексте |
+| [`G732-6.17.3-appendix-page-break`](G732-6.17.3-appendix-page-break.md) | 6.17.3 | error | Приложение не начинается с новой страницы |
 | [`G732-6.17.4-appendix-letter`](G732-6.17.4-appendix-letter.md) | 6.17.4 | error | Приложение обозначено недопустимой буквой |
 | [`G732-6.17.4-appendix-sequence`](G732-6.17.4-appendix-sequence.md) | 6.17.4 | error | В обозначениях приложений пропущена буква |
+| [`G732-6.17.6-appendix-numbering`](G732-6.17.6-appendix-numbering.md) | 6.17.6 | error | Рубрика внутри приложения нумеруется без его обозначения |
 | [`NK-STYLE-dash`](NK-STYLE-dash.md) | вне стандарта | info | Дефис вместо тире |
 | [`NK-STYLE-initials-nbsp`](NK-STYLE-initials-nbsp.md) | вне стандарта | info | Инициалы не привязаны к фамилии |
 | [`NK-STYLE-particle-nbsp`](NK-STYLE-particle-nbsp.md) | вне стандарта | info | Частица не привязана к предыдущему слову |

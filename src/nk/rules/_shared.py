@@ -7,7 +7,7 @@
 import re
 from collections.abc import Iterator
 
-from nk.core.document import Command, Document, Environment, Line
+from nk.core.document import Command, Document, Environment, Line, Span
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
@@ -295,3 +295,30 @@ def capitalize_first(text: str) -> str:
             return text[:index] + char.upper() + text[index + 1 :]
         index += 1
     return text
+
+
+APPENDIX_DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)")
+SECTION_LEVEL = 1
+
+
+def appendix_spans(doc: Document) -> list[tuple[Command, str, Span]]:
+    """Заголовки приложений с обозначением и диапазоном строк каждого.
+
+    Приложение тянется до следующей рубрики уровня раздела в том же файле
+    либо до конца файла.
+    """
+    sections = ordered_commands(doc, *SECTION_DEPTH)
+    found: list[tuple[Command, str, Span]] = []
+    for index, command in enumerate(sections):
+        match = APPENDIX_DESIGNATION.match(normalize_heading(heading_text(command)))
+        if match is None:
+            continue
+        end = len(doc.lines_of(command.path))
+        for following in sections[index + 1 :]:
+            if following.path != command.path:
+                break
+            if SECTION_DEPTH[following.name] <= SECTION_LEVEL:
+                end = following.lineno - 1
+                break
+        found.append((command, match.group(1), Span(command.path, command.span.start, end)))
+    return found
