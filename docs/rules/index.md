@@ -44,6 +44,7 @@
 | [`G732-6.6.3-caption-manual-number`](G732-6.6.3-caption-manual-number.md) | 6.6.3 | error | Номер таблицы вписан в наименование вручную |
 | [`G732-6.6.3-caption-position`](G732-6.6.3-caption-position.md) | 6.6.3 | error | Наименование таблицы расположено ниже самой таблицы |
 | [`G732-6.6.4-appendix-numbering`](G732-6.6.4-appendix-numbering.md) | 6.6.4 | error | Таблица приложения нумеруется без его обозначения |
+| [`G732-6.6.6-table-diagonal`](G732-6.6.6-table-diagonal.md) | 6.6.6 | error | Шапка таблицы разделена диагональной линией |
 | [`G732-6.7.2-note-capital`](G732-6.7.2-note-capital.md) | 6.7.2 | error | Слово «Примечание» набрано со строчной буквы |
 | [`G732-6.7.3-note-dash`](G732-6.7.3-note-dash.md) | 6.7.3 | error | После слова «Примечание» стоит не тире |
 | [`G732-6.7.4-footnote-space`](G732-6.7.4-footnote-space.md) | 6.7.4 | error | Знак сноски отделён пробелом от поясняемого слова |

@@ -34,6 +34,7 @@
     * [G732-6.6.3-caption-manual-number](G732-6.6.3-caption-manual-number.md)
     * [G732-6.6.3-caption-position](G732-6.6.3-caption-position.md)
     * [G732-6.6.4-appendix-numbering](G732-6.6.4-appendix-numbering.md)
+    * [G732-6.6.6-table-diagonal](G732-6.6.6-table-diagonal.md)
     * [G732-6.7.2-note-capital](G732-6.7.2-note-capital.md)
     * [G732-6.7.3-note-dash](G732-6.7.3-note-dash.md)
     * [G732-6.7.4-footnote-space](G732-6.7.4-footnote-space.md)
