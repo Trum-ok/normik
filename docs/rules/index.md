@@ -18,6 +18,7 @@
 | [`G732-5.3.2.1-keywords-count`](G732-5.3.2.1-keywords-count.md) | 5.3.2.1 | error | Число ключевых слов вне допустимого диапазона |
 | [`G732-5.5.2-terms-opening`](G732-5.5.2-terms-opening.md) | 5.5.2 | error | Перечень терминов не начинается с установленной фразы |
 | [`G732-5.6.1-abbreviations-opening`](G732-5.6.1-abbreviations-opening.md) | 5.6.1 | error | Перечень сокращений не начинается с установленной фразы |
+| [`G732-6.2.1-section-page-break`](G732-6.2.1-section-page-break.md) | 6.2.1 | error | Раздел не начинается с новой страницы |
 | [`G732-6.2.1-structural-heading-case`](G732-6.2.1-structural-heading-case.md) | 6.2.1 | error | Заголовок структурного элемента набран не прописными буквами |
 | [`G732-6.2.1-structural-heading-numbered`](G732-6.2.1-structural-heading-numbered.md) | 6.2.1 | error | Заголовок структурного элемента пронумерован |
 | [`G732-6.2.2-heading-empty`](G732-6.2.2-heading-empty.md) | 6.2.2 | error | Раздел или подраздел без заголовка |

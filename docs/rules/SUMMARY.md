@@ -8,6 +8,7 @@
     * [G732-5.5.2-terms-opening](G732-5.5.2-terms-opening.md)
     * [G732-5.6.1-abbreviations-opening](G732-5.6.1-abbreviations-opening.md)
 * Раздел 6. Правила оформления
+    * [G732-6.2.1-section-page-break](G732-6.2.1-section-page-break.md)
     * [G732-6.2.1-structural-heading-case](G732-6.2.1-structural-heading-case.md)
     * [G732-6.2.1-structural-heading-numbered](G732-6.2.1-structural-heading-numbered.md)
     * [G732-6.2.2-heading-empty](G732-6.2.2-heading-empty.md)
