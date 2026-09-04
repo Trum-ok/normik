@@ -13,6 +13,11 @@ OPENING = "«"
 CLOSING = "»"
 PAIR = 2
 
+#: Символы, превращающие кавычку в сокращение babel: «"=» — неразрывный дефис,
+#: «"|» — запрет лигатуры, «"<» и «">» — сами ёлочки. Это команды набора,
+#: а не кавычки, и трогать их нельзя.
+SHORTHANDS = frozenset("=|-~<>,'`\"")
+
 
 @rule(
     id="NK-STYLE-quotes",
@@ -34,12 +39,15 @@ def text_quotes(doc: Document) -> Iterable[Finding]:
     Заменить пару прямых кавычек на «ёлочки». Если кавычек на строке ровно две,
     правка делается автоматически; в остальных случаях границы пары
     определяются неоднозначно.
+
+    Сокращения babel — `"=`, `"|`, `"<`, `">` и подобные — правило не трогает:
+    это команды набора, а не кавычки.
     """
     for line in doc.iter_lines():
         if is_code(doc, line):
             continue
         text = prose(doc, line)
-        positions = [index for index, char in enumerate(text) if char == STRAIGHT]
+        positions = _quotes(text)
         if not positions:
             continue
 
@@ -62,3 +70,20 @@ def text_quotes(doc: Document) -> Iterable[Finding]:
                     else None
                 ),
             )
+
+
+def _quotes(text: str) -> list[int]:
+    """Позиции прямых кавычек без сокращений babel."""
+    found: list[int] = []
+    index = 0
+    while index < len(text):
+        if text[index] != STRAIGHT:
+            index += 1
+            continue
+        if text[index + 1 : index + 2] and text[index + 1] in SHORTHANDS:
+            # Сокращение занимает два символа: вторая кавычка «""» тоже не кавычка.
+            index += 2
+            continue
+        found.append(index)
+        index += 1
+    return found

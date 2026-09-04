@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 from nk.core.document import Document, Line
 from nk.core.finding import Fix
+from nk.core.latex import literal_end
 from nk.core.position import Region
 from nk.rules._shared import NBSP
 
@@ -19,8 +20,13 @@ CODE_ENVIRONMENTS = frozenset(
 )
 
 _COMMAND_ARG = re.compile(
-    r"(\\(?:label|ref|eqref|autoref|cite\w*|input|include|includegraphics|url|href))\s*\{[^{}]*\}"
+    r"(\\(?:label|ref|eqref|autoref|cite\w*|input|include|includegraphics|url|href"
+    # texttt и path набирают путь или имя команды: тире и ёлочки в них — порча.
+    r"|texttt|path))\s*\{[^{}]*\}"
 )
+
+#: Команды, аргумент которых набирается буквально, с разделителем вместо скобок.
+_LITERAL = re.compile(r"\\(verb\*?|lstinline|mintinline)")
 
 
 def prose(doc: Document, line: Line) -> str:
@@ -33,12 +39,49 @@ def prose(doc: Document, line: Line) -> str:
     Позиции находок считаются по исходной строке, поэтому вырезанное
     заменяется пробелами, а не удаляется.
     """
-    text = doc.math.mask(line.path, line.lineno, line.stripped)
+    text = _mask_literals(doc.math.mask(line.path, line.lineno, line.stripped))
     # Имя команды сохраняется: для типографики важно, что идёт после пробела.
     return _COMMAND_ARG.sub(
         lambda match: match.group(1) + " " * (len(match.group(0)) - len(match.group(1))),
         text,
     )
+
+
+def _mask_literals(text: str) -> str:
+    """Заменить пробелами буквальные вставки, оставив имена команд.
+
+    Аргумент ``\\verb`` и его родни набирается как есть: неразрывный пробел или
+    ёлочка, поставленные туда правкой, попали бы в отчёт буквально.
+    """
+    parts = list(text)
+    position = 0
+    while (match := _LITERAL.search(text, position)) is not None:
+        end = _literal_end(text, match.group(1), match.end())
+        parts[match.end() : end] = " " * (end - match.end())
+        position = max(end, match.end())
+    return "".join(parts)
+
+
+def _literal_end(text: str, name: str, index: int) -> int:
+    """Позиция сразу за буквальной вставкой, считая от конца имени команды."""
+    index = _group_end(text, index, "[]")
+    if name == "mintinline":
+        # Первая группа — язык подсветки, буквально набирается вторая.
+        index = _group_end(text, index, "{}")
+    if index < len(text) and text[index] == "{":
+        return _group_end(text, index, "{}")
+
+    end = literal_end(text, index)
+    # Разделителя нет: вставки здесь не начинается, маскировать нечего.
+    return index if end is None else end
+
+
+def _group_end(text: str, index: int, pair: str) -> int:
+    """Позиция за группой, если она начинается на ``index``, иначе сам ``index``."""
+    if index >= len(text) or text[index] != pair[0]:
+        return index
+    close = text.find(pair[1], index + 1)
+    return index if close == -1 else close + 1
 
 
 @dataclass(frozen=True, slots=True)
