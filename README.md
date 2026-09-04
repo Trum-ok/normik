@@ -1,6 +1,7 @@
 # normik
 
 [![ci](https://github.com/Trum-ok/normik/actions/workflows/ci.yaml/badge.svg)](https://github.com/Trum-ok/normik/actions/workflows/ci.yaml)
+[![pypi](https://img.shields.io/pypi/v/normik)](https://pypi.org/project/normik/)
 
 `nk` — линтер оформления отчёта о НИР по ГОСТ 7.32-2017 для исходников LaTeX.
 
@@ -10,7 +11,7 @@
 и строки.
 
 ```bash
-uv run nk check report.tex
+nk check report.tex
 ```
 
 ```text
@@ -40,42 +41,51 @@ report.tex
 ## Установка
 
 ```bash
-uv sync
+uv tool install normik
 ```
+
+После этого команда `nk` доступна в системе. Разовый запуск без установки:
+
+```bash
+uvx --from normik nk check chapters
+```
+
+Для работы над самим линтером — клонировать репозиторий и выполнить `uv sync`;
+внутри клона команда запускается как `uv run nk`.
 
 ## Примеры запуска
 
 Проверить весь каталог с исходниками:
 
 ```bash
-uv run nk check chapters
+nk check chapters
 ```
 
 Получить вывод, который можно скопировать в Claude Code без пояснений:
 
 ```bash
-uv run nk check chapters --format agent
+nk check chapters --format agent
 ```
 
 Проверить по профилю кафедры, показывая только ошибки:
 
 ```bash
-uv run nk check report.tex --profile profiles/example-university.toml --severity error
+nk check report.tex --profile profiles/example-university.toml --severity error
 ```
 
 Починить то, что чинится механически — сначала посмотреть, потом применить:
 
 ```bash
-uv run nk check chapters --diff
-uv run nk check chapters --fix
+nk check chapters --diff
+nk check chapters --fix
 ```
 
 Включить линтер на готовой работе: зафиксировать текущие нарушения снимком
 и дальше видеть только новые:
 
 ```bash
-uv run nk check chapters --write-baseline .nk-baseline.json
-uv run nk check chapters --baseline .nk-baseline.json
+nk check chapters --write-baseline .nk-baseline.json
+nk check chapters --baseline .nk-baseline.json
 ```
 
 ## Команды
