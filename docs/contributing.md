@@ -92,7 +92,7 @@ def figure_caption_dot(doc: Document) -> Iterable[Finding]:
 ```python
 for line in doc.iter_lines():
     line.raw       # исходная строка
-    line.stripped  # без комментария (% с учётом экранированного \%)
+    line.stripped  # без комментария (с учётом экранированного \% и аргумента \verb)
     line.lineno    # номер строки, с единицы
     line.path      # файл, а не файл-агрегатор
 ```

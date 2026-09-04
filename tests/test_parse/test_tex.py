@@ -15,6 +15,12 @@ from nk.parse.tex import collect_sources, parse, parse_findings, read_file, stri
         ("доля 50\\% % и комментарий", "доля 50\\% "),
         ("перенос \\\\% комментарий", "перенос \\\\"),
         ("без комментария", "без комментария"),
+        ("\\verb|a % b| и дальше", "\\verb|a % b| и дальше"),
+        ("\\verb|a % b| % комментарий", "\\verb|a % b| "),
+        ("\\verb*+50%+ текст", "\\verb*+50%+ текст"),
+        ("\\verb |a % b| текст", "\\verb |a % b| текст"),
+        ("\\verbatiminput{f} % комментарий", "\\verbatiminput{f} "),
+        ("\\verb|незакрытый % текст", "\\verb|незакрытый % текст"),
     ],
 )
 def test_strip_comment(raw: str, expected: str) -> None:

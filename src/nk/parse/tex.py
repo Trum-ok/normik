@@ -27,6 +27,7 @@ _INPUT = re.compile(r"\\(?:input|include)\s*\{([^{}]*)\}")
 _DOCUMENT = re.compile(r"\\begin\s*\{document\}")
 _BEGIN = re.compile(r"\\begin\s*\{([^{}]*)\}")
 _END = re.compile(r"\\end\s*\{([^{}]*)\}")
+_VERB = "verb"
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,21 +38,42 @@ class ParseResult:
 
 
 def strip_comment(raw: str) -> str:
-    """Вырезать комментарий, оставив экранированный ``\\%`` на месте.
+    """Вырезать комментарий, оставив ``\\%`` и аргумент ``\\verb`` на месте.
 
-    Нечётное число обратных косых черт перед ``%`` означает экранирование.
+    Обратная косая экранирует следующий символ. Аргумент ``\\verb|...|``
+    набирается буквально, и процент внутри него комментарием не является.
     """
-    for index, char in enumerate(raw):
-        if char != "%":
-            continue
-        backslashes = 0
-        probe = index - 1
-        while probe >= 0 and raw[probe] == "\\":
-            backslashes += 1
-            probe -= 1
-        if backslashes % 2 == 0:
+    index = 0
+    while index < len(raw):
+        char = raw[index]
+        if char == "%":
             return raw[:index]
+        if char != "\\":
+            index += 1
+            continue
+        after_verb = _verb_end(raw, index)
+        index = index + 2 if after_verb is None else after_verb
     return raw
+
+
+def _verb_end(raw: str, start: int) -> int | None:
+    """Позиция сразу за аргументом ``\\verb``, если в ``start`` стоит эта команда.
+
+    Незакрытый аргумент тянется до конца строки: LaTeX на нём падает, а резать
+    строку по процентам внутри него всё равно неверно.
+    """
+    index = start + 1
+    if not raw.startswith(_VERB, index):
+        return None
+    index += len(_VERB)
+    if index < len(raw) and raw[index] == "*":
+        index += 1
+    while index < len(raw) and raw[index].isspace():
+        index += 1
+    if index >= len(raw) or raw[index].isalpha():
+        return None
+    close = raw.find(raw[index], index + 1)
+    return len(raw) if close == -1 else close + 1
 
 
 def read_file(
