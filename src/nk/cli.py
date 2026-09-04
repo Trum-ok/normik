@@ -222,7 +222,15 @@ def check(
 
     if not quiet:
         _report(result, output_format, limit)
-    raise typer.Exit(EXIT_FOUND_ERRORS if result.has_errors else EXIT_OK)
+    raise typer.Exit(_exit_code(result))
+
+
+def _exit_code(result: RunResult) -> int:
+    # Упавшее правило — внутренняя ошибка: часть проверок не выполнилась,
+    # и зелёный прогон в CI говорил бы неправду.
+    if result.failed_rules:
+        return EXIT_INTERNAL_ERROR
+    return EXIT_FOUND_ERRORS if result.has_errors else EXIT_OK
 
 
 @dataclass(frozen=True, slots=True)

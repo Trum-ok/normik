@@ -1,10 +1,14 @@
 import json
+from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
 from nk.cli import EXIT_FOUND_ERRORS, EXIT_INTERNAL_ERROR, EXIT_OK, app
+from nk.core.document import Document
+from nk.core.finding import Finding, Severity
+from nk.core.rule import RuleRegistry, rule
 
 RULE_ID = "G732-6.5.7-caption-dot"
 
@@ -35,6 +39,27 @@ def clean_report(tmp_path: Path) -> Path:
     path = tmp_path / "clean.tex"
     path.write_text(FIGURE % "", encoding="utf-8")
     return path
+
+
+def test_failed_rule_exits_two(clean_report: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    registry = RuleRegistry()
+
+    @rule(
+        id="G732-6.5.7-падает",
+        clause="6.5.7",
+        severity=Severity.ERROR,
+        title="падает",
+        registry=registry,
+    )
+    def explode(doc: Document) -> Iterable[Finding]:
+        raise ValueError("сломалось")
+
+    monkeypatch.setattr("nk.cli.load_rules", lambda: registry)
+
+    result = runner.invoke(app, ["check", str(clean_report)])
+
+    assert result.exit_code == EXIT_INTERNAL_ERROR
+    assert "G732-6.5.7-падает упало и пропущено" in result.stdout
 
 
 def test_clean_report_exits_zero(clean_report: Path) -> None:
