@@ -59,6 +59,7 @@
 | [`G732-6.17.4-appendix-letter`](G732-6.17.4-appendix-letter.md) | 6.17.4 | error | Приложение обозначено недопустимой буквой |
 | [`G732-6.17.4-appendix-sequence`](G732-6.17.4-appendix-sequence.md) | 6.17.4 | error | В обозначениях приложений пропущена буква |
 | [`NK-STYLE-dash`](NK-STYLE-dash.md) | вне стандарта | info | Дефис вместо тире |
+| [`NK-STYLE-particle-nbsp`](NK-STYLE-particle-nbsp.md) | вне стандарта | info | Частица не привязана к предыдущему слову |
 | [`NK-STYLE-preposition-nbsp`](NK-STYLE-preposition-nbsp.md) | вне стандарта | info | Предлог не привязан к следующему слову |
 | [`NK-STYLE-quotes`](NK-STYLE-quotes.md) | вне стандарта | info | Прямые кавычки вместо «ёлочек» |
 | [`NK-STYLE-reference-nbsp`](NK-STYLE-reference-nbsp.md) | вне стандарта | info | Номер в ссылке отделён разрывным пробелом |
