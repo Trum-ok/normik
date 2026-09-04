@@ -8,10 +8,9 @@ from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
     APPENDIX_LETTERS,
-    SECTION_DEPTH,
     heading_text,
     normalize_heading,
-    ordered_commands,
+    ordered_headings,
 )
 
 DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
@@ -40,7 +39,7 @@ def appendix_sequence(doc: Document) -> Iterable[Finding]:
     обозначения следующих сдвигаются.
     """
     position = 0
-    for command in ordered_commands(doc, *SECTION_DEPTH):
+    for command in ordered_headings(doc):
         match = DESIGNATION.match(normalize_heading(heading_text(command)))
         if match is None:
             continue

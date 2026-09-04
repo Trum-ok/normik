@@ -138,3 +138,31 @@ def test_parse_findings_carry_excerpt_and_context(tmp_path: Path) -> None:
     assert finding.severity == "info"
     assert finding.excerpt == "\\input{нет-такого}"
     assert finding.context == ("первая", "\\input{нет-такого}", "третья")
+
+
+def test_directory_is_expanded_from_the_main_file(tmp_path: Path) -> None:
+    """Порядок отчёта задают включения, а не алфавит имён файлов."""
+    write(tmp_path, "введение.tex", "\\section*{ВВЕДЕНИЕ}\n")
+    write(tmp_path, "заключение.tex", "\\section*{ЗАКЛЮЧЕНИЕ}\n")
+    write(
+        tmp_path,
+        "отчёт.tex",
+        "\\begin{document}\n\\include{введение}\n\\include{заключение}\n\\end{document}\n",
+    )
+
+    result = parse([tmp_path])
+
+    assert [path.name for path in result.document.files] == [
+        "отчёт.tex",
+        "введение.tex",
+        "заключение.tex",
+    ]
+
+
+def test_file_outside_the_main_document_goes_after_it(tmp_path: Path) -> None:
+    write(tmp_path, "черновик.tex", "\\section{Набросок}\n")
+    write(tmp_path, "отчёт.tex", "\\begin{document}\n\\section{Раздел}\n\\end{document}\n")
+
+    result = parse([tmp_path])
+
+    assert [path.name for path in result.document.files] == ["отчёт.tex", "черновик.tex"]

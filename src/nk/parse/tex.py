@@ -13,6 +13,7 @@ from nk.core.document import Document, Line
 from nk.core.finding import Finding
 from nk.core.profile import Profile
 from nk.core.suppressions import Suppressions
+from nk.parse.headings import build_headings
 from nk.parse.issues import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING, ParseIssue
 from nk.parse.numbering import build_numbering
 from nk.parse.structure import VERBATIM_ENVIRONMENTS, build_structure
@@ -22,6 +23,7 @@ TEX_SUFFIX = ".tex"
 FALLBACK_ENCODING = "cp1251"
 
 _INPUT = re.compile(r"\\(?:input|include)\s*\{([^{}]*)\}")
+_DOCUMENT = re.compile(r"\\begin\s*\{document\}")
 _BEGIN = re.compile(r"\\begin\s*\{([^{}]*)\}")
 _END = re.compile(r"\\end\s*\{([^{}]*)\}")
 
@@ -118,7 +120,8 @@ def parse(
     overlay: Mapping[Path, str] | None = None,
 ) -> ParseResult:
     """Прочитать исходники, развернуть включения и собрать структуру."""
-    roots = collect_sources(paths)
+    cache: dict[Path, tuple[tuple[Line, ...], tuple[ParseIssue, ...]]] = {}
+    roots = _main_first(collect_sources(paths), cache, overlay)
     base = roots[0].parent if roots else Path()
 
     lines: list[Line] = []
@@ -127,7 +130,7 @@ def parse(
     visited: set[Path] = set()
 
     for root in roots:
-        _expand(root, base, lines, issues, files, visited, stack=(), overlay=overlay)
+        _expand(root, base, lines, issues, files, visited, stack=(), overlay=overlay, cache=cache)
 
     structure, structure_issues = build_structure(lines)
     issues.extend(structure_issues)
@@ -139,6 +142,7 @@ def parse(
         profile=profile or Profile(),
         structure=structure,
     )
+    document = replace(document, headings=build_headings(document))
     document = replace(document, numbering=build_numbering(document))
     return ParseResult(
         document=document,
@@ -159,6 +163,40 @@ def parse_findings(result: ParseResult) -> tuple[Finding, ...]:
     )
 
 
+def _main_first(
+    roots: list[Path],
+    cache: dict[Path, tuple[tuple[Line, ...], tuple[ParseIssue, ...]]],
+    overlay: Mapping[Path, str] | None,
+) -> list[Path]:
+    """Главный файл отчёта — первым, остальные в прежнем порядке.
+
+    Порядок отчёта задают включения из главного файла. При проверке каталога обход
+    иначе начинается со случайного файла, и порядок элементов определяется алфавитом
+    имён — из-за чего введение оказывается «после» заключения.
+    """
+    return sorted(roots, key=lambda path: not _is_main(path, cache, overlay))
+
+
+def _is_main(
+    path: Path,
+    cache: dict[Path, tuple[tuple[Line, ...], tuple[ParseIssue, ...]]],
+    overlay: Mapping[Path, str] | None,
+) -> bool:
+    lines, _ = _cached(path, cache, overlay)
+    return any(_DOCUMENT.search(line.stripped) for line in lines)
+
+
+def _cached(
+    path: Path,
+    cache: dict[Path, tuple[tuple[Line, ...], tuple[ParseIssue, ...]]],
+    overlay: Mapping[Path, str] | None,
+) -> tuple[tuple[Line, ...], tuple[ParseIssue, ...]]:
+    """Прочитанный файл: главный файл ищется до обхода, читать его дважды незачем."""
+    if path not in cache:
+        cache[path] = read_file(path, overlay)
+    return cache[path]
+
+
 def _expand(
     path: Path,
     base: Path,
@@ -168,13 +206,14 @@ def _expand(
     visited: set[Path],
     stack: tuple[Path, ...],
     overlay: Mapping[Path, str] | None = None,
+    cache: dict[Path, tuple[tuple[Line, ...], tuple[ParseIssue, ...]]] | None = None,
 ) -> None:
     resolved = _identity(path)
     if resolved in visited:
         return
     visited.add(resolved)
 
-    file_lines, file_issues = read_file(path, overlay)
+    file_lines, file_issues = _cached(path, cache if cache is not None else {}, overlay)
     issues.extend(file_issues)
     lines.extend(file_lines)
     files.append(path)
@@ -190,7 +229,15 @@ def _expand(
                 issues.append(_input_cycle(path, line.lineno, col, target))
                 continue
             _expand(
-                target, base, lines, issues, files, visited, stack=(*stack, path), overlay=overlay
+                target,
+                base,
+                lines,
+                issues,
+                files,
+                visited,
+                stack=(*stack, path),
+                overlay=overlay,
+                cache=cache,
             )
 
 

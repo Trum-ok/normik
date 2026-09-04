@@ -5,7 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import CONTENTS_COMMAND, is_full_document, structural_headings
+from nk.rules._shared import (
+    BIBLIOGRAPHY_ENVIRONMENT,
+    BIBTEX_COMMANDS,
+    CONTENTS_COMMAND,
+    is_full_document,
+    structural_headings,
+)
 
 #: Обязательные элементы, обнаружимые по исходникам. Титульный лист и основная
 #: часть заголовка структурного элемента не имеют и сюда не входят.
@@ -17,6 +23,9 @@ REQUIRED = (
     "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
 )
 
+CONTENTS = "СОДЕРЖАНИЕ"
+BIBLIOGRAPHY = "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
+
 
 @rule(
     id="G732-4-required-element-missing",
@@ -27,9 +36,10 @@ REQUIRED = (
 def required_element_missing(doc: Document) -> Iterable[Finding]:
     """Проверяет наличие структурных элементов, обнаружимых по исходникам: реферата,
     содержания, введения, заключения и списка использованных источников. Содержание
-    засчитывается и по команде его генерации. Титульный лист и основная часть
-    заголовка структурного элемента не имеют и не проверяются. Правило работает
-    только на полном документе.
+    засчитывается и по команде его генерации, список источников — по окружению
+    библиографии: заголовок ему во многих шаблонах печатает сам класс документа.
+    Титульный лист и основная часть заголовка структурного элемента не имеют
+    и не проверяются. Правило работает только на полном документе.
 
     ## Почему это нарушение
 
@@ -46,7 +56,11 @@ def required_element_missing(doc: Document) -> Iterable[Finding]:
 
     present = {element for _, element in structural_headings(doc)}
     if any(doc.structure.find_commands(CONTENTS_COMMAND)):
-        present.add("СОДЕРЖАНИЕ")
+        present.add(CONTENTS)
+    if any(doc.structure.find_environments(BIBLIOGRAPHY_ENVIRONMENT)) or any(
+        doc.structure.find_commands(*BIBTEX_COMMANDS)
+    ):
+        present.add(BIBLIOGRAPHY)
 
     start = doc.structure.find_environments("document")
     anchor = next(iter(start))

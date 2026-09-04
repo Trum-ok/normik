@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import SECTION_DEPTH, heading_text, headings, visible_text
+from nk.rules._shared import heading_level, heading_text, headings, visible_text
 
 #: Пункты и подпункты заголовков, как правило, не имеют.
 TITLED_DEPTH = 2
@@ -33,7 +33,7 @@ def heading_empty(doc: Document) -> Iterable[Finding]:
     страницы, оформить её средствами вёрстки, а не пустым разделом.
     """
     for command in headings(doc):
-        if SECTION_DEPTH[command.name] > TITLED_DEPTH:
+        if heading_level(doc, command) > TITLED_DEPTH:
             continue
         if visible_text(heading_text(command)).strip():
             continue

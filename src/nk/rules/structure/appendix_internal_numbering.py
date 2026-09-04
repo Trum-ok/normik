@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import SECTION_DEPTH, appendix_spans, heading_text, ordered_commands
+from nk.rules._shared import appendix_spans, heading_text, ordered_headings
 
 
 @rule(
@@ -29,7 +29,7 @@ def appendix_internal_numbering(doc: Document) -> Iterable[Finding]:
     Оформить рубрику через `\\subsection*` и вписать обозначение в заголовок,
     либо перевести приложения на `\\appendix` — тогда номера формирует класс.
     """
-    headings = ordered_commands(doc, *SECTION_DEPTH)
+    headings = ordered_headings(doc)
     for command, letter, span in appendix_spans(doc):
         if not command.name.endswith("*"):
             continue

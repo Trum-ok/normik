@@ -28,13 +28,15 @@ def structural_heading_numbered(doc: Document) -> Iterable[Finding]:
     ## Как исправить
 
     Использовать ненумерованную форму команды — со звёздочкой — и добавить элемент
-    в содержание вручную, если этого требует класс документа.
+    в содержание вручную, если этого требует класс документа. Если заголовок набран
+    макросом шаблона, правку вносят в объявление макроса, а не в текст отчёта.
     """
     for command in headings(doc):
         text = heading_text(command)
         element = structural_element(text)
-        if element is None or not is_numbered(command):
+        if element is None or not is_numbered(doc, command):
             continue
+        alias = doc.headings.alias_of(command.name)
         yield structural_heading_numbered.finding(
             doc,
             command.span,
@@ -43,7 +45,11 @@ def structural_heading_numbered(doc: Document) -> Iterable[Finding]:
                 "Заголовки структурных элементов не нумеруются: "
                 "порядковые номера имеют только разделы основной части."
             ),
-            suggestion=f"\\{command.name}*{{{text}}}",
+            suggestion=(
+                f"Объявить \\{command.name} через ненумерованную \\{alias}*"
+                if alias
+                else f"\\{command.name}*{{{text}}}"
+            ),
             col=command.col,
-            fix=command.region,
+            fix=None if alias else command.region,
         )

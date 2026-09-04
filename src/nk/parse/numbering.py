@@ -11,7 +11,6 @@
 
 import re
 from dataclasses import dataclass
-from pathlib import Path
 
 from nk.core.document import Command, Document, Environment
 from nk.core.numbering import EQUATION, FIGURE, TABLE, Numbered, Numbering, Scheme, SchemeChange
@@ -55,8 +54,7 @@ class _Event:
 
 def build_numbering(doc: Document) -> Numbering:
     """Пройти документ и раздать плавающим объектам номера."""
-    order = {path: index for index, path in enumerate(doc.files)}
-    events = sorted(_events(doc, order), key=lambda event: event.order)
+    events = sorted(_events(doc), key=lambda event: event.order)
 
     schemes: dict[str, Scheme] = dict.fromkeys((FIGURE, TABLE, EQUATION), Scheme.CONTINUOUS)
     counters: dict[str, int] = dict.fromkeys((FIGURE, TABLE, EQUATION), 0)
@@ -120,14 +118,14 @@ def build_numbering(doc: Document) -> Numbering:
     return Numbering(items=tuple(items), changes=tuple(changes))
 
 
-def _events(doc: Document, order: dict[Path, int]) -> list[_Event]:
+def _events(doc: Document) -> list[_Event]:
     events = [
-        _Event(order=(order.get(command.path, 0), command.lineno, command.col), command=command)
+        _Event(order=(doc.file_index(command.path), command.lineno, command.col), command=command)
         for command in doc.structure.find_commands()
     ]
     events.extend(
         _Event(
-            order=(order.get(environment.path, 0), environment.span.start, 0),
+            order=(doc.file_index(environment.path), environment.span.start, 0),
             environment=environment,
         )
         for environment in doc.structure.walk_environments()

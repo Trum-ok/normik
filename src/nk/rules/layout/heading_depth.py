@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import SECTION_DEPTH, heading_text, headings
+from nk.rules._shared import heading_level, heading_text, headings
 
 #: Раздел, подраздел, пункт, подпункт — четыре уровня, как в примере 4.2.1.1.
 DEFAULT_MAX_DEPTH = 4
@@ -33,7 +33,7 @@ def heading_depth(doc: Document) -> Iterable[Finding]:
     """
     max_depth = int(heading_depth.params(doc)["max_depth"])
     for command in headings(doc):
-        depth = SECTION_DEPTH[command.name]
+        depth = heading_level(doc, command)
         if depth <= max_depth:
             continue
         yield heading_depth.finding(

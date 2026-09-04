@@ -105,20 +105,6 @@ def first_tabular_line(environment: Environment) -> int | None:
     return min(starts) if starts else None
 
 
-#: Команды рубрикации и глубина уровня: раздел, подраздел, пункт, подпункт.
-SECTION_DEPTH: dict[str, int] = {
-    "section": 1,
-    "section*": 1,
-    "subsection": 2,
-    "subsection*": 2,
-    "subsubsection": 3,
-    "subsubsection*": 3,
-    "paragraph": 4,
-    "paragraph*": 4,
-    "subparagraph": 5,
-    "subparagraph*": 5,
-}
-
 #: Наименования структурных элементов отчёта по разделу 4 стандарта.
 STRUCTURAL_ELEMENTS = frozenset(
     {
@@ -139,8 +125,18 @@ APPENDIX = "ПРИЛОЖЕНИЕ"
 
 
 def headings(doc: Document) -> Iterator[Command]:
-    """Команды рубрикации в порядке следования по документу."""
-    yield from doc.structure.find_commands(*SECTION_DEPTH)
+    """Команды рубрикации, включая макросы шаблона кафедры."""
+    yield from doc.structure.find_commands(*doc.headings.names)
+
+
+def ordered_headings(doc: Document) -> list[Command]:
+    """Команды рубрикации в порядке следования по отчёту."""
+    return ordered_commands(doc, *doc.headings.names)
+
+
+def heading_level(doc: Document, command: Command) -> int:
+    """Уровень рубрики: раздел, подраздел, пункт, подпункт."""
+    return doc.headings.depth_of(command.name)
 
 
 def heading_text(command: Command) -> str:
@@ -163,9 +159,9 @@ def structural_element(text: str) -> str | None:
     return None
 
 
-def is_numbered(command: Command) -> bool:
-    """Нумеруется ли рубрика: команда без звёздочки."""
-    return not command.name.endswith("*")
+def is_numbered(doc: Document, command: Command) -> bool:
+    """Нумеруется ли рубрика: команда без звёздочки, включая ту, что стоит за макросом."""
+    return doc.headings.is_numbered(command.name)
 
 
 #: Окружения выключных формул.
@@ -195,10 +191,14 @@ BIBTEX_COMMANDS = frozenset({"bibliography", "addbibresource", "printbibliograph
 
 
 def ordered_commands(doc: Document, *names: str) -> list[Command]:
-    """Команды в порядке следования по исходнику, а не по дереву окружений."""
+    """Команды в порядке следования по отчёту, а не по дереву окружений.
+
+    Файлы упорядочены разворачиванием ``\\input`` и ``\\include``: порядок отчёта
+    задаёт главный файл, а не алфавит имён включаемых.
+    """
     return sorted(
         doc.structure.find_commands(*names),
-        key=lambda command: (str(command.path), command.lineno, command.col),
+        key=lambda command: (doc.file_index(command.path), command.lineno, command.col),
     )
 
 
@@ -241,7 +241,7 @@ def is_full_document(doc: Document) -> bool:
 def structural_headings(doc: Document) -> list[tuple[Command, str]]:
     """Заголовки структурных элементов в порядке следования, с каноническим наименованием."""
     found: list[tuple[Command, str]] = []
-    for command in ordered_commands(doc, *SECTION_DEPTH):
+    for command in ordered_headings(doc):
         element = structural_element(heading_text(command))
         if element is not None:
             found.append((command, element))
@@ -250,9 +250,7 @@ def structural_headings(doc: Document) -> list[tuple[Command, str]]:
 
 def section_lines(doc: Document, command: Command) -> list[Line]:
     """Строки раздела: от заголовка до следующего заголовка в том же файле."""
-    same_file = sorted(
-        item.lineno for item in ordered_commands(doc, *SECTION_DEPTH) if item.path == command.path
-    )
+    same_file = sorted(item.lineno for item in ordered_headings(doc) if item.path == command.path)
     following = [lineno for lineno in same_file if lineno > command.span.end]
     end = following[0] - 1 if following else len(doc.lines_of(command.path))
     return [line for line in doc.lines_of(command.path) if command.span.end < line.lineno <= end]
@@ -307,7 +305,7 @@ def appendix_spans(doc: Document) -> list[tuple[Command, str, Span]]:
     Приложение тянется до следующей рубрики уровня раздела в том же файле
     либо до конца файла.
     """
-    sections = ordered_commands(doc, *SECTION_DEPTH)
+    sections = ordered_headings(doc)
     found: list[tuple[Command, str, Span]] = []
     for index, command in enumerate(sections):
         match = APPENDIX_DESIGNATION.match(normalize_heading(heading_text(command)))
@@ -317,7 +315,7 @@ def appendix_spans(doc: Document) -> list[tuple[Command, str, Span]]:
         for following in sections[index + 1 :]:
             if following.path != command.path:
                 break
-            if SECTION_DEPTH[following.name] <= SECTION_LEVEL:
+            if heading_level(doc, following) <= SECTION_LEVEL:
                 end = following.lineno - 1
                 break
         found.append((command, match.group(1), Span(command.path, command.span.start, end)))

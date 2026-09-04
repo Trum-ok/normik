@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from nk.core.finding import truncate_excerpt
+from nk.core.headings import Headings
 from nk.core.position import Position, Region
 from nk.core.profile import Profile
 
@@ -159,10 +160,13 @@ class Document:
     profile: Profile = field(default_factory=Profile)
     structure: Structure = field(default_factory=Structure)
     numbering: "Numbering" = field(default_factory=lambda: _empty_numbering())
+    headings: Headings = field(default_factory=Headings)
+    """Команды рубрикации отчёта, включая макросы шаблона кафедры."""
 
     _index: dict[Path, tuple[Line, ...]] = field(
         init=False, repr=False, compare=False, default_factory=dict
     )
+    _order: dict[Path, int] = field(init=False, repr=False, compare=False, default_factory=dict)
 
     def __post_init__(self) -> None:
         by_file: dict[Path, list[Line]] = {}
@@ -170,6 +174,15 @@ class Document:
             by_file.setdefault(line.path, []).append(line)
         # Мутация словаря допустима и на frozen-датаклассе: атрибут не переприсваивается.
         self._index.update({path: tuple(items) for path, items in by_file.items()})
+        self._order.update({path: index for index, path in enumerate(self.files)})
+
+    def file_index(self, path: Path) -> int:
+        """Место файла в порядке разворачивания включений.
+
+        По нему упорядочивают находки и заголовки: алфавит имён файлов порядку
+        отчёта не соответствует.
+        """
+        return self._order.get(path, len(self.files))
 
     def lines_of(self, path: Path) -> tuple[Line, ...]:
         return self._index.get(path, ())
