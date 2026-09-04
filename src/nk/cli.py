@@ -288,7 +288,9 @@ def _apply_fixes(check_run: _Check, result: RunResult) -> RunResult:
     Проходов несколько: пересекающиеся правки в один проход не применяются,
     а исправленное место может открыть следующее нарушение.
     """
+    before = {finding.rule_id for finding in result.findings}
     applied = 0
+    incomplete = True
     reported: set[Path] = set()
     for _ in range(FIX_PASSES):
         prepared = plan(result.findings)
@@ -297,13 +299,44 @@ def _apply_fixes(check_run: _Check, result: RunResult) -> RunResult:
                 reported.add(path)
                 err_console.print(f"Не удалось прочитать как UTF-8, пропущен: {path}")
         if not prepared.applied:
+            incomplete = False
             break
-        applied += write(prepared)
+        written = write(prepared)
+        for path, reason in written.failed:
+            if path not in reported:
+                reported.add(path)
+                err_console.print(f"Не удалось записать, пропущен: {path} — {reason}")
+        applied += written.applied
+        if not written.applied:
+            # Записать не удалось ничего: следующий проход повторил бы то же самое.
+            break
         result = check_run()
 
     if applied:
         console.print(f"Исправлено находок: {applied}.")
+    _report_fix_result(result, before=before, incomplete=incomplete)
     return result
+
+
+def _report_fix_result(result: RunResult, before: set[str], incomplete: bool) -> None:
+    """Сказать, чем кончились правки: молчаливый успех скрывал бы регресс.
+
+    Правка может открыть нарушение, которого в отчёте не было, а пересекающиеся
+    правки могут не разойтись за отведённые проходы. Сравнивается состав правил:
+    номера строк и число находок правки двигают сами.
+    """
+    opened = sorted({finding.rule_id for finding in result.findings} - before)
+    if opened:
+        err_console.print(
+            f"Правки открыли нарушения, которых не было: {', '.join(opened)}. "
+            "Проверьте правки: nk check --diff"
+        )
+    remaining = sum(1 for finding in result.findings if finding.fix is not None)
+    if incomplete and remaining:
+        err_console.print(
+            f"Правки применены не полностью: осталось с машинной правкой {remaining}. "
+            "Повторите запуск."
+        )
 
 
 def _write_baseline(path: Path, result: RunResult) -> None:

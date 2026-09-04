@@ -7,7 +7,8 @@ from typer.testing import CliRunner
 
 from nk.cli import EXIT_FOUND_ERRORS, EXIT_INTERNAL_ERROR, EXIT_OK, app
 from nk.core.document import Document
-from nk.core.finding import Finding, Severity
+from nk.core.finding import Finding, Fix, Severity
+from nk.core.position import Region
 from nk.core.rule import RuleRegistry, rule
 
 RULE_ID = "G732-6.5.7-caption-dot"
@@ -303,6 +304,76 @@ def test_fix_converges_over_several_passes(tmp_path: Path) -> None:
 
     assert result.exit_code == EXIT_OK
     assert "\\caption{Схема экспериментальной установки}" in path.read_text(encoding="utf-8")
+
+
+def test_write_protected_source_is_reported_not_changed(report: Path) -> None:
+    before = report.read_text(encoding="utf-8")
+    report.chmod(0o444)
+
+    result = runner.invoke(app, ["check", str(report), "--fix"])
+
+    assert "Не удалось записать" in result.output
+    assert "Правки применены не полностью" in result.output
+    assert report.read_text(encoding="utf-8") == before
+
+
+def test_fix_reports_a_rule_opened_by_a_fix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Правка, открывающая нарушение другого правила, не проходит молча."""
+    registry = RuleRegistry()
+
+    @rule(
+        id="G732-6.5.7-точка-тест",
+        clause="6.5.7",
+        severity=Severity.ERROR,
+        title="Точка в наименовании",
+        fixable=True,
+        registry=registry,
+    )
+    def caption_dot(doc: Document) -> Iterable[Finding]:
+        for line in doc.iter_lines():
+            if line.stripped.endswith("."):
+                yield caption_dot.finding(
+                    doc,
+                    line,
+                    message="Наименование заканчивается точкой.",
+                    requirement="Наименование приводят без точки в конце.",
+                    suggestion="Убрать точку.",
+                    fix=Fix(
+                        Region.in_line(
+                            line.path, line.lineno, len(line.stripped), len(line.stripped) + 1
+                        ),
+                        "!",
+                    ),
+                )
+
+    @rule(
+        id="G732-6.5.8-восклицание-тест",
+        clause="6.5.8",
+        severity=Severity.ERROR,
+        title="Восклицание в наименовании",
+        registry=registry,
+    )
+    def caption_capital(doc: Document) -> Iterable[Finding]:
+        for line in doc.iter_lines():
+            if line.stripped.endswith("!"):
+                yield caption_capital.finding(
+                    doc,
+                    line,
+                    message="Наименование заканчивается восклицательным знаком.",
+                    requirement="Наименование приводят без восклицательного знака.",
+                    suggestion="Убрать восклицательный знак.",
+                )
+
+    monkeypatch.setattr("nk.cli.load_rules", lambda: registry)
+    path = tmp_path / "report.tex"
+    path.write_text("Наименование рисунка.\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["check", str(path), "--fix"])
+
+    assert "Правки открыли нарушения, которых не было" in result.output
+    assert "G732-6.5.8-восклицание-тест" in result.output
 
 
 def test_diff_leaves_the_source_alone(report: Path) -> None:

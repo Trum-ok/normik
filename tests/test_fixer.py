@@ -1,3 +1,5 @@
+import os
+from errno import ENOSPC
 from pathlib import Path
 
 from nk.core.finding import Finding, Fix, Severity
@@ -120,6 +122,25 @@ def test_crlf_line_endings_survive(tmp_path: Path) -> None:
     assert path.read_bytes() == "первая\r\n\\caption{Схема}\r\nтретья\r\n".encode()
 
 
+def test_inserted_line_takes_the_crlf_of_the_file(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_bytes("первая\r\nвторая\r\n".encode())
+
+    write(plan([finding(path, Region.at(path, 2, 1), "\\newpage\n")]))
+
+    assert path.read_bytes() == "первая\r\n\\newpage\r\nвторая\r\n".encode()
+
+
+def test_multiline_replacement_takes_the_crlf_of_the_file(tmp_path: Path) -> None:
+    path = tmp_path / "report.tex"
+    path.write_bytes("\\caption{Схема\r\n  установки}\r\nхвост\r\n".encode())
+    region = Region(path, Position(1, 1), Position(2, 13))
+
+    write(plan([finding(path, region, "\\caption{Схема\n  УСТАНОВКИ}")]))
+
+    assert path.read_bytes() == "\\caption{Схема\r\n  УСТАНОВКИ}\r\nхвост\r\n".encode()
+
+
 def test_overlay_replaces_the_file_content(tmp_path: Path) -> None:
     path = write_source(tmp_path, "\\caption{Схема.}\n")
     overlay = {path: "\\caption{Другая.}\n"}
@@ -137,3 +158,83 @@ def test_diff_compares_against_the_file_on_disk(tmp_path: Path) -> None:
 
     assert "-вторая" in text
     assert "+третья" in text
+
+
+def test_file_mode_survives_the_write(tmp_path: Path) -> None:
+    path = write_source(tmp_path, "\\caption{Схема.}\n")
+    path.chmod(0o640)
+
+    write(plan([finding(path, Region.in_line(path, 1, 1, 17), "\\caption{Схема}")]))
+
+    assert path.stat().st_mode & 0o777 == 0o640
+
+
+def test_write_leaves_no_temporary_files(tmp_path: Path) -> None:
+    path = write_source(tmp_path, "\\caption{Схема.}\n")
+
+    write(plan([finding(path, Region.in_line(path, 1, 1, 17), "\\caption{Схема}")]))
+
+    assert [item.name for item in tmp_path.iterdir()] == [path.name]
+
+
+def test_symlink_stays_a_symlink(tmp_path: Path) -> None:
+    target = write_source(tmp_path, "\\caption{Схема.}\n", name="target.tex")
+    link = tmp_path / "report.tex"
+    link.symlink_to(target)
+
+    write(plan([finding(link, Region.in_line(link, 1, 1, 17), "\\caption{Схема}")]))
+
+    assert link.is_symlink()
+    assert target.read_text(encoding="utf-8") == "\\caption{Схема}\n"
+
+
+def test_original_survives_a_failed_write(tmp_path: Path, monkeypatch) -> None:
+    path = write_source(tmp_path, "\\caption{Схема.}\n")
+    prepared = plan([finding(path, Region.in_line(path, 1, 1, 17), "\\caption{Схема}")])
+
+    def fail(source: object, destination: object) -> None:
+        raise OSError(ENOSPC, "нет места на устройстве")
+
+    monkeypatch.setattr(os, "replace", fail)
+    written = write(prepared)
+
+    assert written.applied == 0
+    assert [item[0] for item in written.failed] == [path]
+    assert path.read_text(encoding="utf-8") == "\\caption{Схема.}\n"
+    assert [item.name for item in tmp_path.iterdir()] == [path.name]
+
+
+def test_write_protected_file_is_reported_not_changed(tmp_path: Path) -> None:
+    path = write_source(tmp_path, "\\caption{Схема.}\n")
+    prepared = plan([finding(path, Region.in_line(path, 1, 1, 17), "\\caption{Схема}")])
+    path.chmod(0o444)
+
+    written = write(prepared)
+
+    assert written.applied == 0
+    assert [item[0] for item in written.failed] == [path]
+    assert path.read_text(encoding="utf-8") == "\\caption{Схема.}\n"
+
+
+def test_failure_on_one_file_leaves_the_others_written(tmp_path: Path) -> None:
+    good = write_source(tmp_path, "\\caption{Схема.}\n", name="good.tex")
+    bad = write_source(tmp_path, "\\caption{Схема.}\n", name="bad.tex")
+    prepared = plan(
+        [
+            finding(good, Region.in_line(good, 1, 1, 17), "\\caption{Схема}"),
+            finding(bad, Region.in_line(bad, 1, 1, 17), "\\caption{Схема}"),
+        ]
+    )
+    bad.chmod(0o444)
+
+    written = write(prepared)
+
+    assert written.applied == 1
+    assert [item[0] for item in written.failed] == [bad]
+    assert good.read_text(encoding="utf-8") == "\\caption{Схема}\n"
+
+
+def test_column_past_the_end_of_the_line_is_dropped(tmp_path: Path) -> None:
+    path = write_source(tmp_path, "первая\nвторая\n")
+
+    assert plan([finding(path, Region.in_line(path, 1, 1, 99), "нет")]).edits == ()
