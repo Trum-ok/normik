@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass
 
 from nk.core.document import Command, Document, Environment
-from nk.core.headings import APPENDIX_LETTERS
+from nk.core.headings import APPENDIX_LETTERS, is_heading_call
 from nk.core.numbering import EQUATION, FIGURE, TABLE, Numbered, Numbering, Scheme, SchemeChange
 
 #: Окружения, дающие номер объекту соответствующего вида.
@@ -82,7 +82,7 @@ def build_numbering(doc: Document) -> Numbering:
                 counters = _reset(counters, schemes)
                 continue
 
-            if command.name in SECTION_COMMANDS:
+            if command.name in SECTION_COMMANDS and is_heading_call(command):
                 if in_appendices:
                     appendix, appendix_index = _next_appendix(appendix_index)
                 else:

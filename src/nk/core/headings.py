@@ -8,6 +8,10 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from nk.core.document import Command
 
 CHAPTER = "chapter"
 
@@ -103,3 +107,12 @@ class Headings:
     def alias_of(self, name: str) -> str:
         heading = self.commands.get(name)
         return heading.alias_of if heading is not None else ""
+
+
+def is_heading_call(command: "Command") -> bool:
+    """Вызов команды рубрикации, а не упоминание её имени.
+
+    ``\\titleformat{\\chapter}`` и ``\\let\\old\\chapter`` содержат имя без
+    аргумента: заголовка там нет, и счётчик раздела не двигается.
+    """
+    return bool(command.args)

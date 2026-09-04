@@ -33,6 +33,15 @@ def test_counterwithin_switches_to_section_numbering(tmp_path: Path) -> None:
     assert [item.number for item in items] == ["1.1", "2.1"]
 
 
+def test_mentioned_section_command_does_not_move_the_counter(tmp_path: Path) -> None:
+    source = (
+        "\\counterwithin{figure}{section}\n"
+        "\\titleformat{\\section}[block]{\\bfseries}{\\thesection}{1em}{}\n"
+        "\\let\\oldsection\\section\n" + FIGURE_SOURCE
+    )
+    assert [item.number for item in numbering(tmp_path, source).by_kind(FIGURE)] == ["1.1", "2.1"]
+
+
 def test_renewcommand_with_thesection_switches_too(tmp_path: Path) -> None:
     source = "\\renewcommand{\\thefigure}{\\thesection.\\arabic{figure}}\n" + FIGURE_SOURCE
     assert [item.number for item in numbering(tmp_path, source).by_kind(FIGURE)] == ["1.1", "2.1"]

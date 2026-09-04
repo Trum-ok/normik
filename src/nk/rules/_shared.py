@@ -9,7 +9,7 @@ from collections.abc import Iterable, Iterator
 
 from nk.core.document import Command, Document, Environment, Line, Span
 from nk.core.elements import canonical_element, normalize_element
-from nk.core.headings import PAGE_BREAK_COMMANDS
+from nk.core.headings import PAGE_BREAK_COMMANDS, is_heading_call
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
@@ -135,12 +135,18 @@ def first_tabular_line(environment: Environment) -> int | None:
 
 def headings(doc: Document) -> Iterator[Command]:
     """Команды рубрикации, включая макросы шаблона кафедры."""
-    yield from doc.structure.find_commands(*doc.headings.names)
+    for command in doc.structure.find_commands(*doc.headings.names):
+        if is_heading_call(command):
+            yield command
 
 
 def ordered_headings(doc: Document) -> list[Command]:
     """Команды рубрикации в порядке следования по отчёту."""
-    return ordered_commands(doc, *doc.headings.names)
+    return [
+        command
+        for command in ordered_commands(doc, *doc.headings.names)
+        if is_heading_call(command)
+    ]
 
 
 def heading_level(doc: Document, command: Command) -> int:

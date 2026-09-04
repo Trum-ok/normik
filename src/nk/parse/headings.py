@@ -23,7 +23,14 @@
 import re
 
 from nk.core.document import Document
-from nk.core.headings import CHAPTER, PAGE_BREAK_COMMANDS, Heading, Headings, base_headings
+from nk.core.headings import (
+    CHAPTER,
+    PAGE_BREAK_COMMANDS,
+    Heading,
+    Headings,
+    base_headings,
+    is_heading_call,
+)
 from nk.parse.structure import read_balanced
 
 #: Формы объявления макроса: ``\newcommand{\ssr}``, ``\def\ssr``.
@@ -186,4 +193,4 @@ def _has_chapters(doc: Document, aliases: dict[str, str]) -> bool:
     """Разбит ли отчёт на главы: тогда ``\\section`` в нём подраздел."""
     chapters = {name for name in aliases if aliases[name].startswith(CHAPTER)}
     chapters.update(name for name in base_headings() if name.startswith(CHAPTER))
-    return any(doc.structure.find_commands(*chapters))
+    return any(is_heading_call(command) for command in doc.structure.find_commands(*chapters))

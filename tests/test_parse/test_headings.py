@@ -89,6 +89,15 @@ def test_chapters_shift_the_remaining_levels(tmp_path: Path) -> None:
     assert scheme.depth_of("subsection") == 3
 
 
+def test_mentioned_chapter_command_does_not_make_chapters(tmp_path: Path) -> None:
+    scheme = headings(
+        tmp_path,
+        "\\titleformat{\\chapter}[block]{\\bfseries}{\\thechapter}{1em}{}\n\\section{Раздел}\n",
+    )
+
+    assert scheme.depth_of("section") == 1
+
+
 def test_document_without_chapters_keeps_section_at_the_top(tmp_path: Path) -> None:
     scheme = headings(tmp_path, "\\section{Раздел}\n\\subsection{Подраздел}\n")
 
