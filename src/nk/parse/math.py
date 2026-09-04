@@ -31,7 +31,9 @@ class _Open:
 
 def build_math(doc: Document) -> Math:
     """Разметить математику по всем файлам отчёта."""
-    verbatim = _verbatim_lines(doc)
+    # Доллар в листинге — знак оболочки, а не начало формулы: приняв его за
+    # формулу, разбор проглотил бы весь дальнейший текст файла.
+    verbatim = doc.structure.covered_lines(*VERBATIM_ENVIRONMENTS)
     intervals: dict[tuple[Path, int], list[Interval]] = {}
     for path in doc.files:
         for key, found in _scan_file(path, doc.lines_of(path), verbatim).items():
@@ -46,21 +48,8 @@ def build_math(doc: Document) -> Math:
     return Math({key: tuple(sorted(found)) for key, found in intervals.items()})
 
 
-def _verbatim_lines(doc: Document) -> set[tuple[Path, int]]:
-    """Строки листингов.
-
-    Доллар в листинге — знак оболочки, а не начало формулы: приняв его за формулу,
-    разбор проглотил бы весь дальнейший текст файла.
-    """
-    covered: set[tuple[Path, int]] = set()
-    for environment in doc.structure.find_environments(*VERBATIM_ENVIRONMENTS):
-        span = environment.span
-        covered.update((environment.path, lineno) for lineno in range(span.start, span.end + 1))
-    return covered
-
-
 def _scan_file(
-    path: Path, lines: Sequence[Line], verbatim: set[tuple[Path, int]]
+    path: Path, lines: Sequence[Line], verbatim: frozenset[tuple[Path, int]]
 ) -> dict[tuple[Path, int], list[Interval]]:
     """Участки формул, заданных парными разделителями."""
     intervals: dict[tuple[Path, int], list[Interval]] = {}

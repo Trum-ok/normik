@@ -142,11 +142,16 @@ def headings(doc: Document) -> Iterator[Command]:
 
 def ordered_headings(doc: Document) -> list[Command]:
     """Команды рубрикации в порядке следования по отчёту."""
-    return [
-        command
-        for command in ordered_commands(doc, *doc.headings.names)
-        if is_heading_call(command)
-    ]
+    return list(
+        doc.memo(
+            "ordered_headings",
+            lambda: tuple(
+                command
+                for command in ordered_commands(doc, *doc.headings.names)
+                if is_heading_call(command)
+            ),
+        )
+    )
 
 
 def heading_level(doc: Document, command: Command) -> int:
@@ -182,15 +187,9 @@ BIBTEX_COMMANDS = frozenset({"bibliography", "addbibresource", "printbibliograph
 
 
 def ordered_commands(doc: Document, *names: str) -> list[Command]:
-    """Команды в порядке следования по отчёту, а не по дереву окружений.
-
-    Файлы упорядочены разворачиванием ``\\input`` и ``\\include``: порядок отчёта
-    задаёт главный файл, а не алфавит имён включаемых.
-    """
-    return sorted(
-        doc.structure.find_commands(*names),
-        key=lambda command: (doc.file_index(command.path), command.lineno, command.col),
-    )
+    """Команды с этими именами в порядке следования по отчёту."""
+    wanted = frozenset(names)
+    return [command for command in doc.ordered_commands() if command.name in wanted]
 
 
 def is_numbered_environment(name: str) -> bool:
@@ -223,7 +222,10 @@ def structural_headings(doc: Document) -> list[tuple[Command, str]]:
 
 def section_lines(doc: Document, command: Command) -> list[Line]:
     """Строки раздела: от заголовка до следующего заголовка в том же файле."""
-    same_file = sorted(item.lineno for item in ordered_headings(doc) if item.path == command.path)
+    same_file = doc.memo(
+        ("heading_lines", command.path),
+        lambda: sorted(item.lineno for item in ordered_headings(doc) if item.path == command.path),
+    )
     following = [lineno for lineno in same_file if lineno > command.span.end]
     end = following[0] - 1 if following else len(doc.lines_of(command.path))
     return [line for line in doc.lines_of(command.path) if command.span.end < line.lineno <= end]

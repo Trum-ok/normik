@@ -4,10 +4,10 @@
 и структурное для случаев, где важна вложенность.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Hashable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from nk.core.finding import truncate_excerpt
 from nk.core.headings import Headings
@@ -117,6 +117,10 @@ class Structure:
     commands: tuple[Command, ...] = ()
     """Команды вне окружений."""
 
+    _covered: dict[frozenset[str], frozenset[tuple[Path, int]]] = field(
+        init=False, repr=False, compare=False, default_factory=dict
+    )
+
     def walk_environments(self) -> Iterator[Environment]:
         for env in self.environments:
             yield from env.walk()
@@ -132,6 +136,23 @@ class Structure:
         for command in self._all_commands():
             if not wanted or command.name in wanted:
                 yield command
+
+    def covered_lines(self, *names: str) -> frozenset[tuple[Path, int]]:
+        """Строки внутри окружений с этими именами, по всем файлам.
+
+        Считается один раз на документ: правила, работающие построчно, иначе
+        обходили бы всё дерево окружений на каждой строке.
+        """
+        key = frozenset(names)
+        found = self._covered.get(key)
+        if found is None:
+            found = frozenset(
+                (env.path, lineno)
+                for env in self.find_environments(*names)
+                for lineno in range(env.span.start, env.span.end + 1)
+            )
+            self._covered[key] = found
+        return found
 
     def enclosing(self, path: Path, lineno: int) -> Environment | None:
         """Самое внутреннее окружение, накрывающее позицию."""
@@ -171,6 +192,9 @@ class Document:
         init=False, repr=False, compare=False, default_factory=dict
     )
     _order: dict[Path, int] = field(init=False, repr=False, compare=False, default_factory=dict)
+    _memo: dict[Hashable, object] = field(
+        init=False, repr=False, compare=False, default_factory=dict
+    )
 
     def __post_init__(self) -> None:
         by_file: dict[Path, list[Line]] = {}
@@ -187,6 +211,36 @@ class Document:
         отчёта не соответствует.
         """
         return self._order.get(path, len(self.files))
+
+    def memo(self, key: Hashable, build: "Callable[[], T]") -> "T":
+        """Значение, вычисляемое один раз на документ.
+
+        Помощники правил вызываются на каждый заголовок или строку; без кэша
+        обход всех команд отчёта повторялся бы при каждом вызове.
+        """
+        if key not in self._memo:
+            self._memo[key] = build()
+        return self._memo[key]  # type: ignore[return-value]
+
+    def ordered_commands(self) -> tuple[Command, ...]:
+        """Все команды в порядке следования по отчёту, а не по дереву окружений.
+
+        Файлы упорядочены разворачиванием ``\\input`` и ``\\include``: порядок
+        отчёта задаёт главный файл, а не алфавит имён включаемых.
+        """
+        return self.memo(
+            "ordered_commands",
+            lambda: tuple(
+                sorted(
+                    self.structure.find_commands(),
+                    key=lambda command: (
+                        self.file_index(command.path),
+                        command.lineno,
+                        command.col,
+                    ),
+                )
+            ),
+        )
 
     def lines_of(self, path: Path) -> tuple[Line, ...]:
         return self._index.get(path, ())
@@ -227,6 +281,9 @@ class Document:
         if start > end:
             return ()
         return tuple(truncate_excerpt(item.raw) for item in lines[start - 1 : end])
+
+
+T = TypeVar("T")
 
 
 def _empty_numbering() -> "Numbering":

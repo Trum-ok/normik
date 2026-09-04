@@ -42,8 +42,4 @@ def is_code(doc: Document, line: Line) -> bool:
     Проверяются все охватывающие окружения, а не только внутреннее: ячейка
     ``tabular`` лежит внутри ``table``, а листинг — внутри ``figure``.
     """
-    return any(
-        item.name in CODE_ENVIRONMENTS
-        for item in doc.structure.walk_environments()
-        if item.path == line.path and item.span.contains(line.lineno)
-    )
+    return (line.path, line.lineno) in doc.structure.covered_lines(*CODE_ENVIRONMENTS)

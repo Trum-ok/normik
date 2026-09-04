@@ -106,6 +106,8 @@ doc.structure.enclosing(path, lineno)               # самое внутрен�
 environment.children                                # вложенные окружения
 environment.commands                                # команды непосредственно внутри
 environment.all_commands()                          # включая вложенные окружения
+doc.structure.covered_lines("tabular")             # строки внутри окружений, один раз на документ
+doc.ordered_commands()                              # все команды в порядке отчёта, один раз на документ
 ```
 
 Команды внутри аргументов других команд сканер видит наравне с остальными:
