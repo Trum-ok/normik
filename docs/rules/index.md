@@ -26,6 +26,7 @@
 | [`G732-6.2.4-heading-hyphenation`](G732-6.2.4-heading-hyphenation.md) | 6.2.4 | error | В заголовке задан перенос слова |
 | [`G732-6.4.1-manual-section-number`](G732-6.4.1-manual-section-number.md) | 6.4.1 | error | Номер раздела вписан в заголовок вручную |
 | [`G732-6.4.5-heading-depth`](G732-6.4.5-heading-depth.md) | 6.4.5 | warning | Глубина рубрикации превышает четыре уровня |
+| [`G732-6.4.6-enumeration-label`](G732-6.4.6-enumeration-label.md) | 6.4.6 | error | Элемент перечисления обозначен не по форме |
 | [`G732-6.4.6-enumeration-letters`](G732-6.4.6-enumeration-letters.md) | 6.4.6 | error | В перечислении использована недопустимая буква |
 | [`G732-6.5.1-figure-no-reference`](G732-6.5.1-figure-no-reference.md) | 6.5.1 | error | На рисунок нет ссылки в тексте |
 | [`G732-6.5.1-figure-position`](G732-6.5.1-figure-position.md) | 6.5.1 | error | Иллюстрация размещена выше первой ссылки на неё |

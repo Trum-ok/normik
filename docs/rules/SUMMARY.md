@@ -16,6 +16,7 @@
     * [G732-6.2.4-heading-hyphenation](G732-6.2.4-heading-hyphenation.md)
     * [G732-6.4.1-manual-section-number](G732-6.4.1-manual-section-number.md)
     * [G732-6.4.5-heading-depth](G732-6.4.5-heading-depth.md)
+    * [G732-6.4.6-enumeration-label](G732-6.4.6-enumeration-label.md)
     * [G732-6.4.6-enumeration-letters](G732-6.4.6-enumeration-letters.md)
     * [G732-6.5.1-figure-no-reference](G732-6.5.1-figure-no-reference.md)
     * [G732-6.5.1-figure-position](G732-6.5.1-figure-position.md)
