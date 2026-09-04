@@ -28,6 +28,8 @@
 | [`G732-6.4.6-enumeration-letters`](G732-6.4.6-enumeration-letters.md) | 6.4.6 | error | В перечислении использована недопустимая буква |
 | [`G732-6.5.1-figure-no-reference`](G732-6.5.1-figure-no-reference.md) | 6.5.1 | error | На рисунок нет ссылки в тексте |
 | [`G732-6.5.1-reference-word`](G732-6.5.1-reference-word.md) | 6.5.1 | warning | В ссылке на иллюстрацию использовано сокращение «рис.» |
+| [`G732-6.5.4-numbering-scheme-mixed`](G732-6.5.4-numbering-scheme-mixed.md) | 6.5.4 | error | Схема нумерации иллюстраций задана в документе несколько раз |
+| [`G732-6.5.5-appendix-numbering`](G732-6.5.5-appendix-numbering.md) | 6.5.5 | error | Иллюстрация приложения нумеруется без его обозначения |
 | [`G732-6.5.7-caption-dot`](G732-6.5.7-caption-dot.md) | 6.5.7 | error | Наименование рисунка заканчивается точкой |
 | [`G732-6.5.7-caption-manual-number`](G732-6.5.7-caption-manual-number.md) | 6.5.7 | error | Номер рисунка вписан в наименование вручную |
 | [`G732-6.5.7-caption-position`](G732-6.5.7-caption-position.md) | 6.5.7 | error | Наименование рисунка расположено выше изображения |
@@ -39,10 +41,12 @@
 | [`G732-6.6.3-caption-dot`](G732-6.6.3-caption-dot.md) | 6.6.3 | error | Наименование таблицы заканчивается точкой |
 | [`G732-6.6.3-caption-manual-number`](G732-6.6.3-caption-manual-number.md) | 6.6.3 | error | Номер таблицы вписан в наименование вручную |
 | [`G732-6.6.3-caption-position`](G732-6.6.3-caption-position.md) | 6.6.3 | error | Наименование таблицы расположено ниже самой таблицы |
+| [`G732-6.6.4-appendix-numbering`](G732-6.6.4-appendix-numbering.md) | 6.6.4 | error | Таблица приложения нумеруется без его обозначения |
 | [`G732-6.8.1-blank-line-around`](G732-6.8.1-blank-line-around.md) | 6.8.1 | error | Формула не отделена свободной строкой |
 | [`G732-6.8.2-where-colon`](G732-6.8.2-where-colon.md) | 6.8.2 | error | Пояснение к формуле начинается со слова «где» с двоеточием |
 | [`G732-6.8.3-formula-no-reference`](G732-6.8.3-formula-no-reference.md) | 6.8.3 | warning | Формула пронумерована, но ссылки на неё нет |
 | [`G732-6.8.4-formula-reference-format`](G732-6.8.4-formula-reference-format.md) | 6.8.4 | error | Номер формулы в ссылке приведён без скобок |
+| [`G732-6.8.5-appendix-numbering`](G732-6.8.5-appendix-numbering.md) | 6.8.5 | error | Формула приложения нумеруется без обозначения приложения |
 | [`G732-6.9.1-cite-unresolved`](G732-6.9.1-cite-unresolved.md) | 6.9.1 | error | Ссылка указывает на отсутствующую запись списка источников |
 | [`G732-6.12.2-keywords-final-dot`](G732-6.12.2-keywords-final-dot.md) | 6.12.2 | error | Перечень ключевых слов заканчивается точкой |
 | [`G732-6.12.2-keywords-uppercase`](G732-6.12.2-keywords-uppercase.md) | 6.12.2 | error | Ключевые слова набраны не прописными буквами |

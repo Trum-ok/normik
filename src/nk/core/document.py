@@ -7,10 +7,14 @@
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from nk.core.finding import truncate_excerpt
 from nk.core.position import Position, Region
 from nk.core.profile import Profile
+
+if TYPE_CHECKING:
+    from nk.core.numbering import Numbering
 
 CONTEXT_RADIUS = 2
 
@@ -154,6 +158,7 @@ class Document:
     lines: tuple[Line, ...]
     profile: Profile = field(default_factory=Profile)
     structure: Structure = field(default_factory=Structure)
+    numbering: "Numbering" = field(default_factory=lambda: _empty_numbering())
 
     _index: dict[Path, tuple[Line, ...]] = field(
         init=False, repr=False, compare=False, default_factory=dict
@@ -205,3 +210,10 @@ class Document:
         if start > end:
             return ()
         return tuple(truncate_excerpt(item.raw) for item in lines[start - 1 : end])
+
+
+def _empty_numbering() -> "Numbering":
+    # Импорт отложен: модель нумерации опирается на Span из этого модуля.
+    from nk.core.numbering import Numbering
+
+    return Numbering()

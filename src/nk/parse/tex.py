@@ -6,7 +6,7 @@
 
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from nk.core.document import Document, Line
@@ -14,6 +14,7 @@ from nk.core.finding import Finding
 from nk.core.profile import Profile
 from nk.core.suppressions import Suppressions
 from nk.parse.issues import ENCODING_FALLBACK, INPUT_CYCLE, INPUT_MISSING, ParseIssue
+from nk.parse.numbering import build_numbering
 from nk.parse.structure import VERBATIM_ENVIRONMENTS, build_structure
 from nk.parse.suppressions import collect
 
@@ -138,6 +139,7 @@ def parse(
         profile=profile or Profile(),
         structure=structure,
     )
+    document = replace(document, numbering=build_numbering(document))
     return ParseResult(
         document=document,
         issues=tuple(issues),
