@@ -77,3 +77,32 @@ def test_macro_that_spends_the_parameter_elsewhere_is_not_a_heading(tmp_path: Pa
     scheme = headings(tmp_path, "\\newcommand{\\example}[1]{\\subsection*{Пример}#1}\n")
 
     assert "example" not in scheme
+
+
+def test_macro_writing_the_contents_entry_is_a_heading(tmp_path: Path) -> None:
+    """Заголовок, набранный вручную, попадает в содержание только через запись о нём."""
+    scheme = headings(
+        tmp_path,
+        "\\newcommand{\\ssr}[1]{\\begin{center}\n"
+        "\\LARGE\\bfseries{#1}\n"
+        "\\end{center} \\addcontentsline{toc}{chapter}{#1}}\n"
+        "\\ssr{ВВЕДЕНИЕ}\n",
+    )
+
+    assert scheme.alias_of("ssr") == "chapter*"
+    assert not scheme.is_numbered("ssr")
+
+
+def test_contents_entry_itself_is_not_a_heading(tmp_path: Path) -> None:
+    """Иначе текстом заголовка правила считали бы имя файла содержания."""
+    scheme = headings(tmp_path, "\\addcontentsline{toc}{chapter}{СПИСОК ИСТОЧНИКОВ}\n")
+
+    assert "addcontentsline" not in scheme
+
+
+def test_entry_of_an_unrelated_level_is_not_a_heading(tmp_path: Path) -> None:
+    scheme = headings(
+        tmp_path, "\\newcommand{\\lstentry}[1]{\\addcontentsline{lol}{lstlisting}{#1}}\n"
+    )
+
+    assert "lstentry" not in scheme

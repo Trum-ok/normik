@@ -11,12 +11,15 @@ from nk.parse.tex import parse
 
 TEMPLATE = {
     "преамбула.tex": (
-        "\\documentclass{report}\n\\newcommand{\\ssr}[1]{\\section*{\\centering #1}}\n"
+        "\\documentclass{extreport}\n"
+        "\\newcommand{\\ssr}[1]{\\begin{center}\n"
+        "\\LARGE\\bfseries{#1}\n"
+        "\\end{center} \\addcontentsline{toc}{chapter}{#1}}\n"
     ),
     "титул.tex": "Титульный лист.\n",
     "реферат.tex": "\\ssr{РЕФЕРАТ}\nОтчёт 45 с., 3 рис., 5 табл., 7 источников, 1 прил.\n",
     "введение.tex": "\\ssr{ВВЕДЕНИЕ}\nАктуальность темы.\n",
-    "основная.tex": "\\section{Выбор направления исследований}\nОсновная часть.\n",
+    "основная.tex": "\\chapter{Выбор направления исследований}\nОсновная часть.\n",
     "заключение.tex": "\\ssr{ЗАКЛЮЧЕНИЕ}\nКраткие выводы.\n",
     "источники.tex": (
         "\\addcontentsline{toc}{chapter}{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}\n"
