@@ -1,0 +1,55 @@
+"""Дефис вместо тире в перечне: сокращение."""
+
+import re
+from collections.abc import Iterable
+
+from nk.core.document import Document
+from nk.core.finding import Finding, Fix, Severity
+from nk.core.position import Region
+from nk.core.rule import rule
+from nk.rules._shared import section_lines, structural_headings
+
+DASH = "—"
+SEPARATOR = re.compile(r"\S( - )\S")
+ELEMENTS = frozenset({"ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ", "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ"})
+
+
+@rule(
+    id="G732-6.15-abbreviations-dash",
+    clause="6.15",
+    severity=Severity.WARNING,
+    title="В перечне сокращений расшифровка отделена дефисом",
+    fixable=True,
+)
+def abbreviations_dash(doc: Document) -> Iterable[Finding]:
+    """Проверяет знак, отделяющий сокращение от расшифровки.
+
+    ## Почему это нарушение
+
+    Стандарт требует отделять правую часть тире. Дефис — другой знак, и в
+    наборе он заметно короче.
+
+    ## Как исправить
+
+    Заменить дефис на тире.
+    """
+    for command, element in structural_headings(doc):
+        if element not in ELEMENTS:
+            continue
+        for line in section_lines(doc, command):
+            match = SEPARATOR.search(line.stripped)
+            if match is None:
+                continue
+            start, end = match.span(1)
+            yield abbreviations_dash.finding(
+                doc,
+                line,
+                message="Расшифровка отделена дефисом, а не тире.",
+                requirement="В перечне сокращений расшифровку приводят справа через тире.",
+                suggestion=f"Заменить дефис на тире: {DASH}",
+                col=start + 2,
+                fix=Fix(
+                    Region.in_line(line.path, line.lineno, start + 2, end),
+                    DASH,
+                ),
+            )

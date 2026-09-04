@@ -69,6 +69,9 @@ class RuleImpl:
     fixable: bool = False
     """Правило умеет чинить нарушение ключом ``--fix``. Проверяется на фикстурах."""
 
+    default_off: bool = False
+    """Правило включается только явно — профилем или ключом ``--select``."""
+
     def __call__(self, doc: Document) -> Iterator[Finding]:
         yield from self.func(doc)
 
@@ -174,6 +177,7 @@ def rule(
     params: Params | None = None,
     allow_missing_suggestion: bool = False,
     fixable: bool = False,
+    default_off: bool = False,
     registry: RuleRegistry | None = None,
 ) -> Callable[[RuleCallable], RuleImpl]:
     """Объявить правило::
@@ -204,6 +208,7 @@ def rule(
             default_params=params or {},
             allow_missing_suggestion=allow_missing_suggestion,
             fixable=fixable,
+            default_off=default_off,
         )
         # Явное сравнение с None: пустой реестр ложен из-за __len__.
         target = REGISTRY if registry is None else registry

@@ -32,7 +32,14 @@ SECTIONS: tuple[tuple[str, str], ...] = (
     ("4", "Раздел 4. Структура отчёта"),
     ("5", "Раздел 5. Структурные элементы"),
     ("6", "Раздел 6. Правила оформления"),
+    ("", "Типографика"),
 )
+
+#: Пункт стандарта, которого у правила нет: типографика им не регулируется.
+NO_CLAUSE_LABEL = "вне стандарта"
+
+#: Сортировочный вес правил без пункта: они идут после всех разделов.
+MAX_CLAUSE = 99
 
 
 def render_pages(rules: Iterable[RuleImpl], *, fixtures_root: Path | None = None) -> dict[str, str]:
@@ -75,7 +82,7 @@ def render_index(rules: Iterable[RuleImpl]) -> str:
     ]
     for impl in _ordered(rules):
         lines.append(
-            f"| [`{impl.id}`]({impl.id}.md) | {impl.clause} "
+            f"| [`{impl.id}`]({impl.id}.md) | {impl.clause or NO_CLAUSE_LABEL} "
             f"| {impl.severity.value} | {impl.title} |"
         )
     lines.append("")
@@ -104,7 +111,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
         "",
         "| | |",
         "|---|---|",
-        f"| Пункт ГОСТ 7.32-2017 | {impl.clause} |",
+        f"| Пункт ГОСТ 7.32-2017 | {impl.clause or NO_CLAUSE_LABEL} |",
         f"| Уровень по умолчанию | `{impl.severity.value}` |",
         f"| Объявлено в | `{impl.module}` |",
         f"| Фикстуры | `tests/fixtures/{impl.id}/` |",
@@ -113,6 +120,19 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
     ]
     if impl.description:
         lines.extend([impl.description, ""])
+    if impl.default_off:
+        lines.extend(
+            [
+                "!!! note",
+                "",
+                "    Правило выключено по умолчанию. Включается профилем:",
+                "",
+                "    ```toml",
+                f'    enable = ["{impl.id}"]',
+                "    ```",
+                "",
+            ]
+        )
     if impl.allow_missing_suggestion:
         lines.extend(
             [
@@ -184,5 +204,10 @@ def _ordered(rules: Iterable[RuleImpl]) -> list[RuleImpl]:
 
 
 def _clause_key(clause: str) -> tuple[int, ...]:
-    """Пункты сортируются как числа, а не как строки: 6.10 идёт после 6.9."""
+    """Пункты сортируются как числа, а не как строки: 6.10 идёт после 6.9.
+
+    Правила без пункта стандарта уходят в конец.
+    """
+    if not clause:
+        return (MAX_CLAUSE,)
     return tuple(int(part) if part.isdigit() else 0 for part in clause.split("."))

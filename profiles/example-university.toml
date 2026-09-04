@@ -16,6 +16,9 @@ disable = [
   "G732-6.16-bibtex-order-unverifiable",
 ]
 
+# Включить правило, выключенное по умолчанию.
+enable = ["NK-STYLE-preposition-nbsp"]
+
 # Понизить уровень: нарушение показывается, но не влияет на код возврата.
 [rules."G732-6.4.5-heading-depth"]
 severity = "info"

@@ -50,9 +50,15 @@
 | [`G732-6.9.1-cite-unresolved`](G732-6.9.1-cite-unresolved.md) | 6.9.1 | error | Ссылка указывает на отсутствующую запись списка источников |
 | [`G732-6.12.2-keywords-final-dot`](G732-6.12.2-keywords-final-dot.md) | 6.12.2 | error | Перечень ключевых слов заканчивается точкой |
 | [`G732-6.12.2-keywords-uppercase`](G732-6.12.2-keywords-uppercase.md) | 6.12.2 | error | Ключевые слова набраны не прописными буквами |
+| [`G732-6.14-terms-dash`](G732-6.14-terms-dash.md) | 6.14 | warning | В перечне терминов определение отделено дефисом |
+| [`G732-6.15-abbreviations-dash`](G732-6.15-abbreviations-dash.md) | 6.15 | warning | В перечне сокращений расшифровка отделена дефисом |
 | [`G732-6.16-bibitem-uncited`](G732-6.16-bibitem-uncited.md) | 6.16 | warning | На запись списка источников нет ссылок в тексте |
 | [`G732-6.16-bibliography-order`](G732-6.16-bibliography-order.md) | 6.16 | error | Записи списка источников идут не в порядке появления ссылок |
 | [`G732-6.16-bibtex-order-unverifiable`](G732-6.16-bibtex-order-unverifiable.md) | 6.16 | info | Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется |
 | [`G732-6.17.2-appendix-no-reference`](G732-6.17.2-appendix-no-reference.md) | 6.17.2 | error | На приложение нет ссылки в тексте |
 | [`G732-6.17.4-appendix-letter`](G732-6.17.4-appendix-letter.md) | 6.17.4 | error | Приложение обозначено недопустимой буквой |
 | [`G732-6.17.4-appendix-sequence`](G732-6.17.4-appendix-sequence.md) | 6.17.4 | error | В обозначениях приложений пропущена буква |
+| [`NK-STYLE-dash`](NK-STYLE-dash.md) | вне стандарта | info | Дефис вместо тире |
+| [`NK-STYLE-preposition-nbsp`](NK-STYLE-preposition-nbsp.md) | вне стандарта | info | Предлог не привязан к следующему слову |
+| [`NK-STYLE-quotes`](NK-STYLE-quotes.md) | вне стандарта | info | Прямые кавычки вместо «ёлочек» |
+| [`NK-STYLE-reference-nbsp`](NK-STYLE-reference-nbsp.md) | вне стандарта | info | Номер в ссылке отделён разрывным пробелом |

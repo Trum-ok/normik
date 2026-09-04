@@ -20,7 +20,7 @@ BUILTIN_PACKAGE = "nk.profiles"
 DEFAULT_PROFILE = "base"
 PROFILE_SUFFIX = ".toml"
 
-_TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "rules"})
+_TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "enable", "rules"})
 _RULE_KEYS = frozenset({"severity", "params"})
 
 
@@ -38,11 +38,18 @@ class Profile:
 
     name: str = "base"
     disabled: frozenset[str] = frozenset()
+    enabled: frozenset[str] = frozenset()
+    """Правила, выключенные по умолчанию, но нужные этой кафедре."""
+
     severities: Mapping[str, Severity] = field(default_factory=dict)
     params: Mapping[str, Params] = field(default_factory=dict)
 
     def is_disabled(self, rule_id: str) -> bool:
         return rule_id in self.disabled
+
+    def is_enabled(self, rule_id: str) -> bool:
+        """Включено ли профилем правило, выключенное по умолчанию."""
+        return rule_id in self.enabled
 
     def severity_for(self, rule_id: str, default: Severity) -> Severity:
         return self.severities.get(rule_id, default)
@@ -52,7 +59,7 @@ class Profile:
 
     def mentioned_rules(self) -> frozenset[str]:
         """Правила, названные профилем явно — для проверки на опечатки в идентификаторах."""
-        return frozenset(self.disabled | self.severities.keys() | self.params.keys())
+        return frozenset(self.disabled | self.enabled | self.severities.keys() | self.params.keys())
 
     def resolve(self, defaults: Mapping[str, Params]) -> "Profile":
         """Слить значения по умолчанию из объявлений правил с переопределениями профиля."""
@@ -62,6 +69,7 @@ class Profile:
         return Profile(
             name=self.name,
             disabled=self.disabled,
+            enabled=self.enabled,
             severities=self.severities,
             params=merged,
         )
@@ -154,6 +162,7 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
     return {
         "name": child.get("name", parent.get("name")),
         "disable": [*parent.get("disable", []), *child.get("disable", [])],
+        "enable": [*parent.get("enable", []), *child.get("enable", [])],
         "rules": rules,
     }
 
@@ -172,6 +181,7 @@ def _build(data: dict[str, Any]) -> Profile:
     return Profile(
         name=str(data.get("name") or DEFAULT_PROFILE),
         disabled=frozenset(data.get("disable", [])),
+        enabled=frozenset(data.get("enable", [])),
         severities=severities,
         params=params,
     )

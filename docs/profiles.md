@@ -43,6 +43,18 @@ keywords_max = 20
 Готовый образец для копирования —
 [`profiles/example-university.toml`](https://github.com/Trum-ok/normik/blob/master/profiles/example-university.toml).
 
+## Правила, выключенные по умолчанию
+
+Часть правил даёт много находок, а требованием стандарта не является — такие
+выключены по умолчанию и включаются явно:
+
+```toml
+enable = ["NK-STYLE-preposition-nbsp"]
+```
+
+На странице такого правила стоит пометка о том, что оно выключено. Ключ
+`--select` тоже включает их: `nk check chapters --select NK-STYLE-preposition-nbsp`.
+
 ## Проверка профиля
 
 Опечатка в идентификаторе правила — ошибка, а не молчаливое отключение

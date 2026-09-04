@@ -77,3 +77,50 @@ def test_validate_profile_rejects_typos(three_rules: RuleRegistry) -> None:
 
     with pytest.raises(ProfileError, match="G732-ф"):
         validate_profile(profile, three_rules)
+
+
+def test_default_off_rule_is_skipped(registry: RuleRegistry) -> None:
+    @rule(
+        id="NK-STYLE-шумное",
+        clause="",
+        severity=Severity.INFO,
+        title="Шумное правило",
+        default_off=True,
+        registry=registry,
+    )
+    def noisy(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    assert select_rules(registry) == ()
+
+
+def test_profile_enables_a_default_off_rule(registry: RuleRegistry) -> None:
+    @rule(
+        id="NK-STYLE-шумное",
+        clause="",
+        severity=Severity.INFO,
+        title="Шумное правило",
+        default_off=True,
+        registry=registry,
+    )
+    def noisy(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    chosen = select_rules(registry, profile=Profile(enabled=frozenset({"NK-STYLE-шумное"})))
+    assert [impl.id for impl in chosen] == ["NK-STYLE-шумное"]
+
+
+def test_select_overrides_default_off(registry: RuleRegistry) -> None:
+    @rule(
+        id="NK-STYLE-шумное",
+        clause="",
+        severity=Severity.INFO,
+        title="Шумное правило",
+        default_off=True,
+        registry=registry,
+    )
+    def noisy(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    chosen = select_rules(registry, select=["NK-STYLE-шумное"])
+    assert [impl.id for impl in chosen] == ["NK-STYLE-шумное"]

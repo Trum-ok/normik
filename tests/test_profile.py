@@ -166,3 +166,19 @@ def test_invalid_severity(tmp_path: Path) -> None:
 
     with pytest.raises(ProfileError, match="недопустимый уровень"):
         load_profile(path)
+
+
+def test_enable_is_read_from_toml(tmp_path: Path) -> None:
+    path = write(tmp_path, "кафедра.toml", 'enable = ["NK-STYLE-preposition-nbsp"]\n')
+
+    profile = load_profile(path)
+
+    assert profile.is_enabled("NK-STYLE-preposition-nbsp")
+    assert "NK-STYLE-preposition-nbsp" in profile.mentioned_rules()
+
+
+def test_enable_accumulates_through_extends(tmp_path: Path) -> None:
+    write(tmp_path, "родитель.toml", 'enable = ["NK-STYLE-a"]\n')
+    child = write(tmp_path, "ребёнок.toml", 'extends = "родитель"\nenable = ["NK-STYLE-b"]\n')
+
+    assert load_profile(child).enabled == frozenset({"NK-STYLE-a", "NK-STYLE-b"})

@@ -40,7 +40,13 @@ def select_rules(
     иначе опечатка молча выключает проверку.
     """
     if select is None:
-        chosen = list(registry.all())
+        # Правило, выключенное по умолчанию, попадает в набор только явно:
+        # профилем или перечислением в --select.
+        chosen = [
+            impl
+            for impl in registry.all()
+            if not impl.default_off or (profile is not None and profile.is_enabled(impl.id))
+        ]
     else:
         chosen = [_require(registry, rule_id) for rule_id in select]
 
