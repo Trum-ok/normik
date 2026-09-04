@@ -9,6 +9,9 @@ from nk.core.document import CONTEXT_RADIUS
 from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult, Suppressed
 
+#: Метки уровней в выводе для человека и для агента. Отделены от значения
+#: перечисления намеренно: значение — часть контракта JSON и меняться не может,
+#: а метка — вопрос представления, и однажды она может стать русской.
 SEVERITY_LABELS: dict[Severity, str] = {
     Severity.ERROR: "error",
     Severity.WARNING: "warning",
