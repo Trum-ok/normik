@@ -5,8 +5,9 @@ from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
+from nk.core.headings import APPENDIX_LETTERS
 from nk.core.rule import rule
-from nk.rules._shared import APPENDIX_LETTERS, heading_text, headings, normalize_heading
+from nk.rules._shared import heading_text, headings, normalize_heading
 
 DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)")
 

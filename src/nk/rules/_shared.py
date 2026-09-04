@@ -192,9 +192,6 @@ def is_numbered_environment(name: str) -> bool:
     return not name.endswith("*") and name != "displaymath"
 
 
-#: Прописные буквы кириллицы, которыми обозначают приложения.
-APPENDIX_LETTERS = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
-
 DOCUMENT_ENVIRONMENT = "document"
 CONTENTS_COMMAND = "tableofcontents"
 

@@ -32,6 +32,9 @@ BASE_DEPTH: Mapping[str, int] = {
 #: Команды, начинающие новую страницу.
 PAGE_BREAK_COMMANDS = frozenset({"newpage", "clearpage", "cleardoublepage", "pagebreak"})
 
+#: Обозначения приложений: прописные буквы кириллицы, кроме исключённых стандартом.
+APPENDIX_LETTERS = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
+
 #: Уровень команды, которая рубрикацией не является.
 NOT_A_HEADING = 0
 

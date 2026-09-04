@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass
 
 from nk.core.document import Command, Document, Environment
+from nk.core.headings import APPENDIX_LETTERS
 from nk.core.numbering import EQUATION, FIGURE, TABLE, Numbered, Numbering, Scheme, SchemeChange
 
 #: Окружения, дающие номер объекту соответствующего вида.
@@ -38,8 +39,6 @@ APPENDIX_COMMAND = "appendix"
 WITHIN_COMMANDS = frozenset({"counterwithin", "counterwithin*", "numberwithin"})
 RENEW_COMMAND = "renewcommand"
 
-#: Обозначения приложений: прописные буквы кириллицы, кроме исключённых стандартом.
-APPENDIX_LETTERS = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
 _APPENDIX_HEADING = re.compile(r"^\s*ПРИЛОЖЕНИЕ\s+(\S+)")
 _THE_COUNTER = re.compile(r"^\\the(figure|table|equation)$")
 _COMMANDS = re.compile(r"\\[A-Za-z]+\*?")

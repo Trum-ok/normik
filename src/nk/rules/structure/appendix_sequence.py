@@ -5,9 +5,9 @@ from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
+from nk.core.headings import APPENDIX_LETTERS
 from nk.core.rule import rule
 from nk.rules._shared import (
-    APPENDIX_LETTERS,
     heading_text,
     normalize_heading,
     ordered_headings,
