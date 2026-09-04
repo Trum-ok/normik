@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
+    APPENDIX_REFERENCE,
     heading_text,
     is_full_document,
     normalize_heading,
@@ -14,8 +15,6 @@ from nk.rules._shared import (
 )
 
 DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
-#: «в приложении А», «см. приложение~Б»
-REFERENCE = re.compile(r"приложени\w*\s*~?\s*([А-Я])\b")
 
 
 @rule(
@@ -44,7 +43,9 @@ def appendix_no_reference(doc: Document) -> Iterable[Finding]:
         return
 
     referenced = {
-        match.group(1) for line in doc.iter_lines() for match in REFERENCE.finditer(line.stripped)
+        match.group(1)
+        for line in doc.iter_lines()
+        for match in APPENDIX_REFERENCE.finditer(line.stripped)
     }
     for command in ordered_headings(doc):
         match = DESIGNATION.match(normalize_heading(heading_text(command)))

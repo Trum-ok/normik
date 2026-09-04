@@ -1,16 +1,12 @@
 """Сведения об объёме реферата, оформленные не в строку."""
 
-import re
 from collections.abc import Iterable
 from itertools import pairwise
 
 from nk.core.document import Document, Line
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import section_lines, structural_headings
-
-#: «45 с.», «3 рис.», «12 источн.» — элементы сведений об объёме.
-VOLUME_ITEM = re.compile(r"\d+\s*~?\s*(?:с|кн|рис|табл|источн|прил|ил)\.")
+from nk.rules._shared import VOLUME_ITEM, section_lines, structural_headings
 
 LIST_ENVIRONMENTS = frozenset({"itemize", "enumerate", "description"})
 LINE_BREAK = "\\\\"

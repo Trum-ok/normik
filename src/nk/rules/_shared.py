@@ -5,10 +5,11 @@
 """
 
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 
 from nk.core.document import Command, Document, Environment, Line, Span
 from nk.core.elements import canonical_element, normalize_element
+from nk.core.headings import PAGE_BREAK_COMMANDS
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
@@ -79,6 +80,32 @@ def first_letter(text: str) -> str:
         if char.isalpha():
             return char
     return ""
+
+
+def first_outside_reference(
+    doc: Document, environment: Environment, keys: Iterable[str]
+) -> Command | None:
+    """Первая ссылка на объект в порядке отчёта, не считая ссылок внутри него самого."""
+    wanted = set(keys)
+    for command in ordered_commands(doc, *REF_COMMANDS):
+        if command.path == environment.path and environment.span.contains(command.lineno):
+            continue
+        for arg in command.args:
+            if any(key.strip() in wanted for key in arg.split(",")):
+                return command
+    return None
+
+
+def is_below(doc: Document, command: Command, span: Span) -> bool:
+    """Стоит ли команда ниже диапазона по порядку отчёта, а не по алфавиту файлов."""
+    return (doc.file_index(command.path), command.lineno) > (doc.file_index(span.path), span.end)
+
+
+def place(command: Command, span: Span) -> str:
+    """Место команды для сообщения: файл указывается, только если он другой."""
+    if command.path == span.path:
+        return f"строка {command.lineno}"
+    return f"{command.path.name}, строка {command.lineno}"
 
 
 def has_graphic(environment: Environment) -> bool:
@@ -199,6 +226,9 @@ def section_lines(doc: Document, command: Command) -> list[Line]:
     return [line for line in doc.lines_of(command.path) if command.span.end < line.lineno <= end]
 
 
+#: «45 с.», «3 рис.», «12 источн.» — элементы сведений об объёме отчёта.
+VOLUME_ITEM = re.compile(r"\d+\s*~?\s*(?:с|кн|рис|табл|источн|прил|ил)\.")
+
 KEYWORDS_PREFIX = re.compile(r"^\s*(?:\\\w+\{)?\s*КЛЮЧЕВЫЕ\s+СЛОВА\s*:", re.IGNORECASE)
 
 
@@ -222,6 +252,42 @@ def keyword_lists(doc: Document) -> Iterator[tuple[Line, list[str]]]:
         yield line, [word.strip() for word in text.split(",") if word.strip()]
 
 
+#: Термин и его определение разделяют тире; дефис на этом месте разбирают
+#: правила 6.14 и 6.15, порядку записей он не мешает.
+LISTING_SEPARATOR = re.compile(r"\s+[—–-]\s+")
+
+
+def listing_entries(doc: Document, elements: frozenset[str]) -> Iterator[tuple[Line, str]]:
+    """Записи перечня терминов или сокращений: строка и её левая часть.
+
+    Вводная фраза перечня разделителя не содержит и записью не считается.
+    """
+    for command, element in structural_headings(doc):
+        if element not in elements:
+            continue
+        for line in section_lines(doc, command):
+            text = visible_text(line.stripped).strip()
+            match = LISTING_SEPARATOR.search(text)
+            if match is None:
+                continue
+            left = text[: match.start()].strip()
+            if left:
+                yield line, left
+
+
+def alphabet_key(text: str) -> str:
+    """Ключ сравнения по алфавиту: регистр не различается, «ё» идёт вместе с «е»."""
+    return text.casefold().replace("ё", "е")
+
+
+def alphabet_of(text: str) -> str:
+    """Алфавит первой буквы записи: перечень с латинскими сокращениями ведут отдельно."""
+    for char in text.casefold():
+        if char.isalpha():
+            return "latin" if char.isascii() else "cyrillic"
+    return ""
+
+
 def capitalize_first(text: str) -> str:
     """Поднять первую видимую букву в регистре, пропуская имена команд."""
     index = 0
@@ -239,7 +305,30 @@ def capitalize_first(text: str) -> str:
 
 
 APPENDIX_DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)")
+#: «в приложении А», «см. приложение~Б» — упоминание приложения в тексте.
+APPENDIX_REFERENCE = re.compile(r"приложени\w*\s*~?\s*([А-Я])\b")
 SECTION_LEVEL = 1
+
+#: Команды разрыва страницы в том виде, в каком они встречаются в строке.
+PAGE_BREAKS = tuple(f"\\{name}" for name in sorted(PAGE_BREAK_COMMANDS))
+
+
+def previous_content(doc: Document, command: Command) -> str | None:
+    """Ближайшая непустая строка выше команды либо ``None``, если её нет.
+
+    Рубрика в начале файла даёт ``None``: то, что стоит перед ней, осталось
+    в файле, который её включает.
+    """
+    for lineno in range(command.lineno - 1, 0, -1):
+        line = doc.line_at(command.path, lineno)
+        if line is not None and not line.is_blank:
+            return line.stripped.lstrip()
+    return None
+
+
+def starts_page(previous: str) -> bool:
+    """Начинает ли рубрика после этой строки новую страницу."""
+    return any(previous.startswith(mark) for mark in PAGE_BREAKS)
 
 
 def appendix_spans(doc: Document) -> list[tuple[Command, str, Span]]:
