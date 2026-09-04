@@ -1,0 +1,39 @@
+version: 2
+
+updates:
+  # Python-зависимости: pyproject.toml + uv.lock.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Moscow
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Мелкие обновления — одним PR, мажорные приходят по отдельности.
+      python-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # Экшены в workflow'ах и в composite-экшене .github/actions/setup.
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Moscow
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
