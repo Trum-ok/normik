@@ -1,4 +1,4 @@
-.PHONY: lint format test check docs docs-serve
+.PHONY: lint format test coverage check docs docs-serve
 
 package ?= src tests
 
@@ -13,6 +13,9 @@ format:
 
 test:
 	uv run pytest
+
+coverage:
+	uv run pytest --cov --cov-report=term-missing --cov-report=html
 
 check: lint test
 

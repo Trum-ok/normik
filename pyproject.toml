@@ -50,6 +50,7 @@ exclude = [".cache", ".github", ".idea", "site", "local"]
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.16.5",
     "ty>=0.0.78",
 ]
@@ -63,6 +64,16 @@ docs = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+# Покрытие считается только по явному запросу: make coverage. В обычный прогон
+# и в CI не включается, порог покрытия не задаётся.
+[tool.coverage.run]
+source = ["nk"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
 
 [tool.ruff]
 line-length = 100
