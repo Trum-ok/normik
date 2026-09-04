@@ -6,7 +6,7 @@ from pathlib import Path
 
 from nk.core.document import CONTEXT_RADIUS
 from nk.core.finding import Finding, Severity
-from nk.core.runner import Suppressed
+from nk.core.runner import RunResult, Suppressed
 
 SEVERITY_LABELS: dict[Severity, str] = {
     Severity.ERROR: "error",
@@ -75,6 +75,24 @@ def field_lines(label: str, value: str, indent: str) -> list[str]:
     if "\n" not in value:
         return [f"{indent}{label}: {value}"]
     return [f"{indent}{label}:", *(f"{indent}  {line.strip()}" for line in value.splitlines())]
+
+
+FIX_FLAG = "--fix"
+DIFF_FLAG = "--diff"
+
+
+def fixable_line(result: RunResult, command: str | None = None) -> str | None:
+    """Сколько находок правятся машинно и чем это сделать.
+
+    Ключ ``--fix`` в уже отданной команде означает, что правки применены, а
+    оставшееся ими не берётся: советовать тот же ключ повторно незачем.
+    """
+    if not result.fixable:
+        return None
+    counted = f"Исправимо машинно: {result.fixable} из {len(result.findings)}"
+    if command is None or FIX_FLAG in command.split():
+        return f"{counted}."
+    return f"{counted}. Применить: {command} {FIX_FLAG}, посмотреть правки: {DIFF_FLAG}."
 
 
 def suppressed_line(suppressed: Suppressed) -> str | None:

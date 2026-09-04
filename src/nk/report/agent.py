@@ -13,6 +13,7 @@ from nk.report.common import (
     caret_line,
     context_start,
     field_lines,
+    fixable_line,
     group_by_file,
     summary_line,
     suppressed_line,
@@ -36,6 +37,9 @@ def render(result: RunResult, *, command: str, limit: int = DEFAULT_LIMIT) -> st
 
     lines.append("")
     lines.append(f"Итого: {summary_line(result.summary)}.")
+    fixable = fixable_line(result, command)
+    if fixable:
+        lines.append(fixable)
     hidden_by_config = suppressed_line(result.suppressed)
     if hidden_by_config:
         lines.append(hidden_by_config)

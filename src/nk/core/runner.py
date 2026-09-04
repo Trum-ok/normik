@@ -60,6 +60,11 @@ class RunResult:
         return counts
 
     @property
+    def fixable(self) -> int:
+        """Сколько находок правятся машинно ключом ``--fix``."""
+        return sum(1 for finding in self.findings if finding.fix is not None)
+
+    @property
     def has_errors(self) -> bool:
         return any(finding.severity is Severity.ERROR for finding in self.findings)
 

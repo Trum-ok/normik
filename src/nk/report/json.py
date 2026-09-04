@@ -4,6 +4,7 @@
 поэтому версия схемы вынесена в поле ``schema_version``.
 
 1.1 — добавлено поле ``suppressed`` со счётчиками скрытых находок.
+1.2 — у находки появился признак ``fixable``, в сводке — их число.
 """
 
 import json
@@ -12,7 +13,7 @@ from typing import Any
 from nk.core.finding import Finding
 from nk.core.runner import RunResult
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 TOOL_NAME = "nk"
 
 
@@ -26,6 +27,7 @@ def render(result: RunResult) -> str:
         "summary": {
             **{level.value: count for level, count in result.summary.items()},
             "files_checked": result.files_checked,
+            "fixable": result.fixable,
         },
         "suppressed": {
             "inline": result.suppressed.inline,
@@ -52,4 +54,5 @@ def _finding(finding: Finding) -> dict[str, Any]:
         "excerpt": finding.excerpt,
         "context": list(finding.context),
         "suggestion": finding.suggestion,
+        "fixable": finding.fix is not None,
     }

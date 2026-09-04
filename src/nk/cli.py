@@ -297,13 +297,13 @@ def _write_baseline(path: Path, result: RunResult) -> None:
 def _report(result: RunResult, output_format: OutputFormat, limit: int) -> None:
     # agent и json пишутся в stdout напрямую: Rich переносил бы длинные строки,
     # а оба формата копируются и разбираются как есть.
+    command = " ".join(["nk", *sys.argv[1:]])
     if output_format is OutputFormat.JSON:
         sys.stdout.write(json_report.render(result))
     elif output_format is OutputFormat.AGENT:
-        command = " ".join(["nk", *sys.argv[1:]])
         sys.stdout.write(agent.render(result, command=command, limit=limit))
     else:
-        human.render(result, console)
+        human.render(result, console, command=command)
 
 
 def _split(value: str | None) -> list[str] | None:

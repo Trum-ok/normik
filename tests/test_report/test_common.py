@@ -5,7 +5,10 @@ from helpers import make_finding
 
 from nk.core.finding import Fix
 from nk.core.position import Region
-from nk.report.common import caret_line
+from nk.core.runner import RunResult
+from nk.report.common import caret_line, fixable_line
+
+FIX = Fix(region=Region.in_line(Path("report.tex"), 145, 3, 4), replacement="—")
 
 
 def test_caret_stands_under_the_column() -> None:
@@ -46,3 +49,28 @@ def test_caret_stays_one_character_even_when_the_fix_is_wider() -> None:
     )
 
     assert caret_line(finding, "на рис. 1") == "  ^"
+
+
+def test_fixable_line_counts_and_offers_the_command() -> None:
+    result = RunResult(
+        profile="base",
+        findings=(replace(make_finding(), fix=FIX), make_finding(rule_id="G732-другое")),
+    )
+
+    assert fixable_line(result, "nk check report.tex") == (
+        "Исправимо машинно: 1 из 2. Применить: nk check report.tex --fix, "
+        "посмотреть правки: --diff."
+    )
+
+
+def test_no_fixable_line_when_nothing_is_fixable() -> None:
+    result = RunResult(profile="base", findings=(make_finding(),))
+
+    assert fixable_line(result, "nk check report.tex") is None
+
+
+def test_fix_is_not_offered_twice() -> None:
+    """Ключ уже отдан: оставшееся им не берётся, советовать его снова незачем."""
+    result = RunResult(profile="base", findings=(replace(make_finding(), fix=FIX),))
+
+    assert fixable_line(result, "nk check report.tex --fix") == "Исправимо машинно: 1 из 1."

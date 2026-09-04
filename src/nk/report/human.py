@@ -14,6 +14,7 @@ from nk.report.common import (
     caret_line,
     context_start,
     field_lines,
+    fixable_line,
     group_by_file,
     summary_line,
     suppressed_line,
@@ -29,7 +30,7 @@ MARKER = "> "
 INDENT = "  "
 
 
-def render(result: RunResult, console: Console) -> None:
+def render(result: RunResult, console: Console, command: str | None = None) -> None:
     for path, findings in group_by_file(result.findings):
         console.print()
         console.print(Text(str(path), style="bold underline"))
@@ -38,6 +39,9 @@ def render(result: RunResult, console: Console) -> None:
 
     console.print()
     console.print(f"Итого: {summary_line(result.summary)}.")
+    fixable = fixable_line(result, command)
+    if fixable:
+        console.print(Text(fixable, style="dim"))
     hidden = suppressed_line(result.suppressed)
     if hidden:
         console.print(Text(hidden, style="dim"))

@@ -38,6 +38,7 @@ report.tex
       7 | \end{figure}
 
 Итого: 1 error, 1 warning, 0 info.
+Исправимо машинно: 1 из 2. Применить: nk check report.tex --fix, посмотреть правки: --diff.
 Машинный вывод: --format json, вывод для агента: --format agent
 ```
 
