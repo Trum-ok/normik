@@ -45,3 +45,6 @@ local/
 
 # Ruff
 .ruff_cache/
+
+# Кэш сборки документации
+.cache/

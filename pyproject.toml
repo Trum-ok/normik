@@ -20,6 +20,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/nk"]
 
+[tool.hatch.build.targets.sdist]
+exclude = [".cache", ".github", ".idea", "site", "local"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
