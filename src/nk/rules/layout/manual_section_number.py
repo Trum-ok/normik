@@ -47,7 +47,7 @@ def manual_section_number(doc: Document) -> Iterable[Finding]:
     """
     for command in headings(doc):
         text = heading_text(command)
-        if structural_element(text) is not None:
+        if structural_element(doc, text) is not None:
             continue
         match = MANUAL_NUMBER.match(text)
         if match is None:

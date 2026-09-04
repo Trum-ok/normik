@@ -32,7 +32,7 @@ def structural_heading_case(doc: Document) -> Iterable[Finding]:
     """
     for command in headings(doc):
         text = heading_text(command)
-        element = structural_element(text)
+        element = structural_element(doc, text)
         if element is None:
             continue
         visible = visible_text(text)

@@ -10,6 +10,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from nk.core.elements import STRUCTURAL_ELEMENTS, normalize_element
 from nk.core.finding import Severity
 
 #: ``Any`` — параметры приходят из TOML, их типы определяет автор правила, а не ядро.
@@ -20,8 +21,9 @@ BUILTIN_PACKAGE = "nk.profiles"
 DEFAULT_PROFILE = "base"
 PROFILE_SUFFIX = ".toml"
 
-_TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "enable", "rules"})
+_TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "enable", "rules", "elements"})
 _RULE_KEYS = frozenset({"severity", "params"})
+_ELEMENT_KEYS = frozenset({"aliases"})
 
 
 class ProfileError(ValueError):
@@ -43,6 +45,8 @@ class Profile:
 
     severities: Mapping[str, Severity] = field(default_factory=dict)
     params: Mapping[str, Params] = field(default_factory=dict)
+    element_aliases: Mapping[str, str] = field(default_factory=dict)
+    """Наименования структурных элементов кафедры и канонические наименования стандарта."""
 
     def is_disabled(self, rule_id: str) -> bool:
         return rule_id in self.disabled
@@ -72,6 +76,7 @@ class Profile:
             enabled=self.enabled,
             severities=self.severities,
             params=merged,
+            element_aliases=self.element_aliases,
         )
 
 
@@ -144,6 +149,15 @@ def _parse(text: str, origin: str) -> dict[str, Any]:
             raise ProfileError(
                 f"профиль {origin}: правило {rule_id!r}, неизвестные ключи {sorted(extra)}"
             )
+
+    elements = data.get("elements", {})
+    if not isinstance(elements, dict):
+        raise ProfileError(f"профиль {origin}: секция [elements] должна быть таблицей")
+    unknown_elements = elements.keys() - _ELEMENT_KEYS
+    if unknown_elements:
+        raise ProfileError(
+            f"профиль {origin}: [elements], неизвестные ключи {sorted(unknown_elements)}"
+        )
     return data
 
 
@@ -164,6 +178,12 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
         "disable": [*parent.get("disable", []), *child.get("disable", [])],
         "enable": [*parent.get("enable", []), *child.get("enable", [])],
         "rules": rules,
+        "elements": {
+            "aliases": {
+                **parent.get("elements", {}).get("aliases", {}),
+                **child.get("elements", {}).get("aliases", {}),
+            }
+        },
     }
 
 
@@ -184,7 +204,28 @@ def _build(data: dict[str, Any]) -> Profile:
         enabled=frozenset(data.get("enable", [])),
         severities=severities,
         params=params,
+        element_aliases=_aliases(data.get("elements", {}).get("aliases", {})),
     )
+
+
+def _aliases(raw: object) -> dict[str, str]:
+    """Синонимы наименований: как называет элемент кафедра — как называет стандарт.
+
+    Наименование справа проверяется по стандарту: опечатка в нём иначе завела бы
+    синоним в никуда, и элемент молча перестал бы опознаваться.
+    """
+    if not isinstance(raw, dict):
+        raise ProfileError("профиль: [elements.aliases] должна быть таблицей")
+    found: dict[str, str] = {}
+    for name, canonical in raw.items():
+        target = normalize_element(str(canonical))
+        if target not in STRUCTURAL_ELEMENTS:
+            allowed = ", ".join(sorted(STRUCTURAL_ELEMENTS))
+            raise ProfileError(
+                f"синоним {name!r}: {canonical!r} не структурный элемент, допустимы: {allowed}"
+            )
+        found[normalize_element(str(name))] = target
+    return found
 
 
 def _severity(raw: object, rule_id: str) -> Severity:

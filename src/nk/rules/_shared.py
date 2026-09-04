@@ -8,6 +8,7 @@ import re
 from collections.abc import Iterator
 
 from nk.core.document import Command, Document, Environment, Line, Span
+from nk.core.elements import canonical_element, normalize_element
 
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
@@ -105,25 +106,6 @@ def first_tabular_line(environment: Environment) -> int | None:
     return min(starts) if starts else None
 
 
-#: Наименования структурных элементов отчёта по разделу 4 стандарта.
-STRUCTURAL_ELEMENTS = frozenset(
-    {
-        "СПИСОК ИСПОЛНИТЕЛЕЙ",
-        "РЕФЕРАТ",
-        "СОДЕРЖАНИЕ",
-        "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ",
-        "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ",
-        "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ",
-        "ВВЕДЕНИЕ",
-        "ЗАКЛЮЧЕНИЕ",
-        "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
-        "ПРИЛОЖЕНИЕ",
-    }
-)
-
-APPENDIX = "ПРИЛОЖЕНИЕ"
-
-
 def headings(doc: Document) -> Iterator[Command]:
     """Команды рубрикации, включая макросы шаблона кафедры."""
     yield from doc.structure.find_commands(*doc.headings.names)
@@ -145,18 +127,15 @@ def heading_text(command: Command) -> str:
 
 def normalize_heading(text: str) -> str:
     """Заголовок без команд, знаков препинания и различий в регистре."""
-    cleaned = visible_text(text).upper().replace(",", " ").replace(".", " ")
-    return one_line(cleaned)
+    return normalize_element(visible_text(text))
 
 
-def structural_element(text: str) -> str | None:
-    """Каноническое наименование структурного элемента либо ``None``."""
-    normalized = normalize_heading(text)
-    if normalized in STRUCTURAL_ELEMENTS:
-        return normalized
-    if normalized.startswith(f"{APPENDIX} "):
-        return APPENDIX
-    return None
+def structural_element(doc: Document, text: str) -> str | None:
+    """Каноническое наименование структурного элемента либо ``None``.
+
+    Наименования, принятые кафедрой вместо стандартных, задаёт профиль.
+    """
+    return canonical_element(normalize_heading(text), doc.profile.element_aliases)
 
 
 def is_numbered(doc: Document, command: Command) -> bool:
@@ -207,21 +186,6 @@ def is_numbered_environment(name: str) -> bool:
     return not name.endswith("*") and name != "displaymath"
 
 
-#: Порядок структурных элементов по разделу 4. Термины и объединённый перечень
-#: занимают одно место, поэтому ранг у них общий.
-ELEMENT_ORDER: dict[str, int] = {
-    "СПИСОК ИСПОЛНИТЕЛЕЙ": 1,
-    "РЕФЕРАТ": 2,
-    "СОДЕРЖАНИЕ": 3,
-    "ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ": 4,
-    "ОПРЕДЕЛЕНИЯ ОБОЗНАЧЕНИЯ И СОКРАЩЕНИЯ": 4,
-    "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ": 5,
-    "ВВЕДЕНИЕ": 6,
-    "ЗАКЛЮЧЕНИЕ": 7,
-    "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ": 8,
-    APPENDIX: 9,
-}
-
 #: Прописные буквы кириллицы, которыми обозначают приложения.
 APPENDIX_LETTERS = "АБВГДЕЖИКЛМНПРСТУФХЦШЩЭЮЯ"
 
@@ -242,7 +206,7 @@ def structural_headings(doc: Document) -> list[tuple[Command, str]]:
     """Заголовки структурных элементов в порядке следования, с каноническим наименованием."""
     found: list[tuple[Command, str]] = []
     for command in ordered_headings(doc):
-        element = structural_element(heading_text(command))
+        element = structural_element(doc, heading_text(command))
         if element is not None:
             found.append((command, element))
     return found

@@ -3,9 +3,10 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
+from nk.core.elements import ELEMENT_ORDER
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.rules._shared import ELEMENT_ORDER, is_full_document, structural_headings
+from nk.rules._shared import is_full_document, structural_headings
 
 
 @rule(

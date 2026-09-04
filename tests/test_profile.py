@@ -182,3 +182,55 @@ def test_enable_accumulates_through_extends(tmp_path: Path) -> None:
     child = write(tmp_path, "ребёнок.toml", 'extends = "родитель"\nenable = ["NK-STYLE-b"]\n')
 
     assert load_profile(child).enabled == frozenset({"NK-STYLE-a", "NK-STYLE-b"})
+
+
+def test_element_aliases_are_normalized(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "кафедра.toml",
+        '[elements.aliases]\n"Список литературы." = "список использованных источников"\n',
+    )
+
+    profile = load_profile(path)
+
+    assert profile.element_aliases == {"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"}
+
+
+def test_alias_to_an_unknown_element_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "кафедра.toml", '[elements.aliases]\n"ЛИТЕРАТУРА" = "БИБЛИОГРАФИЯ"\n')
+
+    with pytest.raises(ProfileError, match="не структурный элемент"):
+        load_profile(path)
+
+
+def test_unknown_key_in_elements_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "кафедра.toml", "[elements]\nextra = []\n")
+
+    with pytest.raises(ProfileError, match="неизвестные ключи"):
+        load_profile(path)
+
+
+def test_element_aliases_are_inherited_and_extended(tmp_path: Path) -> None:
+    write(
+        tmp_path,
+        "основа.toml",
+        '[elements.aliases]\n"СПИСОК ЛИТЕРАТУРЫ" = "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"\n',
+    )
+    path = write(
+        tmp_path,
+        "кафедра.toml",
+        'extends = "основа.toml"\n[elements.aliases]\n"ОБОЗНАЧЕНИЯ" = "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ"\n',
+    )
+
+    profile = load_profile(path)
+
+    assert profile.element_aliases == {
+        "СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
+        "ОБОЗНАЧЕНИЯ": "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ",
+    }
+
+
+def test_resolve_keeps_element_aliases() -> None:
+    profile = Profile(element_aliases={"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"})
+
+    assert profile.resolve({}).element_aliases == profile.element_aliases

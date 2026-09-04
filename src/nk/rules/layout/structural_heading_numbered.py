@@ -33,7 +33,7 @@ def structural_heading_numbered(doc: Document) -> Iterable[Finding]:
     """
     for command in headings(doc):
         text = heading_text(command)
-        element = structural_element(text)
+        element = structural_element(doc, text)
         if element is None or not is_numbered(doc, command):
             continue
         alias = doc.headings.alias_of(command.name)
