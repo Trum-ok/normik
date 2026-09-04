@@ -131,6 +131,54 @@ def test_unclosed_group_is_reported() -> None:
     assert issues == (GROUP_UNCLOSED,)
 
 
+def test_commands_inside_arguments_are_visible() -> None:
+    structure, issues = scan(
+        "\\caption{Схема\\label{fig:a}}\n"
+        "См.\\footnote{рисунок~\\ref{fig:a}} и \\emph{\\cite{ivanov}}.\n"
+    )
+
+    assert issues == ()
+    assert [c.name for c in structure.commands] == [
+        "caption",
+        "label",
+        "footnote",
+        "ref",
+        "emph",
+        "cite",
+    ]
+    label = next(structure.find_commands("label"))
+    assert (label.lineno, label.col, label.args) == (1, 15, ("fig:a",))
+
+
+def test_environment_inside_argument_is_scanned() -> None:
+    structure, issues = scan("\\parbox{5cm}{\\begin{tabular}{c}\\label{tab:a}\\end{tabular}}\n")
+
+    assert issues == ()
+    tabular = next(structure.find_environments("tabular"))
+    assert [c.name for c in tabular.commands] == ["label"]
+    assert [c.name for c in structure.commands] == ["parbox"]
+
+
+def test_macro_definition_body_is_not_scanned() -> None:
+    structure, issues = scan(
+        "\\newcommand{\\ssr}[1]{\\section*{#1}\\label{sec:#1}}\n"
+        "\\renewcommand*{\\thefigure}{\\arabic{figure}}\n"
+        "\\def\\figref#1{рисунок~\\ref{fig:#1}}\n"
+        "\\newenvironment{box}{\\begin{center}}{\\end{center}}\n"
+        "\\ssr{ВВЕДЕНИЕ}\n"
+    )
+
+    assert issues == ()
+    assert [c.name for c in structure.commands] == [
+        "newcommand",
+        "renewcommand*",
+        "def",
+        "newenvironment",
+        "ssr",
+    ]
+    assert list(structure.find_environments()) == []
+
+
 def test_starred_commands_keep_the_star() -> None:
     structure, _ = scan("\\section*{ВВЕДЕНИЕ}\n")
     assert [command.name for command in structure.find_commands()] == ["section*"]

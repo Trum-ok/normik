@@ -4,6 +4,11 @@
 позиция каждого узла сохраняется. Готовые библиотеки огрубляют позиции, а позиции
 у нас в требованиях.
 
+Команды внутри аргументов других команд видны наравне с остальными:
+``\\caption{Схема\\label{fig:a}}`` даёт и подпись, и метку, а ``\\ref`` в сноске
+или в ``\\textbf`` — обычную ссылку. Исключение — тела определений макросов:
+``\\section`` внутри ``\\newcommand`` заголовком не является.
+
 Ограничение, принятое сознательно: аргументы команды читаются только те, что идут
 непосредственно за именем и отделены пробелами или табуляцией. Перенос группы на
 следующую строку встречается редко, а жадное чтение через перевод строки
@@ -32,6 +37,25 @@ VERBATIM_ENVIRONMENTS = frozenset(
 
 #: Сколько групп аргументов читать за командой.
 MAX_GROUPS = 4
+
+#: Команды, чьи аргументы не сканируются: там тела макросов, а не текст отчёта.
+DEFINITION_COMMANDS = frozenset(
+    {
+        "newcommand",
+        "renewcommand",
+        "providecommand",
+        "DeclareRobustCommand",
+        "NewDocumentCommand",
+        "RenewDocumentCommand",
+        "ProvideDocumentCommand",
+        "DeclareDocumentCommand",
+        "newenvironment",
+        "renewenvironment",
+        "NewDocumentEnvironment",
+        "RenewDocumentEnvironment",
+        "newcolumntype",
+    }
+)
 
 _COMMAND_NAME = re.compile(r"[A-Za-z]+\*?")
 
@@ -131,7 +155,7 @@ def _scan_file(path: Path, lines: Sequence[Line]) -> tuple[Structure, list[Parse
                     region=Region(path, Position(lineno, col), Position(end_lineno, end_col)),
                 )
             )
-            i = end
+            i = _next_position(text, name, match.end(), end)
 
     while len(stack) > 1:
         frame = stack[-1]
@@ -240,6 +264,32 @@ def _skip_verbatim(
         )
     )
     return at_end
+
+
+def _next_position(text: str, name: str, after_name: int, after_args: int) -> int:
+    """Откуда сканировать после команды.
+
+    Обычно — сразу за именем, чтобы команды внутри аргументов были видны.
+    Тела определений макросов непрозрачны: сканирование продолжается за ними.
+    """
+    if name == "def":
+        return _skip_definition(text, after_name)
+    if name.rstrip("*") in DEFINITION_COMMANDS:
+        return after_args
+    return after_name
+
+
+def _skip_definition(text: str, start: int) -> int:
+    """Позиция за телом ``\\def\\имя#1{тело}``.
+
+    Тело — первая группа в фигурных скобках на той же строке. Если её нет,
+    сканирование продолжается с места, где остановилось.
+    """
+    index = start
+    while index < len(text) and text[index] not in "{\n":
+        index += 1
+    _, end = read_balanced(text, index)
+    return start if end is None else end
 
 
 def _finish(source: _Source, stack: list[_Frame], frame: _Frame, end_lineno: int) -> None:
