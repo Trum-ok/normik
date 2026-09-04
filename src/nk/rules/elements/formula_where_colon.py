@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.rules._text import is_code
 
 WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
 
@@ -28,9 +29,12 @@ def formula_where_colon(doc: Document) -> Iterable[Finding]:
 
     ## Как исправить
 
-    Убрать двоеточие после «где».
+    Убрать двоеточие после «где». Листинги и таблицы правило не
+    просматривает: там это содержимое кода или ячейки.
     """
     for line in doc.iter_lines():
+        if is_code(doc, line):
+            continue
         match = WHERE_WITH_COLON.match(line.stripped)
         if match is None:
             continue

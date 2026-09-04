@@ -38,7 +38,14 @@ def footnote_space(doc: Document) -> Iterable[Finding]:
         stripped = before.rstrip(" \t")
         if len(stripped) == len(before) or not stripped:
             continue
-        start = len(stripped) + 1
+        backslashes = len(stripped) - len(stripped.rstrip("\\"))
+        if backslashes and backslashes % 2 == 0:
+            # Перед пробелом «\\»: знак сноски и так начинает новую строку,
+            # отрывать его от слова тут нечему.
+            continue
+        # Нечётная косая — команда пробела «\ »: убирать нужно её целиком,
+        # иначе остаток слипнется со сноской в «\\footnote».
+        start = len(stripped) + 1 - backslashes % 2
         yield footnote_space.finding(
             doc,
             command.span,

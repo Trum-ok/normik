@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.rules._text import is_code
 
 #: Строка, начинающаяся со слова «Примечание» или «Примечания».
 NOTE_HEADER = re.compile(r"^\s*(примечани[ея])\b", re.IGNORECASE)
@@ -29,9 +30,12 @@ def note_capital(doc: Document) -> Iterable[Finding]:
 
     ## Как исправить
 
-    Заменить первую букву на прописную.
+    Заменить первую букву на прописную. Листинги и таблицы правило не
+    просматривает: там это содержимое кода или ячейки.
     """
     for line in doc.iter_lines():
+        if is_code(doc, line):
+            continue
         match = NOTE_HEADER.match(line.stripped)
         if match is None:
             continue
