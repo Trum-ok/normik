@@ -28,8 +28,16 @@ jobs:
       - name: ty
         run: uv run ty check src tests
 
+  # Нижняя граница requires-python и всё, что выше: линтер обещает работать
+  # на каждой из этих версий, значит на каждой и проверяется.
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
