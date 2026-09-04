@@ -6,6 +6,7 @@
 
 import re
 from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass
 
 from nk.core.document import Command, Document, Environment, Line, Span
 from nk.core.elements import canonical_element, normalize_element
@@ -439,8 +440,33 @@ VOLUME_ITEM = re.compile(r"\d+\s*~?\s*(?:с|кн|рис|табл|источн|п
 KEYWORDS_PREFIX = re.compile(r"^\s*(?:\\\w+\{)?\s*КЛЮЧЕВЫЕ\s+СЛОВА\s*:", re.IGNORECASE)
 
 
-def keyword_lists(doc: Document) -> Iterator[tuple[Line, list[str]]]:
-    """Строки перечня ключевых слов и сами слова.
+@dataclass(frozen=True, slots=True)
+class KeywordList:
+    """Перечень ключевых слов: строки исходника, слова и начало перечня."""
+
+    lines: tuple[Line, ...]
+    words: tuple[str, ...]
+    col: int
+    """Колонка, с которой перечень начинается в первой строке."""
+
+    @property
+    def line(self) -> Line:
+        return self.lines[0]
+
+    @property
+    def inline(self) -> str | None:
+        """Текст перечня, если он уложен в одну строку исходника.
+
+        У перечня, разорванного на несколько строк, между ними могут стоять
+        комментарии: заменять такой фрагмент целиком нельзя.
+        """
+        if len(self.lines) > 1:
+            return None
+        return self.line.stripped[self.col - 1 :].rstrip()
+
+
+def keyword_lists(doc: Document) -> Iterator[KeywordList]:
+    """Перечни ключевых слов документа.
 
     Перечень приводят в строку через запятые, поэтому берётся одна строка исходника
     вместе с продолжением до первой пустой строки.
@@ -450,13 +476,19 @@ def keyword_lists(doc: Document) -> Iterator[tuple[Line, list[str]]]:
         match = KEYWORDS_PREFIX.match(line.stripped)
         if match is None:
             continue
+        own = [line]
         parts = [line.stripped[match.end() :]]
         for following in lines[index + 1 :]:
             if following.path != line.path or following.is_blank:
                 break
+            own.append(following)
             parts.append(following.stripped)
         text = visible_text(" ".join(parts))
-        yield line, [word.strip() for word in text.split(",") if word.strip()]
+        yield KeywordList(
+            lines=tuple(own),
+            words=tuple(word.strip() for word in text.split(",") if word.strip()),
+            col=match.end() + 1,
+        )
 
 
 #: Термин и его определение разделяют тире; дефис на этом месте разбирают

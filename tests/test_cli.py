@@ -149,6 +149,23 @@ def test_profile_lowers_severity(tmp_path: Path, report: Path) -> None:
     assert f"  warning  {RULE_ID}" in result.stdout
 
 
+def test_pyproject_section_is_found_automatically(tmp_path: Path, report: Path) -> None:
+    config = tmp_path / "pyproject.toml"
+    config.write_text(
+        f'[project]\nname = "diploma"\n\n[tool.nk]\ndisable = ["{RULE_ID}"]\n', "utf-8"
+    )
+
+    assert runner.invoke(app, ["check", str(report)]).exit_code == EXIT_OK
+
+
+def test_explicit_profile_wins_over_the_found_config(tmp_path: Path, report: Path) -> None:
+    config = tmp_path / "nk.toml"
+    config.write_text(f'disable = ["{RULE_ID}"]\n', "utf-8")
+
+    result = runner.invoke(app, ["check", str(report), "--profile", "base"])
+    assert result.exit_code == EXIT_FOUND_ERRORS
+
+
 def test_json_output_is_parseable(report: Path) -> None:
     result = runner.invoke(app, ["check", str(report), "--format", "json"])
 

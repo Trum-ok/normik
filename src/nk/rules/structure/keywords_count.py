@@ -36,14 +36,14 @@ def keywords_count(doc: Document) -> Iterable[Finding]:
     lower = int(params["keywords_min"])
     upper = int(params["keywords_max"])
 
-    for line, keywords in keyword_lists(doc):
-        count = len(keywords)
+    for entry in keyword_lists(doc):
+        count = len(entry.words)
         if lower <= count <= upper:
             continue
         side = "меньше" if count < lower else "больше"
         yield keywords_count.finding(
             doc,
-            line,
+            entry.line,
             message=f"В перечне {count} ключевых слов — {side} допустимого.",
             requirement=(
                 f"Перечень ключевых слов включает от {lower} до {upper} слов "
