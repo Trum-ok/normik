@@ -15,7 +15,7 @@ from nk.core.elements import (
 )
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import (
     BIBLIOGRAPHY_ENVIRONMENT,
     BIBTEX_COMMANDS,
@@ -49,7 +49,7 @@ REQUIRED = (
 
 @rule(
     id="required-element-missing",
-    standards={G732: "4"},
+    standards={G732: "4", GR2105: "6.1.2"},
     severity=Severity.ERROR,
     title="Отсутствует обязательный структурный элемент",
     params={"required": list(REQUIRED), "excluded": []},

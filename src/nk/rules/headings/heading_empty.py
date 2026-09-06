@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import heading_level, heading_text, headings, visible_text
 
 #: Пункты и подпункты заголовков, как правило, не имеют.
@@ -14,7 +14,7 @@ TITLED_DEPTH = 2
 
 @rule(
     id="heading-empty",
-    standards={G732: "6.2.2"},
+    standards={G732: "6.2.2", GR2105: "6.6.1"},
     severity=Severity.ERROR,
     title="Раздел или подраздел без заголовка",
     deprecated_ids=("G732-6.2.2-heading-empty",),

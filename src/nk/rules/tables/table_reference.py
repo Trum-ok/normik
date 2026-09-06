@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import TABLE_ENVIRONMENTS, float_no_reference
 
 REQUIREMENT = "На все таблицы в отчёте должны быть ссылки со словом «таблица» и её номером."
@@ -13,7 +13,7 @@ REQUIREMENT = "На все таблицы в отчёте должны быть 
 
 @rule(
     id="table-no-reference",
-    standards={G732: "6.6.2"},
+    standards={G732: "6.6.2", GR2105: "6.8.3"},
     severity=Severity.ERROR,
     title="На таблицу нет ссылки в тексте",
     deprecated_ids=("G732-6.6.2-table-no-reference",),

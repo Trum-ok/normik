@@ -5,13 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import FIGURE_ENVIRONMENTS, float_position
 
 
 @rule(
     id="figure-position",
-    standards={G732: "6.5.1"},
+    standards={G732: "6.5.1", GR2105: "6.9.1"},
     severity=Severity.ERROR,
     title="Иллюстрация размещена выше первой ссылки на неё",
     deprecated_ids=("G732-6.5.1-figure-position",),

@@ -6,13 +6,13 @@ from nk.core.document import Document
 from nk.core.elements import TERMS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import listing_dash
 
 
 @rule(
     id="terms-dash",
-    standards={G732: "6.14"},
+    standards={G732: "6.14", GR2105: "6.1.2"},
     severity=Severity.WARNING,
     title="В перечне терминов определение отделено дефисом",
     fixable=True,

@@ -10,7 +10,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import heading_text, headings, one_line, structural_element
 
 #: «1 Введение», «2.3. Методика», «4.2.1 Расчёт»
@@ -22,7 +22,7 @@ MAX_PLAIN_DIGITS = 2
 
 @rule(
     id="manual-section-number",
-    standards={G732: "6.4.1"},
+    standards={G732: "6.4.1", GR2105: "6.5.4"},
     severity=Severity.ERROR,
     title="Номер раздела вписан в заголовок вручную",
     fixable=True,

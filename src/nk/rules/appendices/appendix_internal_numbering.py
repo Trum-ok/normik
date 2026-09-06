@@ -5,13 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import appendix_spans, heading_text, ordered_headings
 
 
 @rule(
     id="appendix-internal-numbering",
-    standards={G732: "6.17.6"},
+    standards={G732: "6.17.6", GR2105: "6.3.7"},
     severity=Severity.ERROR,
     title="Рубрика внутри приложения нумеруется без его обозначения",
     deprecated_ids=("G732-6.17.6-appendix-numbering",),

@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import reference_abbreviation
 
 SHORT_FORM = re.compile(r"\bтабл\.\s*~?\s*(?:\d|\\(?:ref|autoref|cref))", re.IGNORECASE)
@@ -14,7 +14,7 @@ SHORT_FORM = re.compile(r"\bтабл\.\s*~?\s*(?:\d|\\(?:ref|autoref|cref))", re
 
 @rule(
     id="table-reference-word",
-    standards={G732: "6.6.2"},
+    standards={G732: "6.6.2", GR2105: "6.8.3"},
     severity=Severity.WARNING,
     title="В ссылке на таблицу использовано сокращение «табл.»",
     deprecated_ids=("G732-6.6.2-reference-word",),

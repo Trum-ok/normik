@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import TABLE_ENVIRONMENTS, caption_findings, one_line
 
 #: «Таблица 1 — », «Табл. 2.3 -», «Таблица А.1»
@@ -15,7 +15,7 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Таблица|Табл\.)\s*[0-9А-ЯA-Z][0
 
 @rule(
     id="table-caption-manual-number",
-    standards={G732: "6.6.3"},
+    standards={G732: "6.6.3", GR2105: "6.8.2"},
     severity=Severity.ERROR,
     title="Номер таблицы вписан в наименование вручную",
     fixable=True,

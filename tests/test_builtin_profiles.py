@@ -11,6 +11,7 @@ from nk.core.registry import load_rules, select_rules, validate_profile
 from nk.parse.tex import parse
 
 BMSTU = "bmstu-vkr"
+ESKD = "gost-r-2.105"
 
 
 def builtin_names() -> list[str]:
@@ -30,7 +31,7 @@ def findings(tmp_path: Path, text: str, profile_name: str, rule_id: str) -> list
 
 
 def test_every_builtin_profile_is_listed() -> None:
-    assert builtin_names() == ["base", BMSTU]
+    assert builtin_names() == ["base", BMSTU, ESKD]
 
 
 @pytest.mark.parametrize("name", builtin_names())
@@ -137,3 +138,38 @@ def test_the_same_rule_cites_the_standard_under_base(tmp_path: Path) -> None:
     found = findings(tmp_path, text, "base", "appendix-sequence")
 
     assert [(f.clause, f.source) for f in found] == [("6.17.4", "ГОСТ 7.32-2017")]
+
+
+def test_rules_outside_the_standard_do_not_run(tmp_path: Path) -> None:
+    """Реферата в ГОСТ Р 2.105 нет, и правила о нём под ним не запускаются."""
+    registry = load_rules()
+    chosen = {impl.id for impl in select_rules(registry, profile=load_profile(ESKD))}
+
+    assert "keywords-count" not in chosen
+    assert "abstract-volume-info" not in chosen
+    assert "structural-heading-case" not in chosen
+    assert "table-caption-position" in chosen
+
+
+def test_the_same_rules_run_under_the_report_standard() -> None:
+    registry = load_rules()
+    chosen = {impl.id for impl in select_rules(registry, profile=load_profile("base"))}
+
+    assert {"keywords-count", "abstract-volume-info", "structural-heading-case"} <= chosen
+
+
+def test_shared_rule_cites_the_active_standard(tmp_path: Path) -> None:
+    """Одно правило, два стандарта, разные пункты."""
+    source = (
+        "\\begin{table}\n"
+        "\\begin{tabular}{ll}a&b\\\\c&d\\end{tabular}\n"
+        "\\caption{Показатели}\n"
+        "\\end{table}\n"
+    )
+
+    for profile_name, expected in (
+        ("base", ("6.6.3", "ГОСТ 7.32-2017")),
+        (ESKD, ("6.8.1", "ГОСТ Р 2.105-2019")),
+    ):
+        found = findings(tmp_path, source, profile_name, "table-caption-position")
+        assert [(f.clause, f.source) for f in found] == [expected], profile_name

@@ -5,13 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document, Span
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import APPENDIX_REFERENCE, appendix_spans, is_full_document
 
 
 @rule(
     id="appendix-order",
-    standards={G732: "6.17.2"},
+    standards={G732: "6.17.2", GR2105: "6.3.3"},
     severity=Severity.ERROR,
     title="Приложения идут не в порядке ссылок на них",
     deprecated_ids=("G732-6.17.2-appendix-order",),

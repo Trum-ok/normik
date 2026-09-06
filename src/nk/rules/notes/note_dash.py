@@ -7,7 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import DASH
 from nk.rules._text import is_code
 
@@ -18,7 +18,7 @@ WRONG_SEPARATORS = ":.-–"
 
 @rule(
     id="note-dash",
-    standards={G732: "6.7.3"},
+    standards={G732: "6.7.3", GR2105: "6.12.3"},
     severity=Severity.ERROR,
     title="После слова «Примечание» стоит не тире",
     fixable=True,

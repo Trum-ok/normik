@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import (
     APPENDIX_REFERENCE,
     heading_text,
@@ -20,7 +20,7 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
 
 @rule(
     id="appendix-no-reference",
-    standards={G732: "6.17.2"},
+    standards={G732: "6.17.2", GR2105: "6.3.3"},
     severity=Severity.ERROR,
     title="На приложение нет ссылки в тексте",
     deprecated_ids=("G732-6.17.2-appendix-no-reference",),

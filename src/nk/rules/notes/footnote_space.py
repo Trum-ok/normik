@@ -6,14 +6,14 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 
 FOOTNOTE_COMMANDS = ("footnote", "footnotemark")
 
 
 @rule(
     id="footnote-space",
-    standards={G732: "6.7.4"},
+    standards={G732: "6.7.4", GR2105: "6.13.3"},
     severity=Severity.ERROR,
     title="Знак сноски отделён пробелом от поясняемого слова",
     fixable=True,

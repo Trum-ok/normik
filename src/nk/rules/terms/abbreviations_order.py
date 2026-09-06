@@ -6,13 +6,13 @@ from nk.core.document import Document
 from nk.core.elements import ABBREVIATIONS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import listing_order
 
 
 @rule(
     id="abbreviations-order",
-    standards={G732: "6.15"},
+    standards={G732: "6.15", GR2105: "6.1.2"},
     severity=Severity.ERROR,
     title="Сокращения в перечне идут не по алфавиту",
     deprecated_ids=("G732-6.15-abbreviations-order",),

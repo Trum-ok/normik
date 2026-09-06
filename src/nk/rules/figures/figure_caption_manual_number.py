@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_findings, one_line
 
 #: «Рисунок 1 — », «Рис. 2.1 -», «Рисунок А.3.»
@@ -15,7 +15,7 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Рисунок|Рис\.)\s*[0-9А-ЯA-Z][0-9
 
 @rule(
     id="figure-caption-manual-number",
-    standards={G732: "6.5.7"},
+    standards={G732: "6.5.7", GR2105: "6.9.3"},
     severity=Severity.ERROR,
     title="Номер рисунка вписан в наименование вручную",
     fixable=True,

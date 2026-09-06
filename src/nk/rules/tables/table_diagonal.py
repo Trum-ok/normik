@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 
 #: Команды пакетов, рисующие диагональ в ячейке шапки.
 DIAGONAL_COMMANDS = frozenset({"diagbox", "backslashbox", "slashbox"})
@@ -13,7 +13,7 @@ DIAGONAL_COMMANDS = frozenset({"diagbox", "backslashbox", "slashbox"})
 
 @rule(
     id="table-diagonal",
-    standards={G732: "6.6.6"},
+    standards={G732: "6.6.6", GR2105: "6.8.5"},
     severity=Severity.ERROR,
     title="Шапка таблицы разделена диагональной линией",
     deprecated_ids=("G732-6.6.6-table-diagonal",),

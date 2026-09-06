@@ -65,7 +65,8 @@ def select_rules(
         chosen = [
             impl
             for impl in registry.all()
-            if not impl.default_off or (profile is not None and profile.is_enabled(impl.id))
+            if _applies(impl, profile)
+            and (not impl.default_off or (profile is not None and profile.is_enabled(impl.id)))
         ]
     else:
         chosen = [_require(registry, rule_id) for rule_id in select]
@@ -77,6 +78,19 @@ def select_rules(
         excluded.update(impl.id for impl in chosen if profile.is_disabled(impl.id))
 
     return tuple(sorted((impl for impl in chosen if impl.id not in excluded), key=lambda r: r.id))
+
+
+def _applies(impl: RuleImpl, profile: Profile | None) -> bool:
+    """Проверяет ли правило требование того стандарта, по которому идёт прогон.
+
+    Требование, которого в выбранном стандарте нет, проверять нельзя: отчёт по
+    одному стандарту получал бы находки по чужому. Правило вне стандартов —
+    типографика — применимо всегда. Ключ ``enable`` в профиле сильнее: им
+    подключают требование из другого стандарта, если так велит положение вуза.
+    """
+    if not impl.clauses or profile is None:
+        return True
+    return profile.standard.id in impl.clauses or profile.is_enabled(impl.id)
 
 
 def partition_ids(values: Iterable[str] | None) -> tuple[list[str] | None, frozenset[str]]:

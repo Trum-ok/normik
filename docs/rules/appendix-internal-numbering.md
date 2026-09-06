@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | Категория | Приложения |
-| Пункты | ГОСТ 7.32-2017 п. 6.17.6 |
+| Пункты | ГОСТ 7.32-2017 п. 6.17.6, ГОСТ Р 2.105-2019 п. 6.3.7 |
 | Уровень по умолчанию | `error` |
 | Объявлено в | `nk.rules.appendices.appendix_internal_numbering` |
 | Фикстуры | `tests/fixtures/appendix-internal-numbering/` |
