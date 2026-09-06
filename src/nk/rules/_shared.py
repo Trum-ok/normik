@@ -5,7 +5,7 @@
 """
 
 import re
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 
 from nk.core.document import Command, Document, Environment, Line, Span
@@ -154,18 +154,43 @@ def first_letter(text: str) -> str:
     return ""
 
 
+def _references_by_key(doc: Document) -> Mapping[str, tuple[Command, ...]]:
+    """Ссылки на каждую метку в порядке следования по отчёту.
+
+    Считается один раз на документ: иначе поиск первой ссылки перебирал бы все
+    ссылки отчёта заново на каждый рисунок и каждую таблицу.
+    """
+
+    def build() -> dict[str, tuple[Command, ...]]:
+        found: dict[str, list[Command]] = {}
+        for command in ordered_commands(doc, *REF_COMMANDS):
+            for arg in command.args:
+                for key in arg.split(","):
+                    found.setdefault(key.strip(), []).append(command)
+        return {key: tuple(commands) for key, commands in found.items()}
+
+    return doc.memo("references_by_key", build)
+
+
+def _report_order(doc: Document, command: Command) -> tuple[int, int, int]:
+    """Место команды в отчёте: файл по разворачиванию включений, затем строка и колонка."""
+    return (doc.file_index(command.path), command.lineno, command.col)
+
+
 def first_outside_reference(
     doc: Document, environment: Environment, keys: Iterable[str]
 ) -> Command | None:
     """Первая ссылка на объект в порядке отчёта, не считая ссылок внутри него самого."""
-    wanted = set(keys)
-    for command in ordered_commands(doc, *REF_COMMANDS):
-        if command.path == environment.path and environment.span.contains(command.lineno):
-            continue
-        for arg in command.args:
-            if any(key.strip() in wanted for key in arg.split(",")):
-                return command
-    return None
+    references = _references_by_key(doc)
+    found: Command | None = None
+    for key in keys:
+        for command in references.get(key, ()):
+            if command.path == environment.path and environment.span.contains(command.lineno):
+                continue
+            if found is None or _report_order(doc, command) < _report_order(doc, found):
+                found = command
+            break
+    return found
 
 
 def is_below(doc: Document, command: Command, span: Span) -> bool:

@@ -6,6 +6,7 @@
 а не построчно.
 """
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,6 +19,13 @@ from nk.parse.structure import VERBATIM_ENVIRONMENTS
 DELIMITERS: dict[str, str] = {"$$": "$$", "$": "$", "\\(": "\\)", "\\[": "\\]"}
 
 _OPENINGS = ("$$", "$", "\\(", "\\[")
+
+#: Места, где разделитель может начаться, вместе с экранированными знаками.
+#: Отчёт бывает в десятки тысяч строк, и перебор каждого знака на нём заметен.
+_CANDIDATE = re.compile(r"\$\$|\$|\\[(\[)\]]|\\.")
+
+#: Совпадения ``_CANDIDATE``, которые разделителями и являются.
+_TOKENS = frozenset({"$$", "$", "\\(", "\\)", "\\[", "\\]"})
 
 
 @dataclass
@@ -60,14 +68,12 @@ def _scan_file(
             continue
         text = line.stripped
         index = 0
-        while index < len(text):
-            if text[index] == "\\" and index + 1 < len(text) and text[index + 1] not in "([)]$":
+        while (candidate := _CANDIDATE.search(text, index)) is not None:
+            index = candidate.start()
+            if candidate.group() not in _TOKENS:
                 # Экранированный знак и любая другая команда: два знака за раз, чтобы
                 # \\ перед [ не был принят за начало выключной формулы.
-                index += 2
-                continue
-            if text[index] == "\\" and index + 1 < len(text) and text[index + 1] == "$":
-                index += 2
+                index = candidate.end()
                 continue
 
             token = _token_at(text, index, opened)
