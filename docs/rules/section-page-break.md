@@ -38,8 +38,8 @@
 
 | Параметр | По умолчанию |
 |---|---|
-| `breaking_commands` | `['chapter']` |
-| `structural_only` | `False` |
+| `breaking_commands` | `["chapter"]` |
+| `structural_only` | `false` |
 
 ## Нарушение
 
@@ -125,5 +125,5 @@ disable = ["section-page-break"]
 severity = "info"
 
 [rules."section-page-break".params]
-breaking_commands = ['chapter']
+breaking_commands = ["chapter"]
 ```

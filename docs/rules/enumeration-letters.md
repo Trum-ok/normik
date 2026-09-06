@@ -29,7 +29,7 @@
 
 | Параметр | По умолчанию |
 |---|---|
-| `forbidden` | `'ёзйочъыь'` |
+| `forbidden` | `"ёзйочъыь"` |
 
 ## Нарушение
 
@@ -67,5 +67,5 @@ disable = ["enumeration-letters"]
 severity = "info"
 
 [rules."enumeration-letters".params]
-forbidden = 'ёзйочъыь'
+forbidden = "ёзйочъыь"
 ```

@@ -36,8 +36,8 @@
 
 | Параметр | По умолчанию |
 |---|---|
-| `alphabets` | `['cyrillic']` |
-| `marker` | `'—'` |
+| `alphabets` | `["cyrillic"]` |
+| `marker` | `"—"` |
 
 ## Нарушение
 
@@ -86,5 +86,5 @@ disable = ["enumeration-label"]
 severity = "info"
 
 [rules."enumeration-label".params]
-alphabets = ['cyrillic']
+alphabets = ["cyrillic"]
 ```

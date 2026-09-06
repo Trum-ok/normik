@@ -47,6 +47,14 @@ def test_summary_lists_every_rule() -> None:
     assert missing == [], f"правила без строки в оглавлении: {missing}"
 
 
+def test_boolean_param_is_rendered_as_toml() -> None:
+    """В профиле пишут `false`: питонье `False` профиль не разберёт."""
+    page = _pages()["section-page-break.md"]
+
+    assert "| `structural_only` | `false` |" in page
+    assert "False" not in page
+
+
 def test_example_drops_test_markers() -> None:
     example = examples.load("figure-caption-dot", FIXTURES)
     assert example is not None

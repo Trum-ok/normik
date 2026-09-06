@@ -196,10 +196,22 @@ def _params_section(impl: RuleImpl) -> list[str]:
         return []
     lines = ["## Параметры", "", "| Параметр | По умолчанию |", "|---|---|"]
     lines.extend(
-        f"| `{name}` | `{value!r}` |" for name, value in sorted(impl.default_params.items())
+        f"| `{name}` | `{_toml(value)}` |" for name, value in sorted(impl.default_params.items())
     )
     lines.append("")
     return lines
+
+
+def _toml(value: object) -> str:
+    """Значение параметра так, как его пишут в профиле: `false`, а не `False`."""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+    if isinstance(value, (list, tuple)):
+        return "[" + ", ".join(_toml(item) for item in value) + "]"
+    return repr(value)
 
 
 def _example_section(impl: RuleImpl, fixtures_root: Path | None) -> list[str]:
@@ -236,7 +248,7 @@ def _profile_section(impl: RuleImpl) -> list[str]:
     ]
     if impl.default_params:
         name, value = sorted(impl.default_params.items())[0]
-        lines.extend(["", f'[rules."{impl.id}".params]', f"{name} = {value!r}"])
+        lines.extend(["", f'[rules."{impl.id}".params]', f"{name} = {_toml(value)}"])
     lines.extend(["```", ""])
     return lines
 
