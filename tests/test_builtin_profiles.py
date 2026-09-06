@@ -173,3 +173,31 @@ def test_shared_rule_cites_the_active_standard(tmp_path: Path) -> None:
     ):
         found = findings(tmp_path, source, profile_name, "table-caption-position")
         assert [(f.clause, f.source) for f in found] == [expected], profile_name
+
+
+FORMULAS = """\
+Плотность и объём вычисляют по формулам
+
+\\begin{equation}
+    \\rho = m / V
+\\end{equation}
+\\begin{equation}
+    V = a b c
+\\end{equation}
+"""
+
+
+def test_regulation_enables_a_rule_from_another_standard(tmp_path: Path) -> None:
+    """Положение требует запятой между формулами, а ГОСТ 7.32 — нет."""
+    found = findings(tmp_path, FORMULAS, BMSTU, "formula-sequence-comma")
+
+    assert [(f.clause, f.source) for f in found] == [
+        ("10.7", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
+    ]
+
+
+def test_the_same_rule_stays_off_under_the_report_standard(tmp_path: Path) -> None:
+    registry = load_rules()
+    chosen = {impl.id for impl in select_rules(registry, profile=load_profile("base"))}
+
+    assert "formula-sequence-comma" not in chosen
