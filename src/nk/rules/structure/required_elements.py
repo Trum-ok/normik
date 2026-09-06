@@ -6,8 +6,10 @@ from nk.core.document import Document
 from nk.core.elements import (
     ABSTRACT,
     BIBLIOGRAPHY,
+    BIBLIOGRAPHY_ROLE,
     CONCLUSION,
     CONTENTS,
+    CONTENTS_ROLE,
     INTRODUCTION,
     normalize_element,
 )
@@ -25,12 +27,12 @@ from nk.rules._shared import (
 def _element(doc: Document, name: object) -> str:
     """Наименование из профиля в том виде, в каком его знает документ.
 
-    Синоним кафедры разворачивается в наименование стандарта; наименование,
-    которого стандарт не знает, остаётся как есть и даёт находку об отсутствии —
+    Синоним кафедры разворачивается в каноническое наименование; наименование,
+    которого словарь не знает, остаётся как есть и даёт находку об отсутствии —
     опечатка в профиле заметна, а не выключает проверку.
     """
     normalized = normalize_element(str(name))
-    return doc.profile.element_aliases.get(normalized, normalized)
+    return doc.profile.elements.aliases.get(normalized, normalized)
 
 
 #: Обязательные элементы, обнаружимые по исходникам. Титульный лист и основная
@@ -84,14 +86,17 @@ def required_element_missing(doc: Document) -> Iterable[Finding]:
         if name not in excluded
     ]
 
+    elements = doc.profile.elements
     present = {element for _, element in structural_headings(doc)}
     if any(doc.structure.find_commands(CONTENTS_COMMAND)):
-        present.add(CONTENTS)
+        present |= elements.role(CONTENTS_ROLE)
     if any(doc.structure.find_environments(BIBLIOGRAPHY_ENVIRONMENT)) or any(
         doc.structure.find_commands(*BIBTEX_COMMANDS)
     ):
-        present.add(BIBLIOGRAPHY)
+        present |= elements.role(BIBLIOGRAPHY_ROLE)
 
+    listed = ", ".join(name.lower() for name in required)
+    requirement = f"Обязательные структурные элементы отчёта: {listed}."
     start = doc.structure.find_environments("document")
     anchor = next(iter(start))
     for element in required:
@@ -101,10 +106,6 @@ def required_element_missing(doc: Document) -> Iterable[Finding]:
             doc,
             anchor.span,
             message=f"В отчёте нет структурного элемента «{element}».",
-            requirement=(
-                "Обязательные структурные элементы отчёта: титульный лист, реферат, "
-                "содержание, введение, основная часть, заключение, "
-                "список использованных источников."
-            ),
+            requirement=requirement,
             suggestion=f"Добавить \\section*{{{element}}} на положенное ему место.",
         )

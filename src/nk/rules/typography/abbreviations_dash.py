@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.elements import ABBREVIATION_ELEMENTS
+from nk.core.elements import ABBREVIATIONS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import listing_dash
@@ -31,6 +31,6 @@ def abbreviations_dash(doc: Document) -> Iterable[Finding]:
     return listing_dash(
         abbreviations_dash,
         doc,
-        ABBREVIATION_ELEMENTS,
+        doc.profile.elements.role(ABBREVIATIONS_ROLE),
         "В перечне сокращений расшифровку приводят справа через тире.",
     )

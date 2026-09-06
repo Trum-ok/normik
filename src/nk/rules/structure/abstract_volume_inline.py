@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from itertools import pairwise
 
 from nk.core.document import Document, Line
-from nk.core.elements import ABSTRACT
+from nk.core.elements import ABSTRACT_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import VOLUME_ITEM, section_lines, structural_headings
@@ -34,7 +34,7 @@ def abstract_volume_inline(doc: Document) -> Iterable[Finding]:
     12 источн., 1 прил.`
     """
     for command, element in structural_headings(doc):
-        if element != ABSTRACT:
+        if element not in doc.profile.elements.role(ABSTRACT_ROLE):
             continue
         items = [line for line in section_lines(doc, command) if VOLUME_ITEM.search(line.stripped)]
         if not items:

@@ -4,7 +4,7 @@ import re
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.elements import ABSTRACT
+from nk.core.elements import ABSTRACT_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import section_lines, structural_headings
@@ -36,7 +36,7 @@ def abstract_volume_info(doc: Document) -> Iterable[Finding]:
     «Отчёт 45 с., 1 кн., 3 рис., 2 табл., 12 источн., 1 прил.».
     """
     for command, element in structural_headings(doc):
-        if element != ABSTRACT:
+        if element not in doc.profile.elements.role(ABSTRACT_ROLE):
             continue
         body = section_lines(doc, command)
         if any(VOLUME.search(line.stripped) for line in body):

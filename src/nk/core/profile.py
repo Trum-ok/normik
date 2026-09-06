@@ -11,7 +11,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
-from nk.core.elements import STRUCTURAL_ELEMENTS, normalize_element
+from nk.core.elements import DEFAULT_ELEMENTS, ROLES, Elements, ElementsError, normalize_element
 from nk.core.finding import Severity
 
 #: ``Any`` — параметры приходят из TOML, их типы определяет автор правила, а не ядро.
@@ -30,7 +30,7 @@ CONFIG_NAMES = ("nk.toml", ".nk.toml", PYPROJECT)
 
 _TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "enable", "rules", "elements"})
 _RULE_KEYS = frozenset({"severity", "params"})
-_ELEMENT_KEYS = frozenset({"aliases"})
+_ELEMENT_KEYS = frozenset({"aliases", "order", "roles"})
 
 
 class ProfileError(ValueError):
@@ -52,8 +52,8 @@ class Profile:
 
     severities: Mapping[str, Severity] = field(default_factory=dict)
     params: Mapping[str, Params] = field(default_factory=dict)
-    element_aliases: Mapping[str, str] = field(default_factory=dict)
-    """Наименования структурных элементов кафедры и канонические наименования стандарта."""
+    elements: Elements = DEFAULT_ELEMENTS
+    """Словарь структурных элементов: состав, порядок, роли и синонимы кафедры."""
 
     source: Path | None = None
     """Файл, из которого прочитан профиль; ``None`` — встроенный."""
@@ -91,7 +91,7 @@ class Profile:
             enabled=self.enabled,
             severities=self.severities,
             params=merged,
-            element_aliases=self.element_aliases,
+            elements=self.elements,
             source=self.source,
         )
 
@@ -260,13 +260,23 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
         "disable": [*parent.get("disable", []), *child.get("disable", [])],
         "enable": [*parent.get("enable", []), *child.get("enable", [])],
         "rules": rules,
-        "elements": {
-            "aliases": {
-                **parent.get("elements", {}).get("aliases", {}),
-                **child.get("elements", {}).get("aliases", {}),
-            }
-        },
+        "elements": _merge_elements(parent.get("elements", {}), child.get("elements", {})),
     }
+
+
+def _merge_elements(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
+    """Слить секции ``[elements]`` родителя и наследника.
+
+    Синонимы складываются: кафедра дописывает свои наименования к чужим. Состав
+    и роли — нет: наследник, объявивший ``order``, задаёт словарь целиком.
+    Частичное слияние состава давало бы профиль, в котором остались элементы
+    источника, от которого уходили.
+    """
+    own = "order" in child or "roles" in child
+    base = child if own else parent
+    merged: dict[str, Any] = {key: value for key, value in base.items() if key != "aliases"}
+    merged["aliases"] = {**parent.get("aliases", {}), **child.get("aliases", {})}
+    return merged
 
 
 def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
@@ -286,15 +296,72 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
         enabled=frozenset(data.get("enable", [])),
         severities=severities,
         params=params,
-        element_aliases=_aliases(data.get("elements", {}).get("aliases", {})),
+        elements=_elements(data.get("elements", {})),
         source=source,
     )
 
 
-def _aliases(raw: object) -> dict[str, str]:
-    """Синонимы наименований: как называет элемент кафедра — как называет стандарт.
+def _elements(raw: dict[str, Any]) -> Elements:
+    """Собрать словарь структурных элементов из секции ``[elements]``.
 
-    Наименование справа проверяется по стандарту: опечатка в нём иначе завела бы
+    Без ``order`` берётся состав по умолчанию: профиль кафедры правит наименования,
+    а не перечень элементов.
+
+    Без ``roles`` роли тоже берутся по умолчанию, но только те их наименования,
+    которые остались в составе: у источника требований, где нет реферата, роль
+    реферата пустует, и правила о реферате молчат.
+    """
+    order = _order(raw["order"]) if "order" in raw else DEFAULT_ELEMENTS.order
+    roles = _roles(raw["roles"]) if "roles" in raw else _kept_roles(order)
+    try:
+        return Elements(order=order, roles=roles, aliases=_aliases(raw.get("aliases", {}), order))
+    except ElementsError as error:
+        raise ProfileError(f"профиль: [elements] {error}") from error
+
+
+def _kept_roles(order: Mapping[str, int]) -> dict[str, frozenset[str]]:
+    """Роли по умолчанию, суженные до наименований, которые есть в составе."""
+    return {role: names & order.keys() for role, names in DEFAULT_ELEMENTS.roles.items() if names}
+
+
+def _order(raw: object) -> dict[str, int]:
+    """Состав и порядок: наименование и его ранг.
+
+    Ранг общий у элементов, которые занимают одно место и заменяют друг друга —
+    например у отдельного перечня терминов и объединённого перечня.
+    """
+    if not isinstance(raw, dict):
+        raise ProfileError("профиль: [elements.order] должна быть таблицей наименований и рангов")
+    found: dict[str, int] = {}
+    for name, rank in raw.items():
+        if not isinstance(rank, int) or isinstance(rank, bool):
+            raise ProfileError(f"профиль: ранг элемента {name!r} должен быть целым, а не {rank!r}")
+        found[normalize_element(str(name))] = rank
+    if not found:
+        raise ProfileError("профиль: [elements.order] пуста, состав элементов задавать нечем")
+    return found
+
+
+def _roles(raw: object) -> dict[str, frozenset[str]]:
+    """Роли элементов: правила спрашивают словарь по роли, а не по наименованию."""
+    if not isinstance(raw, dict):
+        raise ProfileError("профиль: [elements.roles] должна быть таблицей")
+    unknown = raw.keys() - ROLES
+    if unknown:
+        allowed = ", ".join(sorted(ROLES))
+        raise ProfileError(f"профиль: неизвестные роли {sorted(unknown)}, допустимы: {allowed}")
+    found: dict[str, frozenset[str]] = {}
+    for role, names in raw.items():
+        if not isinstance(names, list):
+            raise ProfileError(f"профиль: роль {role!r} должна быть списком наименований")
+        found[role] = frozenset(normalize_element(str(name)) for name in names)
+    return found
+
+
+def _aliases(raw: object, order: Mapping[str, int]) -> dict[str, str]:
+    """Синонимы наименований: как называет элемент кафедра — как называет источник.
+
+    Наименование справа проверяется по составу: опечатка в нём иначе завела бы
     синоним в никуда, и элемент молча перестал бы опознаваться.
     """
     if not isinstance(raw, dict):
@@ -302,8 +369,8 @@ def _aliases(raw: object) -> dict[str, str]:
     found: dict[str, str] = {}
     for name, canonical in raw.items():
         target = normalize_element(str(canonical))
-        if target not in STRUCTURAL_ELEMENTS:
-            allowed = ", ".join(sorted(STRUCTURAL_ELEMENTS))
+        if target not in order:
+            allowed = ", ".join(sorted(order))
             raise ProfileError(
                 f"синоним {name!r}: {canonical!r} не структурный элемент, допустимы: {allowed}"
             )

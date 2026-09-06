@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 
 from nk.core.document import Command, Document, Environment, Line, Span
-from nk.core.elements import canonical_element, normalize_element
+from nk.core.elements import normalize_element
 from nk.core.finding import Finding, Fix
 from nk.core.headings import PAGE_BREAK_COMMANDS, is_heading_call
 from nk.core.numbering import Scheme
@@ -374,9 +374,9 @@ def normalize_heading(text: str) -> str:
 def structural_element(doc: Document, text: str) -> str | None:
     """Каноническое наименование структурного элемента либо ``None``.
 
-    Наименования, принятые кафедрой вместо стандартных, задаёт профиль.
+    Состав элементов и наименования, принятые кафедрой, задаёт словарь профиля.
     """
-    return canonical_element(normalize_heading(text), doc.profile.element_aliases)
+    return doc.profile.elements.canonical(normalize_heading(text))
 
 
 def is_numbered(doc: Document, command: Command) -> bool:

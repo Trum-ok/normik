@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.elements import TERMS_ELEMENTS
+from nk.core.elements import TERMS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import listing_order
@@ -34,7 +34,7 @@ def terms_order(doc: Document) -> Iterable[Finding]:
     return listing_order(
         terms_order,
         doc,
-        TERMS_ELEMENTS,
+        doc.profile.elements.role(TERMS_ROLE),
         noun="Термин",
         requirement="Термины в перечне располагают в алфавитном порядке.",
     )

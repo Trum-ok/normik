@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.elements import ABBREVIATION_ELEMENTS
+from nk.core.elements import ABBREVIATIONS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import listing_order
@@ -34,7 +34,7 @@ def abbreviations_order(doc: Document) -> Iterable[Finding]:
     return listing_order(
         abbreviations_order,
         doc,
-        ABBREVIATION_ELEMENTS,
+        doc.profile.elements.role(ABBREVIATIONS_ROLE),
         noun="Сокращение",
         requirement="Сокращения и обозначения в перечне располагают в алфавитном порядке.",
     )

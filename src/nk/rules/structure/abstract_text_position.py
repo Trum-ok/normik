@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document, Line
-from nk.core.elements import ABSTRACT
+from nk.core.elements import ABSTRACT_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import (
@@ -38,7 +38,7 @@ def abstract_text_position(doc: Document) -> Iterable[Finding]:
     Перенести абзац ниже перечня ключевых слов.
     """
     for command, element in structural_headings(doc):
-        if element != ABSTRACT:
+        if element not in doc.profile.elements.role(ABSTRACT_ROLE):
             continue
         lines = section_lines(doc, command)
         keywords = next((line for line in lines if KEYWORDS_PREFIX.match(line.stripped)), None)

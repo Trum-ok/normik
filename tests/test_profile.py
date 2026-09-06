@@ -1,7 +1,9 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
+from nk.core.elements import DEFAULT_ELEMENTS, TERMS_ROLE
 from nk.core.finding import Severity
 from nk.core.profile import Profile, ProfileError, discover, load_profile
 
@@ -193,7 +195,7 @@ def test_element_aliases_are_normalized(tmp_path: Path) -> None:
 
     profile = load_profile(path)
 
-    assert profile.element_aliases == {"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"}
+    assert profile.elements.aliases == {"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"}
 
 
 def test_alias_to_an_unknown_element_is_rejected(tmp_path: Path) -> None:
@@ -224,16 +226,122 @@ def test_element_aliases_are_inherited_and_extended(tmp_path: Path) -> None:
 
     profile = load_profile(path)
 
-    assert profile.element_aliases == {
+    assert profile.elements.aliases == {
         "СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ",
         "ОБОЗНАЧЕНИЯ": "ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ",
     }
 
 
-def test_resolve_keeps_element_aliases() -> None:
-    profile = Profile(element_aliases={"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"})
+def test_order_replaces_the_composition_of_elements(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "источник.toml",
+        '[elements.order]\n"ПРЕДИСЛОВИЕ" = 1\n"СОДЕРЖАНИЕ" = 2\n',
+    )
 
-    assert profile.resolve({}).element_aliases == profile.element_aliases
+    profile = load_profile(path)
+
+    assert profile.elements.names == frozenset({"ПРЕДИСЛОВИЕ", "СОДЕРЖАНИЕ"})
+    assert profile.elements.ordered() == (("ПРЕДИСЛОВИЕ",), ("СОДЕРЖАНИЕ",))
+
+
+def test_elements_sharing_a_rank_share_a_place(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "источник.toml",
+        '[elements.order]\n"ТЕРМИНЫ" = 1\n"ОПРЕДЕЛЕНИЯ" = 1\n"ВВЕДЕНИЕ" = 2\n',
+    )
+
+    assert load_profile(path).elements.ordered() == (("ОПРЕДЕЛЕНИЯ", "ТЕРМИНЫ"), ("ВВЕДЕНИЕ",))
+
+
+def test_own_order_makes_the_old_composition_unknown(tmp_path: Path) -> None:
+    """Иначе от источника, от которого уходили, оставались бы его элементы."""
+    path = write(tmp_path, "источник.toml", '[elements.order]\n"ПРЕДИСЛОВИЕ" = 1\n')
+
+    assert "РЕФЕРАТ" not in load_profile(path).elements.names
+
+
+def test_roles_are_read_from_the_profile(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "источник.toml",
+        '[elements.order]\n"Обозначения и термины" = 1\n\n'
+        '[elements.roles]\nterms = ["ОБОЗНАЧЕНИЯ И ТЕРМИНЫ"]\n',
+    )
+
+    assert load_profile(path).elements.role(TERMS_ROLE) == frozenset({"ОБОЗНАЧЕНИЯ И ТЕРМИНЫ"})
+
+
+def test_unknown_role_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", '[elements.roles]\n"преамбула" = ["РЕФЕРАТ"]\n')
+
+    with pytest.raises(ProfileError, match="неизвестные роли"):
+        load_profile(path)
+
+
+def test_role_pointing_outside_the_composition_is_rejected(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "источник.toml",
+        '[elements.order]\n"ВВЕДЕНИЕ" = 1\n\n[elements.roles]\nabstract = ["РЕФЕРАТ"]\n',
+    )
+
+    with pytest.raises(ProfileError, match="вне состава"):
+        load_profile(path)
+
+
+def test_rank_must_be_a_whole_number(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", '[elements.order]\n"ВВЕДЕНИЕ" = "первое"\n')
+
+    with pytest.raises(ProfileError, match="должен быть целым"):
+        load_profile(path)
+
+
+def test_empty_order_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", "[elements.order]\n")
+
+    with pytest.raises(ProfileError, match="состав элементов задавать нечем"):
+        load_profile(path)
+
+
+def test_own_order_keeps_inherited_aliases(tmp_path: Path) -> None:
+    write(
+        tmp_path,
+        "основа.toml",
+        '[elements.aliases]\n"ЛИТЕРАТУРА" = "СОДЕРЖАНИЕ"\n',
+    )
+    path = write(
+        tmp_path,
+        "кафедра.toml",
+        'extends = "основа.toml"\n[elements.order]\n"СОДЕРЖАНИЕ" = 1\n',
+    )
+
+    profile = load_profile(path)
+
+    assert profile.elements.names == frozenset({"СОДЕРЖАНИЕ"})
+    assert profile.elements.aliases == {"ЛИТЕРАТУРА": "СОДЕРЖАНИЕ"}
+
+
+def test_inherited_alias_outside_the_new_composition_is_rejected(tmp_path: Path) -> None:
+    write(tmp_path, "основа.toml", '[elements.aliases]\n"ЛИТЕРАТУРА" = "РЕФЕРАТ"\n')
+    path = write(
+        tmp_path,
+        "кафедра.toml",
+        'extends = "основа.toml"\n[elements.order]\n"СОДЕРЖАНИЕ" = 1\n',
+    )
+
+    with pytest.raises(ProfileError, match="не структурный элемент"):
+        load_profile(path)
+
+
+def test_resolve_keeps_the_element_dictionary() -> None:
+    elements = replace(
+        DEFAULT_ELEMENTS, aliases={"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"}
+    )
+    profile = Profile(elements=elements)
+
+    assert profile.resolve({}).elements == elements
 
 
 def test_discover_finds_nk_toml(tmp_path: Path) -> None:

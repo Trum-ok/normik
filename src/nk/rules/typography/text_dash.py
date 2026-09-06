@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from nk.core.document import Document
-from nk.core.elements import LISTING_ELEMENTS
+from nk.core.elements import LISTING_ROLE
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
@@ -69,7 +69,7 @@ def _dedicated_lines(doc: Document) -> set[tuple[Path, int]]:
     """
     covered: set[tuple[Path, int]] = set()
     for command, element in structural_headings(doc):
-        if element not in LISTING_ELEMENTS:
+        if element not in doc.profile.elements.role(LISTING_ROLE):
             continue
         covered.update((line.path, line.lineno) for line in section_lines(doc, command))
     return covered

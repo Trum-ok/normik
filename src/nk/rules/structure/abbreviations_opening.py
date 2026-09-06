@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from nk.core.document import Document
-from nk.core.elements import ABBREVIATION_ELEMENTS
+from nk.core.elements import ABBREVIATIONS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
 from nk.rules._shared import section_lines, structural_headings
@@ -34,7 +34,7 @@ def abbreviations_opening(doc: Document) -> Iterable[Finding]:
     применяют следующие сокращения и обозначения.», а сам перечень — ниже.
     """
     for command, element in structural_headings(doc):
-        if element not in ABBREVIATION_ELEMENTS:
+        if element not in doc.profile.elements.role(ABBREVIATIONS_ROLE):
             continue
         body = section_lines(doc, command)
         if any(OPENING in line.stripped.lower() for line in body):
