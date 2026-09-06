@@ -86,6 +86,8 @@
     * [appendix-sequence](appendix-sequence.md)
     * [appendix-status](appendix-status.md)
 * Изложение текста
+    * [first-person-pronoun](first-person-pronoun.md)
+    * [first-person-verb](first-person-verb.md)
     * [math-sign-without-value](math-sign-without-value.md)
     * [sign-instead-of-word](sign-instead-of-word.md)
     * [standard-without-number](standard-without-number.md)

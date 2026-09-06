@@ -158,6 +158,24 @@ def gaps(doc: Document, pattern: re.Pattern[str]) -> Iterator[Gap]:
             )
 
 
+#: Знаки, после которых начинается новое предложение.
+SENTENCE_OPENERS = ".!?:;«\"'(—–"
+
+#: Разметка, которая предложение не продолжает: команда, скобка, пробел.
+_MARKUP = re.compile(r"\\[a-zA-Z]+\*?|[{}\[\]]|\s+")
+
+
+def at_sentence_start(text: str, start: int) -> bool:
+    r"""Начинается ли на позиции ``start`` новое предложение.
+
+    Разметка в счёт не идёт: ``\item`` и ``\section{`` открывают текст, а не
+    продолжают фразу. Нужно правилам о первом лице: подлежащее там опущено,
+    и опознаётся это по началу предложения.
+    """
+    before = _MARKUP.sub("", text[:start])
+    return not before or before[-1] in SENTENCE_OPENERS
+
+
 def is_code(doc: Document, line: Line) -> bool:
     """Находится ли строка внутри окружения, к которому типографика неприменима.
 

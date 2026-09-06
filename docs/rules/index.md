@@ -143,6 +143,8 @@
 
 | ID | Пункты | Уровень | Название |
 |---|---|---|---|
+| [`first-person-pronoun`](first-person-pronoun.md) | вне стандартов | <span class="nk-severity nk-severity--warning">warning</span> | Текст изложен от первого лица: местоимение |
+| [`first-person-verb`](first-person-verb.md) | вне стандартов | <span class="nk-severity nk-severity--warning">warning</span> | Текст изложен от первого лица: глагол |
 | [`math-sign-without-value`](math-sign-without-value.md) | ГОСТ Р 2.105-2019 п. 5.2.4 | <span class="nk-severity nk-severity--warning">warning</span> | Математический знак приведён без числового значения |
 | [`sign-instead-of-word`](sign-instead-of-word.md) | ГОСТ Р 2.105-2019 п. 5.2.4 | <span class="nk-severity nk-severity--warning">warning</span> | Знак приведён вместо слова |
 | [`standard-without-number`](standard-without-number.md) | ГОСТ Р 2.105-2019 п. 5.2.4 | <span class="nk-severity nk-severity--warning">warning</span> | Обозначение стандарта приведено без регистрационного номера |
