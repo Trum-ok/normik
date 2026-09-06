@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Изложение текста |
 | Пункты | ГОСТ Р 2.105-2019 п. 6.16.5 |
-| Уровень по умолчанию | `warning` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.text.unit_in_range` |
 | Фикстуры | `tests/fixtures/unit-in-range/` |
 | Автоисправление | нет |

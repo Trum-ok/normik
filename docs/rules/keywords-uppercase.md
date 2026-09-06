@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Реферат |
 | Пункты | ГОСТ 7.32-2017 п. 6.12.2 |
-| Уровень по умолчанию | `error` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.abstract.keywords_uppercase` |
 | Фикстуры | `tests/fixtures/keywords-uppercase/` |
 | Автоисправление | да, ключом `--fix` |

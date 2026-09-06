@@ -5,12 +5,13 @@
 [![python](https://img.shields.io/pypi/pyversions/normik)](https://pypi.org/project/normik/)
 [![license](https://img.shields.io/github/license/Trum-ok/normik)](https://github.com/Trum-ok/normik/blob/master/LICENSE)
 
-`nk` — линтер оформления отчёта о НИР по ГОСТ 7.32-2017 для исходников LaTeX.
+`nk` — линтер оформления отчётных документов по ГОСТ для исходников LaTeX.
 
 **Документация: <https://trum-ok.github.io/normik/>**
 
 Принимает `.tex` и выдаёт список нарушений с указанием пункта стандарта, файла
-и строки.
+и строки. Стандарт задаётся профилем — перечень поддержанных на странице
+[Профили](https://trum-ok.github.io/normik/profiles/#стандарт-и-свой-источник-требований).
 
 ```bash
 nk check report.tex
@@ -54,9 +55,6 @@ uv tool install normik
 uvx --from normik nk check chapters
 ```
 
-Для работы над самим линтером — клонировать репозиторий и выполнить `uv sync`;
-внутри клона команда запускается как `uv run nk`.
-
 ## Примеры запуска
 
 Проверить весь каталог с исходниками:
@@ -97,36 +95,11 @@ nk check chapters --baseline .nk-baseline.json
 
 ## Команды
 
-| Команда | Назначение |
-|---|---|
-| `nk check PATH...` | проверить исходники |
-| `nk rules list` | перечень правил |
-| `nk rules show RULE_ID` | подробности по правилу |
-| `nk rules docs` | пересобрать страницы правил в `docs/rules/` |
-| `nk profile show` | итоговый набор правил после применения профиля |
+| Команда                 | Назначение                                     |
+|-------------------------|------------------------------------------------|
+| `nk check PATH...`      | проверить исходники                            |
+| `nk rules list`         | перечень правил                                |
+| `nk rules show RULE_ID` | подробности по правилу                         |
+| `nk profile show`       | итоговый набор правил после применения профиля |
 
-Ключи `check`, коды возврата и форматы вывода — на странице
-[Использование](https://trum-ok.github.io/normik/usage/).
-
-## Документация
-
-| Страница | О чём |
-|---|---|
-| [Использование](https://trum-ok.github.io/normik/usage/) | команды, ключи, форматы вывода, автоисправление, подавления, снимок |
-| [Профили](https://trum-ok.github.io/normik/profiles/) | подстройка набора правил под кафедру |
-| [Правила](https://trum-ok.github.io/normik/rules/) | страница на каждое правило: почему, пример, настройка |
-| [Интеграции](https://trum-ok.github.io/normik/integrations/) | CI, хук, передача вывода агенту |
-| [Как добавить правило](https://trum-ok.github.io/normik/contributing/) | руководство для соавторов |
-
-Исходники документации — в каталоге
-[`docs/`](https://github.com/Trum-ok/normik/tree/master/docs); каталог
-[`docs/rules/`](https://github.com/Trum-ok/normik/tree/master/docs/rules)
-генерируется командой `uv run nk rules docs` и руками не редактируется.
-
-## Разработка
-
-```bash
-make check      # ruff, ty, pytest
-make docs       # перегенерировать правила и собрать сайт
-make docs-serve # локальный просмотр на http://127.0.0.1:8000
-```
+Разработка и добавление правил — [CONTRIBUTING.md](CONTRIBUTING.md).

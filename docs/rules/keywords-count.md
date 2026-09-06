@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Реферат |
 | Пункты | ГОСТ 7.32-2017 п. 5.3.2.1 |
-| Уровень по умолчанию | `error` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.abstract.keywords_count` |
 | Фикстуры | `tests/fixtures/keywords-count/` |
 | Автоисправление | нет |

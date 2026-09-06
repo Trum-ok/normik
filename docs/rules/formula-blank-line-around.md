@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Формулы |
 | Пункты | ГОСТ 7.32-2017 п. 6.8.1 |
-| Уровень по умолчанию | `error` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.formulas.formula_blank_lines` |
 | Фикстуры | `tests/fixtures/formula-blank-line-around/` |
 | Автоисправление | да, ключом `--fix` |

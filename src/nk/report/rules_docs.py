@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from nk.core import categories, standards
+from nk.core.finding import Severity
 from nk.core.rule import RuleImpl
 from nk.report import examples
 
@@ -23,12 +24,15 @@ INDEX_HEADER = """\
 Правила разложены по тому, что они регулируют, а не по разделам стандарта:
 у разных стандартов разделы разные, а иллюстрации остаются иллюстрациями.
 
-Уровень `error` влияет на код возврата, `warning` и `info` — нет. Любое правило
+Уровень {error} влияет на код возврата, {warning} и {info} — нет. Любое правило
 отключается или переоценивается [профилем](../profiles.md).
 """
 
 #: Правило, которого нет ни в одном стандарте: типографика им не регулируется.
 NO_CLAUSE_LABEL = "вне стандартов"
+
+#: Стандарты в ячейке таблицы: по одному на строку.
+CLAUSE_SEPARATOR = "<br>"
 
 
 def render_pages(rules: Iterable[RuleImpl], *, fixtures_root: Path | None = None) -> dict[str, str]:
@@ -66,7 +70,13 @@ def write_pages(
 def render_index(rules: Iterable[RuleImpl]) -> str:
     """Обзор раздела: правила по категориям, каждая своей таблицей."""
     ordered = _ordered(rules)
-    lines = [INDEX_HEADER]
+    lines = [
+        INDEX_HEADER.format(
+            error=_severity(Severity.ERROR),
+            warning=_severity(Severity.WARNING),
+            info=_severity(Severity.INFO),
+        )
+    ]
     for category in categories.CATEGORIES:
         section = [impl for impl in ordered if impl.category == category.name]
         if not section:
@@ -81,7 +91,7 @@ def render_index(rules: Iterable[RuleImpl]) -> str:
         )
         lines.extend(
             f"| [`{impl.id}`]({impl.id}.md) | {_clauses(impl)} "
-            f"| {impl.severity.value} | {impl.title} |"
+            f"| {_severity(impl.severity)} | {impl.title} |"
             for impl in section
         )
         lines.append("")
@@ -112,7 +122,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
         "|---|---|",
         f"| Категория | {categories.title(impl.category)} |",
         f"| Пункты | {_clauses(impl)} |",
-        f"| Уровень по умолчанию | `{impl.severity.value}` |",
+        f"| Уровень по умолчанию | {_severity(impl.severity)} |",
         f"| Объявлено в | `{impl.module}` |",
         f"| Фикстуры | `tests/fixtures/{impl.id}/` |",
         f"| Автоисправление | {'да, ключом `--fix`' if impl.fixable else 'нет'} |",
@@ -150,12 +160,21 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
 
 
 def _clauses(impl: RuleImpl) -> str:
-    """Стандарты и пункты правила: одно требование бывает записано в нескольких."""
+    """Стандарты и пункты правила: одно требование бывает записано в нескольких.
+
+    Значение идёт в ячейку таблицы, поэтому стандарты разделены переносом строки.
+    """
     if not impl.clauses:
         return NO_CLAUSE_LABEL
-    return ", ".join(
+    return CLAUSE_SEPARATOR.join(
         f"{standards.get(key).title} п. {clause}" for key, clause in sorted(impl.clauses.items())
     )
+
+
+def _severity(severity: Severity) -> str:
+    """Уровень находки плашкой: стиль задаёт `docs/stylesheets/severity.css`."""
+    value = severity.value
+    return f'<span class="nk-severity nk-severity--{value}">{value}</span>'
 
 
 def _params_section(impl: RuleImpl) -> list[str]:

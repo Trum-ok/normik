@@ -26,7 +26,7 @@ from nk.report import json as json_report
 
 app = typer.Typer(
     name="nk",
-    help="Линтер оформления отчёта о НИР по ГОСТ 7.32-2017 для исходников LaTeX.",
+    help="Линтер оформления отчётных документов по ГОСТ для исходников LaTeX.",
     no_args_is_help=True,
     add_completion=False,
 )
@@ -190,7 +190,7 @@ def check(
     ),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Только код возврата."),
 ) -> None:
-    """Проверить исходники отчёта на соответствие ГОСТ 7.32-2017."""
+    """Проверить исходники отчёта на соответствие стандарту, выбранному профилем."""
     missing = [path for path in paths if not path.exists()]
     if missing:
         err_console.print("Не найдено: " + ", ".join(str(path) for path in missing))

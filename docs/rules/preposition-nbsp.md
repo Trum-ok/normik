@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Типографика |
 | Пункты | вне стандартов |
-| Уровень по умолчанию | `info` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--info">info</span> |
 | Объявлено в | `nk.rules.typography.preposition_nbsp` |
 | Фикстуры | `tests/fixtures/preposition-nbsp/` |
 | Автоисправление | да, ключом `--fix` |

@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Изложение текста |
 | Пункты | ГОСТ Р 2.105-2019 п. 5.2.4 |
-| Уровень по умолчанию | `warning` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.text.math_sign_without_value` |
 | Фикстуры | `tests/fixtures/math-sign-without-value/` |
 | Автоисправление | нет |

@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Таблицы |
 | Пункты | ГОСТ Р 2.105-2019 п. 6.8.19 |
-| Уровень по умолчанию | `warning` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.tables.table_empty_cell` |
 | Фикстуры | `tests/fixtures/table-empty-cell/` |
 | Автоисправление | нет |

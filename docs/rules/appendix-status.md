@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Приложения |
 | Пункты | ГОСТ Р 2.105-2019 п. 6.3.4 |
-| Уровень по умолчанию | `error` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.appendices.appendix_status` |
 | Фикстуры | `tests/fixtures/appendix-status/` |
 | Автоисправление | нет |

@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | Категория | Источники и ссылки на них |
-| Пункты | ГОСТ 7.32-2017 п. 6.16, ГОСТ Р 2.105-2019 п. 6.4.2 |
-| Уровень по умолчанию | `warning` |
+| Пункты | ГОСТ 7.32-2017 п. 6.16<br>ГОСТ Р 2.105-2019 п. 6.4.2 |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.bibliography.bibliography_uncited` |
 | Фикстуры | `tests/fixtures/bibitem-uncited/` |
 | Автоисправление | нет |

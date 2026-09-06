@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Формулы |
 | Пункты | ГОСТ 7.32-2017 п. 6.8.3 |
-| Уровень по умолчанию | `warning` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.formulas.formula_reference` |
 | Фикстуры | `tests/fixtures/formula-no-reference/` |
 | Автоисправление | нет |

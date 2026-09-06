@@ -7,7 +7,7 @@
 ```yaml
 name: gost
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   nk:

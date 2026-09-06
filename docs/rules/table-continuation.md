@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Таблицы |
 | Пункты | ГОСТ 7.32-2017 п. 6.6.3 |
-| Уровень по умолчанию | `warning` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.tables.table_continuation` |
 | Фикстуры | `tests/fixtures/table-continuation/` |
 | Автоисправление | нет |

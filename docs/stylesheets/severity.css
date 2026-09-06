@@ -1,0 +1,48 @@
+/* Уровни находок в таблицах правил. */
+
+.nk-severity {
+  display: inline-block;
+  padding: 0 0.4em;
+  border: 1px solid transparent;
+  border-radius: 0.6em;
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.nk-severity--error {
+  background-color: #fdecea;
+  border-color: #f3b7b1;
+  color: #a71d15;
+}
+
+.nk-severity--warning {
+  background-color: #fdf3e2;
+  border-color: #f0cf95;
+  color: #8a5300;
+}
+
+.nk-severity--info {
+  background-color: #e8f1fd;
+  border-color: #aecbf2;
+  color: #14539c;
+}
+
+[data-md-color-scheme="slate"] .nk-severity--error {
+  background-color: #3a1a18;
+  border-color: #7a3129;
+  color: #ff9c92;
+}
+
+[data-md-color-scheme="slate"] .nk-severity--warning {
+  background-color: #352713;
+  border-color: #6f5122;
+  color: #f5c169;
+}
+
+[data-md-color-scheme="slate"] .nk-severity--info {
+  background-color: #17263b;
+  border-color: #2f4d78;
+  color: #8ab8f0;
+}

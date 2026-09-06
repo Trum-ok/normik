@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | Категория | Источники и ссылки на них |
-| Пункты | ГОСТ 7.32-2017 п. 6.9.1, ГОСТ Р 2.105-2019 п. 6.4.2 |
-| Уровень по умолчанию | `error` |
+| Пункты | ГОСТ 7.32-2017 п. 6.9.1<br>ГОСТ Р 2.105-2019 п. 6.4.2 |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.bibliography.bibliography_cite_unresolved` |
 | Фикстуры | `tests/fixtures/cite-unresolved/` |
 | Автоисправление | нет |

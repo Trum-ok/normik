@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Иллюстрации |
 | Пункты | вне стандартов |
-| Уровень по умолчанию | `warning` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.figures.figure_reference_form` |
 | Фикстуры | `tests/fixtures/figure-reference-form/` |
 | Автоисправление | нет |

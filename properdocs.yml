@@ -1,5 +1,5 @@
 site_name: normik
-site_description: Линтер оформления отчёта о НИР по ГОСТ 7.32-2017 для исходников LaTeX
+site_description: Линтер оформления отчётных документов по ГОСТ для исходников LaTeX
 site_url: https://trum-ok.github.io/normik/
 repo_url: https://github.com/Trum-ok/normik
 repo_name: Trum-ok/normik
@@ -60,6 +60,7 @@ nav:
   - Правила: rules/
   - Разработка:
       - Как добавить правило: contributing.md
+      - Участие в разработке: development.md
 
 markdown_extensions:
   - admonition
@@ -76,6 +77,9 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+
+extra_css:
+  - stylesheets/severity.css
 
 extra:
   social:

@@ -6,7 +6,9 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
-authors = [{ name = "Arkadii Artamonov", email = "artamarkan@gmail.com" }]
+authors = [
+    { name = "Arkadii Artamonov", email = "artamarkan@gmail.com" }
+]
 keywords = ["latex", "linter", "gost", "нир", "гост"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -55,7 +57,6 @@ dev = [
     "ty>=0.0.78",
 ]
 docs = [
-    # ProperDocs — продолжение MkDocs 1.x: MkDocs 2 несовместим с темой и плагинами.
     "properdocs>=1.6.7",
     "mkdocs-material>=9.7.0",
     "mkdocs-literate-nav>=0.6.3",
@@ -65,8 +66,6 @@ docs = [
 testpaths = ["tests"]
 addopts = "-q"
 
-# Покрытие считается только по явному запросу: make coverage. В обычный прогон
-# и в CI не включается, порог покрытия не задаётся.
 [tool.coverage.run]
 source = ["nk"]
 branch = true

@@ -6,7 +6,7 @@
 |---|---|
 | Категория | Таблицы |
 | Пункты | ГОСТ 7.32-2017 п. 6.6.3 |
-| Уровень по умолчанию | `error` |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.tables.table_caption_dot` |
 | Фикстуры | `tests/fixtures/table-caption-dot/` |
 | Автоисправление | да, ключом `--fix` |

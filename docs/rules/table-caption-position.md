@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | Категория | Таблицы |
-| Пункты | ГОСТ 7.32-2017 п. 6.6.3, ГОСТ Р 2.105-2019 п. 6.8.1 |
-| Уровень по умолчанию | `error` |
+| Пункты | ГОСТ 7.32-2017 п. 6.6.3<br>ГОСТ Р 2.105-2019 п. 6.8.1 |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.tables.table_caption_position` |
 | Фикстуры | `tests/fixtures/table-caption-position/` |
 | Автоисправление | нет |

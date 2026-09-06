@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | Категория | Иллюстрации |
-| Пункты | ГОСТ 7.32-2017 п. 6.5.1, ГОСТ Р 2.105-2019 п. 6.9.3 |
-| Уровень по умолчанию | `warning` |
+| Пункты | ГОСТ 7.32-2017 п. 6.5.1<br>ГОСТ Р 2.105-2019 п. 6.9.3 |
+| Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.figures.figure_reference_word` |
 | Фикстуры | `tests/fixtures/figure-reference-word/` |
 | Автоисправление | нет |
