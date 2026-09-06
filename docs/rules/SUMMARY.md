@@ -7,6 +7,7 @@
     * [heading-dot](heading-dot.md)
     * [heading-empty](heading-empty.md)
     * [heading-hyphenation](heading-hyphenation.md)
+    * [heading-rubric-word](heading-rubric-word.md)
     * [manual-section-number](manual-section-number.md)
     * [section-page-break](section-page-break.md)
     * [structural-heading-case](structural-heading-case.md)
@@ -28,9 +29,11 @@
     * [keywords-uppercase](keywords-uppercase.md)
 * Термины и сокращения
     * [abbreviations-dash](abbreviations-dash.md)
+    * [abbreviations-final-punctuation](abbreviations-final-punctuation.md)
     * [abbreviations-opening](abbreviations-opening.md)
     * [abbreviations-order](abbreviations-order.md)
     * [terms-dash](terms-dash.md)
+    * [terms-final-punctuation](terms-final-punctuation.md)
     * [terms-opening](terms-opening.md)
     * [terms-order](terms-order.md)
 * Иллюстрации

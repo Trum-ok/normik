@@ -516,6 +516,35 @@ def listing_entries(doc: Document, elements: frozenset[str]) -> Iterator[tuple[L
                 yield line, left
 
 
+#: Знаки препинания, которыми запись перечня не заканчивают.
+LISTING_FINAL_MARKS = ".,;:"
+
+
+def listing_final_punctuation(
+    impl: RuleImpl, doc: Document, elements: frozenset[str], requirement: str
+) -> Iterator[Finding]:
+    """Записи перечня, законченные знаком препинания.
+
+    Перечень набирают столбцом, и знак в конце строки читается как конец
+    предложения, которым запись не является.
+    """
+    for line, _ in listing_entries(doc, elements):
+        text = visible_text(line.stripped).rstrip()
+        mark = text[-1:]
+        if mark not in LISTING_FINAL_MARKS:
+            continue
+        column = line.stripped.rstrip().rfind(mark) + 1
+        yield impl.finding(
+            doc,
+            line,
+            message=f"Запись перечня заканчивается знаком «{mark}».",
+            requirement=requirement,
+            suggestion=f"Убрать «{mark}» в конце записи.",
+            col=column,
+            fix=Fix(Region.in_line(line.path, line.lineno, column, column + 1), ""),
+        )
+
+
 #: Дефис между пробелами на месте тире: «СИ - система измерений».
 _LISTING_HYPHEN = re.compile(r"\S( - )\S")
 

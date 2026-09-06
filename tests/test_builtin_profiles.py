@@ -250,3 +250,33 @@ def test_regulation_enables_a_rule_outside_every_standard(tmp_path: Path) -> Non
     assert [(f.clause, f.source) for f in found] == [
         ("10.5", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
     ]
+
+
+LISTING = """\
+\\section*{ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ}
+
+АЦП — аналого-цифровой преобразователь;
+"""
+
+
+def test_listing_punctuation_is_required_by_both_standards(tmp_path: Path) -> None:
+    """Знаков препинания в конце записи не допускают оба стандарта."""
+    found = findings(tmp_path, LISTING, "base", "abbreviations-final-punctuation")
+
+    assert [(f.clause, f.source) for f in found] == [("6.15", "ГОСТ 7.32-2017")]
+
+
+def test_regulation_forbids_the_rubric_word_in_a_heading(tmp_path: Path) -> None:
+    """Слова «глава» и «раздел» в заголовке запрещает положение, а не стандарт."""
+    registry = load_rules()
+    under_base = {impl.id for impl in select_rules(registry, profile=load_profile("base"))}
+    under_bmstu = {impl.id for impl in select_rules(registry, profile=load_profile(BMSTU))}
+
+    assert "heading-rubric-word" not in under_base
+    assert "heading-rubric-word" in under_bmstu
+
+    text = "\\section{Глава 1. Обзор существующих решений}\n"
+    found = findings(tmp_path, text, BMSTU, "heading-rubric-word")
+    assert [(f.clause, f.source) for f in found] == [
+        ("10.4", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
+    ]

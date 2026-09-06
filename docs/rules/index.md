@@ -24,6 +24,7 @@
 | [`heading-dot`](heading-dot.md) | ГОСТ 7.32-2017 п. 6.2.3<br>ГОСТ Р 2.105-2019 п. 6.6.2 | <span class="nk-severity nk-severity--error">error</span> | Заголовок заканчивается точкой |
 | [`heading-empty`](heading-empty.md) | ГОСТ 7.32-2017 п. 6.2.2<br>ГОСТ Р 2.105-2019 п. 6.6.1 | <span class="nk-severity nk-severity--error">error</span> | Раздел или подраздел без заголовка |
 | [`heading-hyphenation`](heading-hyphenation.md) | ГОСТ 7.32-2017 п. 6.2.4<br>ГОСТ Р 2.105-2019 п. 6.6.2 | <span class="nk-severity nk-severity--error">error</span> | В заголовке задан перенос слова |
+| [`heading-rubric-word`](heading-rubric-word.md) | вне стандартов | <span class="nk-severity nk-severity--warning">warning</span> | Заголовок начинается со слова «глава» или «раздел» |
 | [`manual-section-number`](manual-section-number.md) | ГОСТ 7.32-2017 п. 6.4.1<br>ГОСТ Р 2.105-2019 п. 6.5.4 | <span class="nk-severity nk-severity--error">error</span> | Номер раздела вписан в заголовок вручную |
 | [`section-page-break`](section-page-break.md) | ГОСТ 7.32-2017 п. 6.2.1<br>ГОСТ Р 2.105-2019 п. 6.6.5 | <span class="nk-severity nk-severity--error">error</span> | Раздел не начинается с новой страницы |
 | [`structural-heading-case`](structural-heading-case.md) | ГОСТ 7.32-2017 п. 6.2.1 | <span class="nk-severity nk-severity--error">error</span> | Заголовок структурного элемента набран не прописными буквами |
@@ -57,9 +58,11 @@
 | ID | Пункты | Уровень | Название |
 |---|---|---|---|
 | [`abbreviations-dash`](abbreviations-dash.md) | ГОСТ 7.32-2017 п. 6.15<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--warning">warning</span> | В перечне сокращений расшифровка отделена дефисом |
+| [`abbreviations-final-punctuation`](abbreviations-final-punctuation.md) | ГОСТ 7.32-2017 п. 6.15<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--warning">warning</span> | Запись перечня сокращений заканчивается знаком препинания |
 | [`abbreviations-opening`](abbreviations-opening.md) | ГОСТ 7.32-2017 п. 5.6.1<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--error">error</span> | Перечень сокращений не начинается с установленной фразы |
 | [`abbreviations-order`](abbreviations-order.md) | ГОСТ 7.32-2017 п. 6.15<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--error">error</span> | Сокращения в перечне идут не по алфавиту |
 | [`terms-dash`](terms-dash.md) | ГОСТ 7.32-2017 п. 6.14<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--warning">warning</span> | В перечне терминов определение отделено дефисом |
+| [`terms-final-punctuation`](terms-final-punctuation.md) | ГОСТ 7.32-2017 п. 6.14<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--warning">warning</span> | Запись перечня терминов заканчивается знаком препинания |
 | [`terms-opening`](terms-opening.md) | ГОСТ 7.32-2017 п. 5.5.2<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--error">error</span> | Перечень терминов не начинается с установленной фразы |
 | [`terms-order`](terms-order.md) | ГОСТ 7.32-2017 п. 6.14<br>ГОСТ Р 2.105-2019 п. 6.1.2 | <span class="nk-severity nk-severity--error">error</span> | Термины в перечне идут не по алфавиту |
 
