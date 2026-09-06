@@ -246,7 +246,7 @@ def rule(
     """Объявить правило::
 
         @rule(
-            id="G732-6.5.7-caption-dot",
+            id="figure-caption-dot",
             standards={G732: "6.5.7"},
             severity=Severity.ERROR,
             title="Подпись рисунка заканчивается точкой",
