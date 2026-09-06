@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import FIGURE_ENVIRONMENTS
 
 #: Упоминание рисунка с номером или ссылкой: «рисунком 2», «рисунке~\ref{...}».
@@ -24,6 +25,7 @@ _FORM = re.compile(r"в\s+соответствии\s+с\w*\s*$", re.IGNORECASE)
 
 @rule(
     id="figure-reference-form",
+    origin=Origin.REGULATION,
     severity=Severity.WARNING,
     title="Ссылка на графический материал дана не установленным оборотом",
     default_off=True,

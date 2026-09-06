@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import NBSP
 from nk.rules._text import gaps
 
@@ -18,6 +19,7 @@ BEFORE_NUMBER = re.compile(
 
 @rule(
     id="reference-nbsp",
+    origin=Origin.UNIVERSAL,
     severity=Severity.INFO,
     title="Номер в ссылке отделён разрывным пробелом",
     fixable=True,

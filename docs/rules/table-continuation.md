@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Таблицы |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.6.3 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.tables.table_continuation` |

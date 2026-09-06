@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Перечисления |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.4.6<br>ГОСТ Р 2.105-2019 п. 6.7.5 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.enumerations.enumeration_letters` |

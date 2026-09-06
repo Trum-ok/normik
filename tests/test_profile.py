@@ -475,6 +475,17 @@ def test_rule_outside_the_active_standard_has_neither_clause_nor_source() -> Non
     assert profile.requirement("unit-nbsp", {}) == ("", "")
 
 
+def test_regulation_requirement_names_the_source_without_a_clause() -> None:
+    """Чьё это требование — известно, а под каким пунктом записано, профиль назвать не обязан."""
+    profile = Profile(source_title="Положение")
+
+    assert profile.requirement("first-person-verb", {}, standards.Origin.REGULATION) == (
+        "",
+        "Положение",
+    )
+    assert profile.requirement("text-dash", {}, standards.Origin.UNIVERSAL) == ("", "")
+
+
 def test_standard_and_source_are_inherited(tmp_path: Path) -> None:
     write(tmp_path, "основа.toml", 'standard = "GR2105"\n\n[source]\ntitle = "Положение"\n')
     path = write(tmp_path, "кафедра.toml", 'extends = "основа.toml"\n')

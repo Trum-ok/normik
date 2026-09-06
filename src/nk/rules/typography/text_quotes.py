@@ -6,6 +6,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._text import is_code, prose
 
 STRAIGHT = '"'
@@ -21,6 +22,7 @@ SHORTHANDS = frozenset("=|-~<>,'`\"")
 
 @rule(
     id="text-quotes",
+    origin=Origin.UNIVERSAL,
     severity=Severity.INFO,
     title="Прямые кавычки вместо «ёлочек»",
     fixable=True,

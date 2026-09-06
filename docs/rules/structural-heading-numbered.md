@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Заголовки и рубрикация |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.2.1 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.headings.structural_heading_numbered` |

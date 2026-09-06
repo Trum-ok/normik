@@ -5,7 +5,8 @@
 | | |
 |---|---|
 | Категория | Типографика |
-| Пункты | вне стандартов |
+| Источник требования | вне стандартов |
+| Пункты | — |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--info">info</span> |
 | Объявлено в | `nk.rules.typography.text_dash` |
 | Фикстуры | `tests/fixtures/text-dash/` |

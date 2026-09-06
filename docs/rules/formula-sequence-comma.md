@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Формулы |
+| Источник требования | стандарт |
 | Пункты | ГОСТ Р 2.105-2019 п. 6.10.1 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.formulas.formula_sequence_comma` |

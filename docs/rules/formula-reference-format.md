@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Формулы |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.8.4<br>ГОСТ Р 2.105-2019 п. 6.10.4 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.formulas.formula_reference_format` |

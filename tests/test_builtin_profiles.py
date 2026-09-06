@@ -252,6 +252,22 @@ def test_regulation_enables_a_rule_outside_every_standard(tmp_path: Path) -> Non
     ]
 
 
+def test_regulation_rule_names_the_source_without_a_clause(tmp_path: Path) -> None:
+    """Пункта для изложения от первого лица положение не даёт, а источник назвать обязано."""
+    found = findings(tmp_path, "Изучил структуру предприятия.\n", BMSTU, "first-person-verb")
+
+    assert [(f.clause, f.source) for f in found] == [
+        ("", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
+    ]
+
+
+def test_the_same_rule_names_nobody_under_base(tmp_path: Path) -> None:
+    """Профиль источника не назвал: сослаться не на кого, и находка молчит об этом."""
+    found = findings(tmp_path, "Изучил структуру предприятия.\n", "base", "first-person-verb")
+
+    assert [(f.clause, f.source) for f in found] == [("", "")]
+
+
 LISTING = """\
 \\section*{ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ}
 

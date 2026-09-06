@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import heading_text, headings, normalize_heading, structural_element
 
 #: Слова, называющие саму рубрику: их место в номере, а не в заголовке.
@@ -17,6 +18,7 @@ _RUBRIC_START = re.compile(r"^(" + "|".join(RUBRIC_WORDS) + r")\b")
 
 @rule(
     id="heading-rubric-word",
+    origin=Origin.REGULATION,
     severity=Severity.WARNING,
     title="Заголовок начинается со слова «глава» или «раздел»",
     fixable=True,

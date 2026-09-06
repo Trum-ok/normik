@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import NBSP
 from nk.rules._text import gaps
 
@@ -30,6 +31,7 @@ _PROCLITIC = re.compile(
 
 @rule(
     id="preposition-nbsp",
+    origin=Origin.UNIVERSAL,
     severity=Severity.INFO,
     title="Предлог не привязан к следующему слову",
     fixable=True,

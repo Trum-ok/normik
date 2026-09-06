@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import NBSP
 from nk.rules._text import is_code, prose
 
@@ -18,6 +19,7 @@ _SURNAME = re.compile(r"[А-ЯЁA-Z][а-яёa-z]")
 
 @rule(
     id="initials-nbsp",
+    origin=Origin.UNIVERSAL,
     severity=Severity.INFO,
     title="Инициалы не привязаны к фамилии",
     fixable=True,

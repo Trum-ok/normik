@@ -28,11 +28,8 @@ INDEX_HEADER = """\
 отключается или переоценивается [профилем](../profiles.md).
 """
 
-#: Правило, которого нет ни в одном стандарте: типографика им не регулируется.
-NO_CLAUSE_LABEL = "вне стандартов"
-
-#: Пункт назван, но область правила им не ограничена: требование нужно под любым стандартом.
-UNIVERSAL_LABEL = "требование универсально"
+#: Пунктов нет: требование не записано ни в одном поддерживаемом стандарте.
+NO_CLAUSE_LABEL = "—"
 
 #: Стандарты в ячейке таблицы: по одному на строку.
 CLAUSE_SEPARATOR = "<br>"
@@ -88,12 +85,12 @@ def render_index(rules: Iterable[RuleImpl]) -> str:
             [
                 f"## {category.title}",
                 "",
-                "| ID | Пункты | Уровень | Название |",
-                "|---|---|---|---|",
+                "| ID | Источник | Пункты | Уровень | Название |",
+                "|---|---|---|---|---|",
             ]
         )
         lines.extend(
-            f"| [`{impl.id}`]({impl.id}.md) | {_clauses(impl)} "
+            f"| [`{impl.id}`]({impl.id}.md) | {_origin(impl)} | {_clauses(impl)} "
             f"| {_severity(impl.severity)} | {impl.title} |"
             for impl in section
         )
@@ -124,6 +121,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
         "| | |",
         "|---|---|",
         f"| Категория | {categories.title(impl.category)} |",
+        f"| Источник требования | {_origin(impl)} |",
         f"| Пункты | {_clauses(impl)} |",
         f"| Уровень по умолчанию | {_severity(impl.severity)} |",
         f"| Объявлено в | `{impl.module}` |",
@@ -146,16 +144,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
                 "",
             ]
         )
-    if impl.universal and impl.clauses:
-        lines.extend(
-            [
-                "!!! note",
-                "",
-                "    Требование универсально: правило работает под любым стандартом.",
-                "    Пункт назван там, где требование записано.",
-                "",
-            ]
-        )
+    lines.extend(_origin_note(impl))
     if impl.allow_missing_suggestion:
         lines.extend(
             [
@@ -172,6 +161,29 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
     return "\n".join(lines)
 
 
+def _origin(impl: RuleImpl) -> str:
+    """Чьё требование проверяет правило: та же подпись, что и в `nk rules show`."""
+    return standards.ORIGIN_LABELS[impl.origin]
+
+
+def _origin_note(impl: RuleImpl) -> list[str]:
+    """Примечание о происхождении там, где одних пунктов для понимания мало."""
+    if impl.origin is standards.Origin.REGULATION:
+        note = (
+            "Ни один стандарт этого не требует: источник — положение вуза либо "
+            "методические указания кафедры. Название источника и пункт объявляет "
+            "[профиль](../profiles.md#стандарт-и-свой-источник-требований)."
+        )
+    elif impl.origin is standards.Origin.UNIVERSAL and impl.clauses:
+        note = (
+            "Требование нужно под любым стандартом, а пункт назван там, где оно "
+            "записано: область правила пункт не сужает."
+        )
+    else:
+        return []
+    return ["!!! note", "", f"    {note}", ""]
+
+
 def _clauses(impl: RuleImpl) -> str:
     """Стандарты и пункты правила: одно требование бывает записано в нескольких.
 
@@ -179,10 +191,9 @@ def _clauses(impl: RuleImpl) -> str:
     """
     if not impl.clauses:
         return NO_CLAUSE_LABEL
-    listed = CLAUSE_SEPARATOR.join(
+    return CLAUSE_SEPARATOR.join(
         f"{standards.get(key).title} п. {clause}" for key, clause in sorted(impl.clauses.items())
     )
-    return f"{listed}{CLAUSE_SEPARATOR}{UNIVERSAL_LABEL}" if impl.universal else listed
 
 
 def _severity(severity: Severity) -> str:

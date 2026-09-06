@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Изложение текста |
+| Источник требования | стандарт |
 | Пункты | ГОСТ Р 2.105-2019 п. 5.2.4 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.text.sign_instead_of_word` |

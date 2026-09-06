@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Иллюстрации |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.5.4<br>ГОСТ Р 2.105-2019 п. 6.9.3 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.figures.numbering_scheme_mixed` |

@@ -94,18 +94,30 @@ class Profile:
     def params_for(self, rule_id: str) -> Params:
         return self.params.get(rule_id, {})
 
-    def requirement(self, rule_id: str, clauses: Mapping[str, str]) -> tuple[str, str]:
+    def requirement(
+        self,
+        rule_id: str,
+        clauses: Mapping[str, str],
+        origin: standards.Origin = standards.Origin.STANDARD,
+    ) -> tuple[str, str]:
         """Пункт и источник требования для находки.
 
         Пункт, объявленный самим профилем, старше пункта стандарта: требование
         кафедры или вуза расходится со стандартом именно там, где объявлено.
-        Пункта нет — нет и источника: у типографики его не бывает.
+
+        У требования положения источник называется и без пункта: чьё оно —
+        известно, а под каким номером записано, профиль объявлять не обязан.
+        У типографики источника не бывает вовсе.
         """
         own = self.clauses.get(rule_id)
         if own is not None:
             return own, self.source_title
         clause = clauses.get(self.standard.id, standards.NO_CLAUSE)
-        return clause, self.standard.title if clause else ""
+        if clause:
+            return clause, self.standard.title
+        if origin is standards.Origin.REGULATION:
+            return standards.NO_CLAUSE, self.source_title
+        return standards.NO_CLAUSE, ""
 
     def mentioned_rules(self) -> frozenset[str]:
         """Правила, названные профилем явно — для проверки на опечатки в идентификаторах."""

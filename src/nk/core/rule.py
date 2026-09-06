@@ -14,7 +14,7 @@ from nk.core.document import Document, Line, Span
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.profile import Params
-from nk.core.standards import NO_CLAUSE, Standard
+from nk.core.standards import NO_CLAUSE, Origin, Standard
 
 
 class RuleCallable(Protocol):
@@ -31,6 +31,7 @@ class Rule(Protocol):
 
     id: str
     clauses: Mapping[str, str]
+    origin: Origin
     severity: Severity
     title: str
 
@@ -39,6 +40,10 @@ class Rule(Protocol):
 
 class DuplicateRuleError(ValueError):
     """Два правила объявили один и тот же идентификатор."""
+
+
+class RuleDeclarationError(ValueError):
+    """Объявление правила противоречит само себе."""
 
 
 class UnknownRuleError(KeyError):
@@ -67,13 +72,13 @@ class RuleImpl:
     Пусто — требование не записано ни в одном: типографика.
     """
 
-    universal: bool = False
-    """Требование действует под любым стандартом, а не только под названными в ``clauses``.
+    origin: Origin = Origin.STANDARD
+    """Чьё требование проверяет правило: стандарта, ничьё или чужого положения.
 
-    Пункты отвечают, где требование записано, а не когда его проверять, и эти
-    ответы расходятся: неразрывный пробел между числом и единицей нужен в любом
-    отчёте, хотя пункт для него есть только у одного стандарта. Правило без
-    пунктов — типографика — универсально само собой.
+    Карта ``clauses`` отвечает, где требование записано, а происхождение — под
+    какими стандартами его проверять. Ответы расходятся: неразрывный пробел
+    между числом и единицей нужен в любом отчёте, хотя пункт для него есть
+    только у одного стандарта.
     """
 
     description: str = ""
@@ -110,7 +115,7 @@ class RuleImpl:
 
     def applies_under(self, standard: Standard) -> bool:
         """Проверяется ли требование, когда отчёт идёт по этому стандарту."""
-        return self.universal or standard.id in self.clauses
+        return self.origin is not Origin.STANDARD or standard.id in self.clauses
 
     def params(self, doc: Document) -> Params:
         """Значения по умолчанию, перекрытые профилем документа."""
@@ -137,7 +142,7 @@ class RuleImpl:
         """
         lineno = at.lineno if isinstance(at, Line) else at.start
         excerpt, offset = doc.excerpt_at(at.path, lineno, col)
-        clause, source = doc.profile.requirement(self.id, self.clauses)
+        clause, source = doc.profile.requirement(self.id, self.clauses, self.origin)
         return Finding(
             rule_id=self.id,
             clause=clause,
@@ -230,7 +235,7 @@ def rule(
     severity: Severity,
     title: str,
     standards: Mapping[Standard, str] | None = None,
-    universal: bool = False,
+    origin: Origin = Origin.STANDARD,
     params: Params | None = None,
     allow_missing_suggestion: bool = False,
     fixable: bool = False,
@@ -254,17 +259,18 @@ def rule(
     Обращение к правилу по имени внутри его тела резолвится в момент вызова,
     когда декоратор уже отработал.
 
-    ``standards`` говорит, где требование записано, ``universal`` — под какими
-    стандартами его проверять. Правило без ``standards`` универсально само собой;
-    ``universal=True`` при названных пунктах объявляет требование, которое нужно
-    и там, где пункта под него нет.
+    ``standards`` говорит, где требование записано, ``origin`` — чьё оно.
+    Требование стандарта без пунктов и требование положения с пунктами —
+    ошибка объявления: и то и другое означало бы, что автор не выбрал
+    происхождение, а именно этот выбор и отличает типографику, которая нужна
+    всем, от требования, которое предъявляет чьё-то положение.
     """
 
     def decorate(func: RuleCallable) -> RuleImpl:
         impl = RuleImpl(
             id=id,
             clauses={item.id: clause for item, clause in (standards or {}).items()},
-            universal=universal or not standards,
+            origin=origin,
             severity=severity,
             title=title,
             func=func,
@@ -275,11 +281,33 @@ def rule(
             default_off=default_off,
             deprecated_ids=deprecated_ids,
         )
+        _check(impl)
         # Явное сравнение с None: пустой реестр ложен из-за __len__.
         target = REGISTRY if registry is None else registry
         return target.register(impl)
 
     return decorate
+
+
+def _check(impl: RuleImpl) -> None:
+    """Сверить происхождение требования с объявленными пунктами.
+
+    Пустая карта у требования стандарта раньше молча означала типографику —
+    так требования вузовских положений и оказывались неотличимы от неё.
+    """
+    if impl.origin is Origin.STANDARD and not impl.clauses:
+        raise RuleDeclarationError(
+            f"правило {impl.id!r}: требование стандарта объявлено без пунктов. "
+            "Требование, не записанное ни в одном стандарте, объявляют "
+            "origin=Origin.UNIVERSAL, если оно нужно всем, либо "
+            "origin=Origin.REGULATION, если его предъявляет чьё-то положение"
+        )
+    if impl.origin is Origin.REGULATION and impl.clauses:
+        raise RuleDeclarationError(
+            f"правило {impl.id!r}: требование положения ссылается на пункты "
+            f"{sorted(impl.clauses)}. Пункт положения объявляет профиль ключом "
+            "clause: нумерация чужого источника в реестре не хранится"
+        )
 
 
 def _fix(fix: Region | Fix | None, suggestion: str | None) -> Fix | None:

@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Термины и сокращения |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.15<br>ГОСТ Р 2.105-2019 п. 6.1.2 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--warning">warning</span> |
 | Объявлено в | `nk.rules.terms.abbreviations_final_punctuation` |

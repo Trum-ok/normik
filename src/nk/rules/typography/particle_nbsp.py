@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import NBSP
 from nk.rules._text import gaps
 
@@ -17,6 +18,7 @@ _ENCLITIC = re.compile(r"(?<=\w)( )(?:" + "|".join(ENCLITICS) + r")(?![\w~-])", 
 
 @rule(
     id="particle-nbsp",
+    origin=Origin.UNIVERSAL,
     severity=Severity.INFO,
     title="Частица не привязана к предыдущему слову",
     fixable=True,

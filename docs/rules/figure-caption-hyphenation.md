@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Иллюстрации |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.5.8 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.figures.figure_caption_hyphenation` |

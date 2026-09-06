@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Перечисления |
+| Источник требования | стандарт |
 | Пункты | ГОСТ Р 2.105-2019 п. 6.7.4 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.enumerations.enumeration_marker_reference` |

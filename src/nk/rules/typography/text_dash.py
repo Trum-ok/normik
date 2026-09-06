@@ -9,6 +9,7 @@ from nk.core.elements import LISTING_ROLE
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._shared import DASH, section_lines, structural_headings
 from nk.rules._text import is_code, prose
 
@@ -19,6 +20,7 @@ LONELY_HYPHEN = re.compile(r"(?<!-)(?<!\w)-(?!-)(?=\s)")
 
 @rule(
     id="text-dash",
+    origin=Origin.UNIVERSAL,
     severity=Severity.INFO,
     title="Дефис вместо тире",
     fixable=True,

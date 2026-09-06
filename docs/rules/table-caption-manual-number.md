@@ -5,6 +5,7 @@
 | | |
 |---|---|
 | Категория | Таблицы |
+| Источник требования | стандарт |
 | Пункты | ГОСТ 7.32-2017 п. 6.6.3<br>ГОСТ Р 2.105-2019 п. 6.8.2 |
 | Уровень по умолчанию | <span class="nk-severity nk-severity--error">error</span> |
 | Объявлено в | `nk.rules.tables.table_caption_manual_number` |

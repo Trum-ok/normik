@@ -6,8 +6,15 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.profile import Profile, ProfileError
 from nk.core.registry import load_rules, select_rules, validate_profile
-from nk.core.rule import REGISTRY, DuplicateRuleError, RuleRegistry, UnknownRuleError, rule
-from nk.core.standards import G732, GR2105
+from nk.core.rule import (
+    REGISTRY,
+    DuplicateRuleError,
+    RuleDeclarationError,
+    RuleRegistry,
+    UnknownRuleError,
+    rule,
+)
+from nk.core.standards import G732, GR2105, Origin
 
 
 @pytest.fixture
@@ -83,6 +90,7 @@ def test_validate_profile_rejects_typos(three_rules: RuleRegistry) -> None:
 def test_default_off_rule_is_skipped(registry: RuleRegistry) -> None:
     @rule(
         id="NK-STYLE-шумное",
+        origin=Origin.UNIVERSAL,
         severity=Severity.INFO,
         title="Шумное правило",
         default_off=True,
@@ -97,6 +105,7 @@ def test_default_off_rule_is_skipped(registry: RuleRegistry) -> None:
 def test_profile_enables_a_default_off_rule(registry: RuleRegistry) -> None:
     @rule(
         id="NK-STYLE-шумное",
+        origin=Origin.UNIVERSAL,
         severity=Severity.INFO,
         title="Шумное правило",
         default_off=True,
@@ -112,6 +121,7 @@ def test_profile_enables_a_default_off_rule(registry: RuleRegistry) -> None:
 def test_select_overrides_default_off(registry: RuleRegistry) -> None:
     @rule(
         id="NK-STYLE-шумное",
+        origin=Origin.UNIVERSAL,
         severity=Severity.INFO,
         title="Шумное правило",
         default_off=True,
@@ -144,7 +154,7 @@ def test_universal_rule_runs_under_a_standard_without_its_clause(registry: RuleR
     @rule(
         id="универсальное",
         standards={GR2105: "6.16.6"},
-        universal=True,
+        origin=Origin.UNIVERSAL,
         severity=Severity.INFO,
         title="Универсальное требование с пунктом одного стандарта",
         registry=registry,
@@ -155,6 +165,52 @@ def test_universal_rule_runs_under_a_standard_without_its_clause(registry: RuleR
     chosen = select_rules(registry, profile=Profile(standard=G732))
 
     assert [impl.id for impl in chosen] == ["универсальное"]
+
+
+def test_regulation_rule_runs_under_any_standard(registry: RuleRegistry) -> None:
+    @rule(
+        id="по-положению",
+        origin=Origin.REGULATION,
+        severity=Severity.INFO,
+        title="Требование положения",
+        registry=registry,
+    )
+    def regulation(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    for standard in (G732, GR2105):
+        chosen = select_rules(registry, profile=Profile(standard=standard))
+        assert [impl.id for impl in chosen] == ["по-положению"], standard.id
+
+
+def test_standard_requirement_without_clauses_is_rejected(registry: RuleRegistry) -> None:
+    """Пустая карта раньше молча означала типографику: так терялось происхождение."""
+    with pytest.raises(RuleDeclarationError, match="без пунктов"):
+
+        @rule(
+            id="ничьё",
+            severity=Severity.INFO,
+            title="Требование без пунктов и без происхождения",
+            registry=registry,
+        )
+        def nobodys(doc: Document) -> Iterable[Finding]:
+            return ()
+
+
+def test_regulation_requirement_with_clauses_is_rejected(registry: RuleRegistry) -> None:
+    """Пункт положения объявляет профиль: чужой нумерации в реестре не место."""
+    with pytest.raises(RuleDeclarationError, match="пункты"):
+
+        @rule(
+            id="положение-с-пунктом",
+            standards={G732: "6.1"},
+            origin=Origin.REGULATION,
+            severity=Severity.INFO,
+            title="Требование положения с пунктом стандарта",
+            registry=registry,
+        )
+        def mixed(doc: Document) -> Iterable[Finding]:
+            return ()
 
 
 def test_deprecated_id_resolves_to_the_rule() -> None:

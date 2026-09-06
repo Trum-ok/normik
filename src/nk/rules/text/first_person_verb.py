@@ -6,6 +6,7 @@ from collections.abc import Iterable, Iterator
 from nk.core.document import Document, Line
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import Origin
 from nk.rules._text import at_sentence_start, is_code, prose
 
 #: Прошедшее время лица не выражает, поэтому список закрытый, а само совпадение
@@ -55,6 +56,7 @@ _PRESENT_ANY = _pattern(f"{PRESENT} {PRESENT_PLURAL}")
 
 @rule(
     id="first-person-verb",
+    origin=Origin.REGULATION,
     severity=Severity.WARNING,
     title="Текст изложен от первого лица: глагол",
     params={"plural": False},
@@ -68,6 +70,10 @@ def first_person_verb(doc: Document) -> Iterable[Finding]:
 
     Авторское «мы» — «рассмотрим», «получим» — по умолчанию не трогается:
     часть руководителей его требует. Включается параметром `plural`.
+
+    Безличного изложения ни один стандарт не требует: это требование положений
+    вузов и методических указаний. Предъявляют его почти везде, поэтому правило
+    включено по умолчанию.
 
     ## Почему это замечание
 
