@@ -5,24 +5,25 @@ from collections.abc import Iterable
 from nk.core.document import Command, Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 from nk.rules._shared import DASH, ITEM_COMMAND, parse_enumeration_label
 
-#: Знаки, которыми маркер перечисления записывают вместо тире.
-WRONG_MARKERS = frozenset({"-", "--", "---", "–", "*", "•", "·"})
+#: Знаки, которыми записывают маркер перечисления. Какой из них верен, задаёт
+#: профиль: ГОСТ 7.32 требует тире, ГОСТ Р 2.105 — дефиса.
+MARKERS = ("-", "--", "---", "–", "—", "*", "•", "·")
 
-REQUIREMENT = (
-    "Элементы перечисления обозначают тире либо строчной буквой русского алфавита "
-    "или арабской цифрой со скобкой."
-)
+#: Алфавиты, буквами которых обозначают элементы перечисления.
+CYRILLIC = "cyrillic"
+LATIN = "latin"
 
 
 @rule(
     id="enumeration-label",
-    standards={G732: "6.4.6"},
+    standards={G732: "6.4.6", GR2105: "6.7.4"},
     severity=Severity.ERROR,
     title="Элемент перечисления обозначен не по форме",
     fixable=True,
+    params={"marker": DASH, "alphabets": [CYRILLIC]},
     deprecated_ids=("G732-6.4.6-enumeration-label",),
 )
 def enumeration_label(doc: Document) -> Iterable[Finding]:
@@ -41,28 +42,40 @@ def enumeration_label(doc: Document) -> Iterable[Finding]:
 
     ## Как исправить
 
-    Привести обозначение к принятой форме: `\item[--]` заменить на тире,
-    `\item[1.]` — на `\item[1)]`, латинскую букву — на русскую.
+    Привести обозначение к принятой форме: `\item[--]` заменить на маркер,
+    принятый источником требований, `\item[1.]` — на `\item[1)]`.
+
+    Маркер и допустимые алфавиты задаются параметрами: ГОСТ 7.32 требует тире
+    и русских букв, ГОСТ Р 2.105 — дефиса и русских либо латинских.
     """
+    params = enumeration_label.params(doc)
+    marker = str(params["marker"])
+    alphabets = frozenset(str(item) for item in params["alphabets"])
     for command in doc.structure.find_commands(ITEM_COMMAND):
         for option in command.options:
-            finding = _check(doc, command, option)
+            finding = _check(doc, command, option, marker, alphabets)
             if finding is not None:
                 yield finding
 
 
-def _check(doc: Document, command: Command, option: str) -> Finding | None:
+def _check(
+    doc: Document, command: Command, option: str, marker: str, alphabets: frozenset[str]
+) -> Finding | None:
     label = option.strip()
     if not label:
         return None
-    if label in WRONG_MARKERS:
-        return _finding(doc, command, DASH, f"Элемент перечисления помечен «{label}», а не тире.")
+    if label == marker:
+        return None
+    if label in MARKERS:
+        return _finding(
+            doc, command, marker, f"Элемент перечисления помечен «{label}», а не «{marker}»."
+        )
 
     parsed = parse_enumeration_label(label)
     if parsed is None:
         return None
     mark, tail = parsed
-    if mark.isascii() and mark.isalpha():
+    if mark.isascii() and mark.isalpha() and LATIN not in alphabets:
         return _finding(
             doc,
             command,
@@ -85,6 +98,11 @@ def _check(doc: Document, command: Command, option: str) -> Finding | None:
             f"Обозначение «{mark}» отделено от текста {found}, а не скобкой.",
         )
     return None
+
+
+REQUIREMENT = (
+    "Элементы перечисления обозначают маркером либо строчной буквой или арабской цифрой со скобкой."
+)
 
 
 def _finding(doc: Document, command: Command, label: str | None, message: str) -> Finding:

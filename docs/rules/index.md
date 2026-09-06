@@ -33,8 +33,8 @@
 
 | ID | Пункты | Уровень | Название |
 |---|---|---|---|
-| [`enumeration-label`](enumeration-label.md) | ГОСТ 7.32-2017 п. 6.4.6 | error | Элемент перечисления обозначен не по форме |
-| [`enumeration-letters`](enumeration-letters.md) | ГОСТ 7.32-2017 п. 6.4.6 | error | В перечислении использована недопустимая буква |
+| [`enumeration-label`](enumeration-label.md) | ГОСТ 7.32-2017 п. 6.4.6, ГОСТ Р 2.105-2019 п. 6.7.4 | error | Элемент перечисления обозначен не по форме |
+| [`enumeration-letters`](enumeration-letters.md) | ГОСТ 7.32-2017 п. 6.4.6, ГОСТ Р 2.105-2019 п. 6.7.5 | error | В перечислении использована недопустимая буква |
 | [`enumeration-lowercase`](enumeration-lowercase.md) | ГОСТ Р 2.105-2019 п. 6.7.1 | warning | Элемент перечисления начат с прописной буквы |
 | [`enumeration-marker-nested`](enumeration-marker-nested.md) | ГОСТ Р 2.105-2019 п. 6.7.4 | error | Элемент маркированного списка разбит на подсписок |
 | [`enumeration-marker-referenced`](enumeration-marker-referenced.md) | ГОСТ Р 2.105-2019 п. 6.7.4 | error | На элемент маркированного списка дана ссылка |
@@ -133,6 +133,16 @@
 | [`appendix-page-break`](appendix-page-break.md) | ГОСТ 7.32-2017 п. 6.17.3, ГОСТ Р 2.105-2019 п. 6.3.4 | error | Приложение не начинается с новой страницы |
 | [`appendix-sequence`](appendix-sequence.md) | ГОСТ 7.32-2017 п. 6.17.4, ГОСТ Р 2.105-2019 п. 6.3.5 | error | В обозначениях приложений пропущена буква |
 | [`appendix-status`](appendix-status.md) | ГОСТ Р 2.105-2019 п. 6.3.4 | error | Под обозначением приложения не указан его статус |
+
+## Изложение текста
+
+| ID | Пункты | Уровень | Название |
+|---|---|---|---|
+| [`math-sign-without-value`](math-sign-without-value.md) | ГОСТ Р 2.105-2019 п. 5.2.4 | warning | Математический знак приведён без числового значения |
+| [`sign-instead-of-word`](sign-instead-of-word.md) | ГОСТ Р 2.105-2019 п. 5.2.4 | warning | Знак приведён вместо слова |
+| [`standard-without-number`](standard-without-number.md) | ГОСТ Р 2.105-2019 п. 5.2.4 | warning | Обозначение стандарта приведено без регистрационного номера |
+| [`unit-in-range`](unit-in-range.md) | ГОСТ Р 2.105-2019 п. 6.16.5 | warning | Единица величины повторена при обеих границах диапазона |
+| [`unit-in-series`](unit-in-series.md) | ГОСТ Р 2.105-2019 п. 6.16.4 | warning | Единица величины повторена при каждом значении ряда |
 
 ## Типографика
 

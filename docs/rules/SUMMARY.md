@@ -80,6 +80,12 @@
     * [appendix-page-break](appendix-page-break.md)
     * [appendix-sequence](appendix-sequence.md)
     * [appendix-status](appendix-status.md)
+* Изложение текста
+    * [math-sign-without-value](math-sign-without-value.md)
+    * [sign-instead-of-word](sign-instead-of-word.md)
+    * [standard-without-number](standard-without-number.md)
+    * [unit-in-range](unit-in-range.md)
+    * [unit-in-series](unit-in-series.md)
 * Типографика
     * [initials-nbsp](initials-nbsp.md)
     * [particle-nbsp](particle-nbsp.md)

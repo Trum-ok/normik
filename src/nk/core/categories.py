@@ -44,6 +44,7 @@ CATEGORIES: tuple[Category, ...] = (
     Category("notes", "Примечания и сноски"),
     Category("bibliography", "Источники и ссылки на них"),
     Category("appendices", "Приложения"),
+    Category("text", "Изложение текста"),
     Category("typography", "Типографика"),
 )
 
