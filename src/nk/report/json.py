@@ -7,6 +7,8 @@
 1.2 — у находки появился признак ``fixable``, в сводке — их число.
 1.3 — у находки появился ``source``: чей это пункт. Стандарт задаёт профиль,
 поэтому одно и то же правило под разными профилями даёт разные пункты.
+1.4 — добавлен ``excerpt_offset``: длинную строку сокращают окном вокруг места
+нарушения, и ``col`` считается по исходной строке, а не по показанной.
 """
 
 import json
@@ -15,7 +17,7 @@ from typing import Any
 from nk.core.finding import Finding
 from nk.core.runner import RunResult
 
-SCHEMA_VERSION = "1.3"
+SCHEMA_VERSION = "1.4"
 TOOL_NAME = "nk"
 
 
@@ -55,6 +57,7 @@ def _finding(finding: Finding) -> dict[str, Any]:
         "lineno": finding.lineno,
         "col": finding.col,
         "excerpt": finding.excerpt,
+        "excerpt_offset": finding.excerpt_offset,
         "context": list(finding.context),
         "suggestion": finding.suggestion,
         "fixable": finding.fix is not None,

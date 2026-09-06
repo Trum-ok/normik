@@ -6,7 +6,7 @@ from itertools import groupby
 from pathlib import Path
 
 from nk.core.document import CONTEXT_RADIUS
-from nk.core.finding import Finding, Severity
+from nk.core.finding import MAX_EXCERPT_LENGTH, Finding, Severity, excerpt_window
 from nk.core.runner import RunResult, Suppressed
 
 #: Метки уровней в выводе для человека и для агента. Отделены от значения
@@ -37,6 +37,9 @@ def context_start(finding: Finding) -> int:
 #: Чем помечают место нарушения под строкой исходника.
 CARET = "^"
 
+#: Меньше этого окно не сжимают: в узком терминале лучше перенос, чем пустота.
+_MIN_ROOM = 24
+
 #: С чего начинается команда LaTeX: под ней указатель не ставят.
 COMMAND_START = "\\"
 
@@ -55,7 +58,16 @@ def caret_line(finding: Finding, text: str) -> str | None:
     Позиция в строке есть не у всякой находки, а фрагмент строки в выводе урезан
     по длине: указывать в пустоту хуже, чем не указывать вовсе.
     """
-    col = finding.col
+    return caret_at(_column(finding), text)
+
+
+def _column(finding: Finding) -> int | None:
+    """Позиция нарушения внутри показанного фрагмента строки."""
+    return None if finding.col is None else finding.col - finding.excerpt_offset
+
+
+def caret_at(col: int | None, text: str) -> str | None:
+    """Указатель под колонкой показанного текста."""
     if col is None or col < 1 or col > len(text) + 1:
         return None
     if col <= len(text) and text[col - 1] == COMMAND_START:
@@ -81,20 +93,27 @@ class ContextLine:
     """Это указатель, а не строка исходника."""
 
 
-def context_lines(finding: Finding) -> Iterator[ContextLine]:
+def context_lines(finding: Finding, limit: int | None = None) -> Iterator[ContextLine]:
     """Контекст находки с указателем под местом нарушения.
 
     Форматы выводят его по-разному — с цветом и без, — но считается он одинаково:
     номера строк восстанавливаются из позиции находки, ширина колонки берётся
     по самому длинному номеру.
+
+    ``limit`` — сколько знаков строки помещается в вывод. Строку нарушения
+    сокращают окном вокруг самого нарушения: обрезанная по ширине терминала,
+    она показала бы зачин вместо того места, о котором находка.
     """
     start = context_start(finding)
     width = len(str(start + len(finding.context) - 1))
+    col = _column(finding)
+    room = MAX_EXCERPT_LENGTH if limit is None else max(limit, _MIN_ROOM)
     for offset, text in enumerate(finding.context):
         lineno = start + offset
         hit = lineno == finding.lineno
-        yield ContextLine(number=f"{lineno:>{width}}", text=text, hit=hit)
-        caret = caret_line(finding, text) if hit else None
+        shown, shift = excerpt_window(text, col if hit else None, room)
+        yield ContextLine(number=f"{lineno:>{width}}", text=shown, hit=hit)
+        caret = caret_at(col - shift, shown) if hit and col is not None else None
         if caret is not None:
             yield ContextLine(number=" " * width, text=caret, hit=True, caret=True)
 

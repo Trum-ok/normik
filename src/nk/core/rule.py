@@ -123,6 +123,7 @@ class RuleImpl:
         строку, — передаётся готовый :class:`~nk.core.finding.Fix`.
         """
         lineno = at.lineno if isinstance(at, Line) else at.start
+        excerpt, offset = doc.excerpt_at(at.path, lineno, col)
         clause, source = doc.profile.requirement(self.id, self.clauses)
         return Finding(
             rule_id=self.id,
@@ -134,8 +135,9 @@ class RuleImpl:
             path=at.path,
             lineno=lineno,
             col=col,
-            excerpt=doc.excerpt(at.path, lineno),
-            context=doc.context(at.path, lineno),
+            excerpt=excerpt,
+            excerpt_offset=offset,
+            context=doc.context(at.path, lineno, col=col),
             suggestion=suggestion,
             fix=_fix(fix, suggestion),
         )

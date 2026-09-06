@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nk.core.finding import MAX_EXCERPT_LENGTH, Finding, Severity, truncate_excerpt
+from nk.core.finding import MAX_EXCERPT_LENGTH, Finding, Severity, excerpt_window, truncate_excerpt
 
 
 def test_severity_ordering() -> None:
@@ -52,3 +52,42 @@ def test_findings_sort_by_path_then_line_then_rule() -> None:
         ("a.tex", 10, "G732-b"),
         ("b.tex", 1, "G732-b"),
     ]
+
+
+def test_short_line_is_left_alone() -> None:
+    assert excerpt_window("короткая строка", 3) == ("короткая строка", 0)
+
+
+def test_long_line_without_a_column_is_cut_from_the_start() -> None:
+    text, offset = excerpt_window("x" * 300, None)
+
+    assert offset == 0
+    assert text.startswith("x") and text.endswith("…")
+    assert len(text) == MAX_EXCERPT_LENGTH
+
+
+def test_violation_beyond_the_limit_stays_visible() -> None:
+    """Иначе находка о двухсотом знаке показывает зачин строки и ничем не помогает."""
+    line = "a" * 200 + "цель" + "b" * 200
+    col = 201
+
+    text, offset = excerpt_window(line, col)
+
+    assert text[col - 1 - offset :].startswith("цель")
+    assert len(text) <= MAX_EXCERPT_LENGTH
+
+
+def test_window_is_marked_on_both_sides() -> None:
+    text, _ = excerpt_window("a" * 400, 300)
+
+    assert text.startswith("…") and text.endswith("…")
+
+
+def test_window_does_not_run_past_the_end() -> None:
+    """У нарушения в самом конце окно упирается в конец строки, а не выходит за него."""
+    line = "a" * 200 + "ц"
+
+    text, offset = excerpt_window(line, len(line))
+
+    assert text.endswith("ц")
+    assert text[len(line) - 1 - offset] == "ц"

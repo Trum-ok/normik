@@ -171,7 +171,7 @@ def test_json_output_is_parseable(report: Path) -> None:
     result = runner.invoke(app, ["check", str(report), "--format", "json"])
 
     payload = json.loads(result.stdout)
-    assert payload["schema_version"] == "1.3"
+    assert payload["schema_version"] == "1.4"
     assert payload["summary"]["error"] == 1
     assert payload["findings"][0]["rule_id"] == RULE_ID
     assert payload["findings"][0]["clause"] == "6.5.7"

@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar, cast
 
-from nk.core.finding import truncate_excerpt
+from nk.core.finding import excerpt_window, truncate_excerpt
 from nk.core.headings import Headings
 from nk.core.math import Math
 from nk.core.position import Position, Region
@@ -261,6 +261,13 @@ class Document:
         line = self.line_at(path, lineno)
         return truncate_excerpt(line.raw) if line is not None else None
 
+    def excerpt_at(self, path: Path, lineno: int, col: int | None) -> tuple[str | None, int]:
+        """Фрагмент строки, в который попадает место нарушения, и смещение окна."""
+        line = self.line_at(path, lineno)
+        if line is None:
+            return None, 0
+        return excerpt_window(line.raw, col)
+
     def slice(self, region: Region) -> str:
         """Исходный текст под регионом — основа правок, меняющих фрагмент точечно."""
         lines = self.lines_of(region.path)
@@ -276,14 +283,25 @@ class Document:
         parts.append(lines[last - 1].raw[: region.end.col - 1])
         return "\n".join(parts)
 
-    def context(self, path: Path, lineno: int, radius: int = CONTEXT_RADIUS) -> tuple[str, ...]:
-        """Соседние строки вокруг позиции, включая саму строку нарушения."""
+    def context(
+        self, path: Path, lineno: int, radius: int = CONTEXT_RADIUS, col: int | None = None
+    ) -> tuple[str, ...]:
+        """Соседние строки вокруг позиции, включая саму строку нарушения.
+
+        Строку нарушения сокращают окном вокруг ``col``, соседние — с начала:
+        место нарушения обязано попасть в вывод, а соседям хватает зачина.
+        """
         lines = self.lines_of(path)
         start = max(1, lineno - radius)
         end = min(len(lines), lineno + radius)
         if start > end:
             return ()
-        return tuple(truncate_excerpt(item.raw) for item in lines[start - 1 : end])
+        return tuple(
+            excerpt_window(item.raw, col)[0]
+            if item.lineno == lineno
+            else truncate_excerpt(item.raw)
+            for item in lines[start - 1 : end]
+        )
 
 
 def _empty_numbering() -> "Numbering":

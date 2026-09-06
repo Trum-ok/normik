@@ -7,6 +7,7 @@
 from rich.console import Console
 from rich.text import Text
 
+from nk.core.document import CONTEXT_RADIUS
 from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
@@ -32,11 +33,12 @@ INDENT = "  "
 
 
 def render(result: RunResult, console: Console, command: str | None = None) -> None:
+    room = _room(console, result)
     for path, findings in group_by_file(result.findings):
         console.print()
         console.print(Text(str(path), style="bold underline"))
         for finding in findings:
-            _print_finding(console, finding)
+            _print_finding(console, finding, room)
 
     console.print()
     console.print(f"Итого: {summary_line(result.summary)}.")
@@ -56,7 +58,19 @@ def render(result: RunResult, console: Console, command: str | None = None) -> N
         )
 
 
-def _print_finding(console: Console, finding: Finding) -> None:
+#: Что занимает строку контекста кроме самого текста: отступ, номер и « | ».
+_GUTTER = len(INDENT) * 2 + 3
+
+
+def _room(console: Console, result: RunResult) -> int:
+    """Сколько знаков строки исходника помещается в ширину терминала."""
+    numbers = max(
+        (len(str(finding.lineno + CONTEXT_RADIUS)) for finding in result.findings), default=1
+    )
+    return console.width - _GUTTER - numbers
+
+
+def _print_finding(console: Console, finding: Finding, room: int) -> None:
     style = SEVERITY_STYLES[finding.severity]
     position = f"{finding.lineno}:{finding.col}" if finding.col is not None else str(finding.lineno)
 
@@ -71,7 +85,7 @@ def _print_finding(console: Console, finding: Finding) -> None:
         for text in field_lines(label, value, INDENT * 2):
             console.print(Text(text))
 
-    for item in context_lines(finding):
+    for item in context_lines(finding, room):
         mark = MARKER if item.hit and not item.caret else "  "
         console.print(
             Text(f"{INDENT * 2}{mark}{item.number} | {item.text}"),

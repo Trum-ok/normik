@@ -6,7 +6,7 @@ from helpers import make_finding
 from nk.core.finding import Fix
 from nk.core.position import Region
 from nk.core.runner import RunResult
-from nk.report.common import caret_line, fixable_line
+from nk.report.common import caret_line, context_lines, fixable_line
 
 FIX = Fix(region=Region.in_line(Path("report.tex"), 145, 3, 4), replacement="—")
 
@@ -74,3 +74,33 @@ def test_fix_is_not_offered_twice() -> None:
     result = RunResult(profile="base", findings=(replace(make_finding(), fix=FIX),))
 
     assert fixable_line(result, "nk check report.tex --fix") == "Исправимо машинно: 1 из 1."
+
+
+def test_caret_follows_the_window_of_a_long_line() -> None:
+    """Строку сокращают окном вокруг нарушения, и указатель обязан ехать вместе с ним."""
+    line = "a" * 200 + "цель" + "b" * 200
+    finding = replace(
+        make_finding(col=201),
+        lineno=1,
+        excerpt=line,
+        context=(line,),
+    )
+
+    shown = list(context_lines(finding, limit=60))
+
+    source, caret = shown[0].text, shown[1].text
+    assert "цель" in source
+    assert source[caret.index("^")] == "ц"
+
+
+def test_neighbours_are_cut_from_the_start() -> None:
+    """Соседней строке окно не нужно: нарушения в ней нет."""
+    finding = replace(
+        make_finding(col=1),
+        lineno=2,
+        context=("n" * 200, "hit", "n" * 200),
+    )
+
+    shown = [item.text for item in context_lines(finding, limit=40)]
+
+    assert shown[0].startswith("n") and shown[0].endswith("…")

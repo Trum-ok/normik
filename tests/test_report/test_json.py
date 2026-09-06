@@ -5,7 +5,7 @@ from nk.core.runner import RunResult
 from nk.report import json as json_report
 
 EXPECTED = {
-    "schema_version": "1.3",
+    "schema_version": "1.4",
     "tool": {"name": "nk", "version": __version__},
     "profile": "base",
     "summary": {"error": 1, "warning": 1, "info": 1, "files_checked": 12, "fixable": 0},
@@ -22,6 +22,7 @@ EXPECTED = {
             "lineno": 12,
             "col": 3,
             "excerpt": "  \\caption{Схема экспериментальной установки.}",
+            "excerpt_offset": 0,
             "context": [
                 "\\begin{figure}[h]",
                 "  \\includegraphics{img/setup.png}",
@@ -43,6 +44,7 @@ EXPECTED = {
             "lineno": 145,
             "col": 3,
             "excerpt": "  \\caption{Схема экспериментальной установки.}",
+            "excerpt_offset": 0,
             "context": [
                 "\\begin{figure}[h]",
                 "  \\includegraphics{img/setup.png}",
@@ -64,6 +66,7 @@ EXPECTED = {
             "lineno": 160,
             "col": None,
             "excerpt": "  \\caption{Схема экспериментальной установки.}",
+            "excerpt_offset": 0,
             "context": [
                 "\\begin{figure}[h]",
                 "  \\includegraphics{img/setup.png}",

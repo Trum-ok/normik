@@ -40,11 +40,38 @@ _SEVERITY_RANK: dict[Severity, int] = {
 }
 
 
+#: Знак на месте отброшенного куска строки.
+ELLIPSIS = "…"
+
+#: Сколько знаков оставить слева от места нарушения, когда начало строки отброшено.
+LEAD = 40
+
+
 def truncate_excerpt(text: str, limit: int = MAX_EXCERPT_LENGTH) -> str:
+    """Начало строки в пределах длины: остаток отбрасывается."""
+    return excerpt_window(text, None, limit)[0]
+
+
+def excerpt_window(text: str, col: int | None, limit: int = MAX_EXCERPT_LENGTH) -> tuple[str, int]:
+    """Кусок строки, в который попадает место нарушения, и сколько знаков отброшено слева.
+
+    Длинную строку нельзя резать с начала: нарушение на двухсотом знаке иначе
+    не попадает в вывод вовсе, и находка перестаёт быть самодостаточной.
+    Поэтому окно сдвигается к месту нарушения, оставляя перед ним немного
+    текста для опоры.
+    """
     text = text.rstrip("\n")
     if len(text) <= limit:
-        return text
-    return text[: limit - 1] + "…"
+        return text, 0
+    if col is None or col <= limit:
+        return text[: limit - 1] + ELLIPSIS, 0
+
+    # Окно упирается в конец строки: там хвост показывают целиком, и место
+    # под завершающий знак сокращения освобождается под сам текст.
+    start = min(col - 1 - LEAD, len(text) - limit + 1)
+    if start + limit - 1 >= len(text):
+        return ELLIPSIS + text[start:], start - 1
+    return ELLIPSIS + text[start : start + limit - 2] + ELLIPSIS, start - 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +115,13 @@ class Finding:
 
     suggestion: str | None = None
     """Конкретное действие для исправления."""
+
+    excerpt_offset: int = 0
+    """Сколько знаков отброшено слева от строки нарушения при её сокращении.
+
+    Позиция ``col`` считается по исходной строке, а показывается окно вокруг
+    неё: без смещения указатель встал бы не под тот знак.
+    """
 
     source: str = ""
     """Источник требования: стандарт профиля либо объявленное им положение.
