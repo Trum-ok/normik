@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import GR2105
 from nk.rules._shared import NBSP
 from nk.rules._text import gaps
 
@@ -30,6 +31,8 @@ _BEFORE_UNIT = re.compile(
 
 @rule(
     id="unit-nbsp",
+    standards={GR2105: "6.16.6"},
+    universal=True,
     severity=Severity.INFO,
     title="Число не привязано к единице измерения",
     fixable=True,

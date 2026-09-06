@@ -227,6 +227,15 @@ def test_continuation_is_not_required_by_the_eskd_standard(tmp_path: Path) -> No
     assert "table-continuation" not in chosen
 
 
+def test_universal_rule_runs_under_every_standard(tmp_path: Path) -> None:
+    """Пробел между числом и единицей нужен всюду, а пункт под него есть у одного стандарта."""
+    text = "Масса образца 12 кг.\n"
+
+    for profile_name, expected in (("base", ("", "")), (ESKD, ("6.16.6", "ГОСТ Р 2.105-2019"))):
+        found = findings(tmp_path, text, profile_name, "unit-nbsp")
+        assert [(f.clause, f.source) for f in found] == [expected], profile_name
+
+
 def test_regulation_enables_a_rule_outside_every_standard(tmp_path: Path) -> None:
     """Оборот ссылки на рисунок задаёт положение, а не стандарт."""
     registry = load_rules()

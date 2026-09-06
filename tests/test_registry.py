@@ -7,7 +7,7 @@ from nk.core.finding import Finding, Severity
 from nk.core.profile import Profile, ProfileError
 from nk.core.registry import load_rules, select_rules, validate_profile
 from nk.core.rule import REGISTRY, DuplicateRuleError, RuleRegistry, UnknownRuleError, rule
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105
 
 
 @pytest.fixture
@@ -122,6 +122,39 @@ def test_select_overrides_default_off(registry: RuleRegistry) -> None:
 
     chosen = select_rules(registry, select=["NK-STYLE-шумное"])
     assert [impl.id for impl in chosen] == ["NK-STYLE-шумное"]
+
+
+def test_rule_of_another_standard_does_not_run(registry: RuleRegistry) -> None:
+    @rule(
+        id="требование-2.105",
+        standards={GR2105: "6.9.4"},
+        severity=Severity.INFO,
+        title="Требование одного стандарта",
+        registry=registry,
+    )
+    def eskd_only(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    assert select_rules(registry, profile=Profile(standard=G732)) == ()
+
+
+def test_universal_rule_runs_under_a_standard_without_its_clause(registry: RuleRegistry) -> None:
+    """Пункт называет, где требование записано, а не сужает область правила."""
+
+    @rule(
+        id="универсальное",
+        standards={GR2105: "6.16.6"},
+        universal=True,
+        severity=Severity.INFO,
+        title="Универсальное требование с пунктом одного стандарта",
+        registry=registry,
+    )
+    def everywhere(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    chosen = select_rules(registry, profile=Profile(standard=G732))
+
+    assert [impl.id for impl in chosen] == ["универсальное"]
 
 
 def test_deprecated_id_resolves_to_the_rule() -> None:

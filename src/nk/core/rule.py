@@ -64,7 +64,16 @@ class RuleImpl:
     clauses: Mapping[str, str] = field(default_factory=dict)
     """Пункт требования в каждом стандарте, где оно записано; ключ — имя стандарта.
 
-    Пусто — требование не из стандарта: типографика.
+    Пусто — требование не записано ни в одном: типографика.
+    """
+
+    universal: bool = False
+    """Требование действует под любым стандартом, а не только под названными в ``clauses``.
+
+    Пункты отвечают, где требование записано, а не когда его проверять, и эти
+    ответы расходятся: неразрывный пробел между числом и единицей нужен в любом
+    отчёте, хотя пункт для него есть только у одного стандарта. Правило без
+    пунктов — типографика — универсально само собой.
     """
 
     description: str = ""
@@ -98,6 +107,10 @@ class RuleImpl:
     def clause_for(self, standard_id: str) -> str:
         """Пункт требования в этом стандарте либо пустая строка."""
         return self.clauses.get(standard_id, NO_CLAUSE)
+
+    def applies_under(self, standard: Standard) -> bool:
+        """Проверяется ли требование, когда отчёт идёт по этому стандарту."""
+        return self.universal or standard.id in self.clauses
 
     def params(self, doc: Document) -> Params:
         """Значения по умолчанию, перекрытые профилем документа."""
@@ -217,6 +230,7 @@ def rule(
     severity: Severity,
     title: str,
     standards: Mapping[Standard, str] | None = None,
+    universal: bool = False,
     params: Params | None = None,
     allow_missing_suggestion: bool = False,
     fixable: bool = False,
@@ -239,12 +253,18 @@ def rule(
 
     Обращение к правилу по имени внутри его тела резолвится в момент вызова,
     когда декоратор уже отработал.
+
+    ``standards`` говорит, где требование записано, ``universal`` — под какими
+    стандартами его проверять. Правило без ``standards`` универсально само собой;
+    ``universal=True`` при названных пунктах объявляет требование, которое нужно
+    и там, где пункта под него нет.
     """
 
     def decorate(func: RuleCallable) -> RuleImpl:
         impl = RuleImpl(
             id=id,
             clauses={item.id: clause for item, clause in (standards or {}).items()},
+            universal=universal or not standards,
             severity=severity,
             title=title,
             func=func,

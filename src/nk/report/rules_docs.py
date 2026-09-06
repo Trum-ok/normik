@@ -31,6 +31,9 @@ INDEX_HEADER = """\
 #: Правило, которого нет ни в одном стандарте: типографика им не регулируется.
 NO_CLAUSE_LABEL = "вне стандартов"
 
+#: Пункт назван, но область правила им не ограничена: требование нужно под любым стандартом.
+UNIVERSAL_LABEL = "требование универсально"
+
 #: Стандарты в ячейке таблицы: по одному на строку.
 CLAUSE_SEPARATOR = "<br>"
 
@@ -143,6 +146,16 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
                 "",
             ]
         )
+    if impl.universal and impl.clauses:
+        lines.extend(
+            [
+                "!!! note",
+                "",
+                "    Требование универсально: правило работает под любым стандартом.",
+                "    Пункт назван там, где требование записано.",
+                "",
+            ]
+        )
     if impl.allow_missing_suggestion:
         lines.extend(
             [
@@ -166,9 +179,10 @@ def _clauses(impl: RuleImpl) -> str:
     """
     if not impl.clauses:
         return NO_CLAUSE_LABEL
-    return CLAUSE_SEPARATOR.join(
+    listed = CLAUSE_SEPARATOR.join(
         f"{standards.get(key).title} п. {clause}" for key, clause in sorted(impl.clauses.items())
     )
+    return f"{listed}{CLAUSE_SEPARATOR}{UNIVERSAL_LABEL}" if impl.universal else listed
 
 
 def _severity(severity: Severity) -> str:

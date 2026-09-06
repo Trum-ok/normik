@@ -93,6 +93,8 @@ def rules_show(rule_id: str = typer.Argument(..., help="Идентификато
     console.print(f"Категория: {categories.title(impl.category)}")
     for standard_id, clause in sorted(impl.clauses.items()):
         console.print(f"{standards.get(standard_id).title}: п. {clause}")
+    if impl.universal and impl.clauses:
+        console.print("Требование универсально: правило работает под любым стандартом.")
     console.print(f"Уровень по умолчанию: {impl.severity.value}")
     console.print(f"Объявлено в: {impl.module}")
     if impl.description:

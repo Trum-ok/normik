@@ -156,4 +156,4 @@
 | [`reference-nbsp`](reference-nbsp.md) | вне стандартов | <span class="nk-severity nk-severity--info">info</span> | Номер в ссылке отделён разрывным пробелом |
 | [`text-dash`](text-dash.md) | вне стандартов | <span class="nk-severity nk-severity--info">info</span> | Дефис вместо тире |
 | [`text-quotes`](text-quotes.md) | вне стандартов | <span class="nk-severity nk-severity--info">info</span> | Прямые кавычки вместо «ёлочек» |
-| [`unit-nbsp`](unit-nbsp.md) | вне стандартов | <span class="nk-severity nk-severity--info">info</span> | Число не привязано к единице измерения |
+| [`unit-nbsp`](unit-nbsp.md) | ГОСТ Р 2.105-2019 п. 6.16.6<br>требование универсально | <span class="nk-severity nk-severity--info">info</span> | Число не привязано к единице измерения |
