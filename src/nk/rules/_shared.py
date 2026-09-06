@@ -19,6 +19,8 @@ from nk.core.rule import RuleImpl
 FIGURE_ENVIRONMENTS = frozenset({"figure", "figure*", "SCfigure", "wrapfigure"})
 TABLE_ENVIRONMENTS = frozenset({"table", "table*", "longtable", "sidewaystable"})
 TABULAR_ENVIRONMENTS = frozenset({"tabular", "tabular*", "tabularx", "longtable", "array"})
+#: Окружения с ячейками таблицы. ``array`` сюда не входит: это матрица в формуле.
+TABLE_BODY_ENVIRONMENTS = frozenset({"tabular", "tabular*", "tabularx", "longtable"})
 GRAPHIC_COMMANDS = frozenset({"includegraphics", "includesvg", "input", "includepdf"})
 GRAPHIC_ENVIRONMENTS = frozenset({"tikzpicture", "pgfpicture", "picture"})
 
@@ -717,3 +719,69 @@ def appendix_spans(doc: Document) -> list[tuple[Command, str, Span]]:
                 break
         found.append((command, match.group(1), Span(command.path, command.span.start, end)))
     return found
+
+
+#: Команды линеек: собственной ячейки не образуют, из строки вычищаются.
+_TABLE_RULES = re.compile(r"\\(?:hline|toprule|midrule|bottomrule|cline\s*\{[^{}]*\}|hdashline)")
+
+#: Разделитель граф. Экранированный амперсанд — знак в тексте ячейки, не разделитель.
+_CELL_SEPARATOR = re.compile(r"(?<!\\)&")
+
+ROW_END = "\\\\"
+
+#: Команды объединения ячеек: при них число граф в строке считать нельзя.
+SPANNING_COMMANDS = ("\\multicolumn", "\\multirow")
+
+
+@dataclass(frozen=True, slots=True)
+class TableRow:
+    """Строка таблицы: где начинается и что в её графах."""
+
+    lineno: int
+    cells: tuple[str, ...]
+
+    @property
+    def spanning(self) -> bool:
+        return any(command in cell for cell in self.cells for command in SPANNING_COMMANDS)
+
+
+def table_rows(doc: Document, environment: Environment) -> tuple[TableRow, ...]:
+    """Строки таблицы по её исходнику.
+
+    Строка может занимать несколько строк файла, поэтому она собирается до
+    ``\\\\``; номер запоминается по началу. Строки из одних линеек отбрасываются:
+    графы они не образуют.
+    """
+    rows: list[TableRow] = []
+    text = ""
+    start: int | None = None
+    body = doc.lines_of(environment.path)[environment.span.start : environment.span.end - 1]
+    for line in body:
+        rest = line.stripped
+        while ROW_END in rest:
+            head, rest = rest.split(ROW_END, 1)
+            if start is None and _TABLE_RULES.sub(" ", head).strip():
+                start = line.lineno
+            row = _row(start if start is not None else line.lineno, text + " " + head)
+            if row is not None:
+                rows.append(row)
+            text, start = "", None
+        if rest.strip():
+            # Линейка собственной строки не открывает: номер должен указывать
+            # на графы, а не на \hline перед ними.
+            if start is None and _TABLE_RULES.sub(" ", rest).strip():
+                start = line.lineno
+            text += " " + rest
+    row = _row(start, text) if start is not None else None
+    if row is not None:
+        rows.append(row)
+    return tuple(rows)
+
+
+def _row(lineno: int, text: str) -> TableRow | None:
+    """Строка без линеек либо ``None``, если в ней ничего, кроме них, не было."""
+    cleaned = _TABLE_RULES.sub(" ", text)
+    cells = tuple(cell.strip() for cell in _CELL_SEPARATOR.split(cleaned))
+    if len(cells) == 1 and not cells[0]:
+        return None
+    return TableRow(lineno=lineno, cells=cells)

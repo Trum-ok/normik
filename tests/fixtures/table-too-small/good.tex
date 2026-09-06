@@ -1,0 +1,22 @@
+\begin{table}
+  \caption{Показатели изделия}
+  \begin{tabular}{ll}
+    \hline
+    Показатель & Значение \\
+    \hline
+    Масса, кг & 12,5 \\
+    Длина, мм & 340 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Таблицу с объединёнными ячейками правило не считает:
+
+\begin{table}
+  \caption{Сводка}
+  \begin{tabular}{l}
+    \hline
+    \multicolumn{1}{c}{Итог} \\
+    \hline
+  \end{tabular}
+\end{table}

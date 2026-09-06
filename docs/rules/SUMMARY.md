@@ -51,14 +51,17 @@
     * [table-caption-manual-number](table-caption-manual-number.md)
     * [table-caption-position](table-caption-position.md)
     * [table-diagonal](table-diagonal.md)
+    * [table-empty-cell](table-empty-cell.md)
     * [table-no-reference](table-no-reference.md)
     * [table-position](table-position.md)
     * [table-reference-word](table-reference-word.md)
+    * [table-too-small](table-too-small.md)
 * Формулы
     * [formula-appendix-numbering](formula-appendix-numbering.md)
     * [formula-blank-line-around](formula-blank-line-around.md)
     * [formula-no-reference](formula-no-reference.md)
     * [formula-reference-format](formula-reference-format.md)
+    * [formula-sequence-comma](formula-sequence-comma.md)
     * [formula-where-colon](formula-where-colon.md)
 * Примечания и сноски
     * [footnote-space](footnote-space.md)
@@ -76,6 +79,7 @@
     * [appendix-order](appendix-order.md)
     * [appendix-page-break](appendix-page-break.md)
     * [appendix-sequence](appendix-sequence.md)
+    * [appendix-status](appendix-status.md)
 * Типографика
     * [initials-nbsp](initials-nbsp.md)
     * [particle-nbsp](particle-nbsp.md)

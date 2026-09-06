@@ -88,9 +88,11 @@
 | [`table-caption-manual-number`](table-caption-manual-number.md) | ГОСТ 7.32-2017 п. 6.6.3, ГОСТ Р 2.105-2019 п. 6.8.2 | error | Номер таблицы вписан в наименование вручную |
 | [`table-caption-position`](table-caption-position.md) | ГОСТ 7.32-2017 п. 6.6.3, ГОСТ Р 2.105-2019 п. 6.8.1 | error | Наименование таблицы расположено ниже самой таблицы |
 | [`table-diagonal`](table-diagonal.md) | ГОСТ 7.32-2017 п. 6.6.6, ГОСТ Р 2.105-2019 п. 6.8.5 | error | Шапка таблицы разделена диагональной линией |
+| [`table-empty-cell`](table-empty-cell.md) | ГОСТ Р 2.105-2019 п. 6.8.19 | warning | Графа таблицы оставлена пустой |
 | [`table-no-reference`](table-no-reference.md) | ГОСТ 7.32-2017 п. 6.6.2, ГОСТ Р 2.105-2019 п. 6.8.3 | error | На таблицу нет ссылки в тексте |
 | [`table-position`](table-position.md) | ГОСТ 7.32-2017 п. 6.6.2, ГОСТ Р 2.105-2019 п. 6.8.6 | error | Таблица размещена выше первой ссылки на неё |
 | [`table-reference-word`](table-reference-word.md) | ГОСТ 7.32-2017 п. 6.6.2, ГОСТ Р 2.105-2019 п. 6.8.3 | warning | В ссылке на таблицу использовано сокращение «табл.» |
+| [`table-too-small`](table-too-small.md) | ГОСТ Р 2.105-2019 п. 6.8.1 | error | В таблице меньше двух граф или двух строк |
 
 ## Формулы
 
@@ -100,6 +102,7 @@
 | [`formula-blank-line-around`](formula-blank-line-around.md) | ГОСТ 7.32-2017 п. 6.8.1 | error | Формула не отделена свободной строкой |
 | [`formula-no-reference`](formula-no-reference.md) | ГОСТ 7.32-2017 п. 6.8.3 | warning | Формула пронумерована, но ссылки на неё нет |
 | [`formula-reference-format`](formula-reference-format.md) | ГОСТ 7.32-2017 п. 6.8.4, ГОСТ Р 2.105-2019 п. 6.10.4 | error | Номер формулы в ссылке приведён без скобок |
+| [`formula-sequence-comma`](formula-sequence-comma.md) | ГОСТ Р 2.105-2019 п. 6.10.1 | warning | Формулы идут подряд без разделяющего знака |
 | [`formula-where-colon`](formula-where-colon.md) | ГОСТ 7.32-2017 п. 6.8.2, ГОСТ Р 2.105-2019 п. 6.10.1 | error | Пояснение к формуле начинается со слова «где» с двоеточием |
 
 ## Примечания и сноски
@@ -129,6 +132,7 @@
 | [`appendix-order`](appendix-order.md) | ГОСТ 7.32-2017 п. 6.17.2, ГОСТ Р 2.105-2019 п. 6.3.3 | error | Приложения идут не в порядке ссылок на них |
 | [`appendix-page-break`](appendix-page-break.md) | ГОСТ 7.32-2017 п. 6.17.3, ГОСТ Р 2.105-2019 п. 6.3.4 | error | Приложение не начинается с новой страницы |
 | [`appendix-sequence`](appendix-sequence.md) | ГОСТ 7.32-2017 п. 6.17.4, ГОСТ Р 2.105-2019 п. 6.3.5 | error | В обозначениях приложений пропущена буква |
+| [`appendix-status`](appendix-status.md) | ГОСТ Р 2.105-2019 п. 6.3.4 | error | Под обозначением приложения не указан его статус |
 
 ## Типографика
 
