@@ -1,0 +1,27 @@
+\begin{longtable}{ll}
+  \caption{Показатели изделия} \\
+  \hline
+  Показатель & Значение \\
+  \hline
+  \endfirsthead
+  \multicolumn{2}{l}{Продолжение таблицы \thetable} \\
+  \hline
+  Показатель & Значение \\
+  \hline
+  \endhead
+  Масса, кг & 12,5 \\
+  Длина, мм & 340 \\
+  \hline
+\end{longtable}
+
+Обычная таблица переносом не разбивается:
+
+\begin{table}
+  \caption{Сводка}
+  \begin{tabular}{ll}
+    \hline
+    Показатель & Значение \\
+    Масса, кг & 12,5 \\
+    \hline
+  \end{tabular}
+\end{table}

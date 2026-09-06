@@ -76,6 +76,7 @@
 | [`figure-no-reference`](figure-no-reference.md) | ГОСТ 7.32-2017 п. 6.5.1, ГОСТ Р 2.105-2019 п. 6.9.3 | error | На рисунок нет ссылки в тексте |
 | [`figure-numbering-scheme-mixed`](figure-numbering-scheme-mixed.md) | ГОСТ 7.32-2017 п. 6.5.4, ГОСТ Р 2.105-2019 п. 6.9.3 | error | Схема нумерации иллюстраций задана в документе несколько раз |
 | [`figure-position`](figure-position.md) | ГОСТ 7.32-2017 п. 6.5.1, ГОСТ Р 2.105-2019 п. 6.9.1 | error | Иллюстрация размещена выше первой ссылки на неё |
+| [`figure-reference-form`](figure-reference-form.md) | вне стандартов | warning | Ссылка на графический материал дана не установленным оборотом |
 | [`figure-reference-word`](figure-reference-word.md) | ГОСТ 7.32-2017 п. 6.5.1, ГОСТ Р 2.105-2019 п. 6.9.3 | warning | В ссылке на иллюстрацию использовано сокращение «рис.» |
 
 ## Таблицы
@@ -87,6 +88,7 @@
 | [`table-caption-dot`](table-caption-dot.md) | ГОСТ 7.32-2017 п. 6.6.3 | error | Наименование таблицы заканчивается точкой |
 | [`table-caption-manual-number`](table-caption-manual-number.md) | ГОСТ 7.32-2017 п. 6.6.3, ГОСТ Р 2.105-2019 п. 6.8.2 | error | Номер таблицы вписан в наименование вручную |
 | [`table-caption-position`](table-caption-position.md) | ГОСТ 7.32-2017 п. 6.6.3, ГОСТ Р 2.105-2019 п. 6.8.1 | error | Наименование таблицы расположено ниже самой таблицы |
+| [`table-continuation`](table-continuation.md) | ГОСТ 7.32-2017 п. 6.6.3 | warning | Над продолжением таблицы нет надписи «Продолжение таблицы» |
 | [`table-diagonal`](table-diagonal.md) | ГОСТ 7.32-2017 п. 6.6.6, ГОСТ Р 2.105-2019 п. 6.8.5 | error | Шапка таблицы разделена диагональной линией |
 | [`table-empty-cell`](table-empty-cell.md) | ГОСТ Р 2.105-2019 п. 6.8.19 | warning | Графа таблицы оставлена пустой |
 | [`table-no-reference`](table-no-reference.md) | ГОСТ 7.32-2017 п. 6.6.2, ГОСТ Р 2.105-2019 п. 6.8.3 | error | На таблицу нет ссылки в тексте |

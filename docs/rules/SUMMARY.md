@@ -43,6 +43,7 @@
     * [figure-no-reference](figure-no-reference.md)
     * [figure-numbering-scheme-mixed](figure-numbering-scheme-mixed.md)
     * [figure-position](figure-position.md)
+    * [figure-reference-form](figure-reference-form.md)
     * [figure-reference-word](figure-reference-word.md)
 * Таблицы
     * [table-appendix-numbering](table-appendix-numbering.md)
@@ -50,6 +51,7 @@
     * [table-caption-dot](table-caption-dot.md)
     * [table-caption-manual-number](table-caption-manual-number.md)
     * [table-caption-position](table-caption-position.md)
+    * [table-continuation](table-continuation.md)
     * [table-diagonal](table-diagonal.md)
     * [table-empty-cell](table-empty-cell.md)
     * [table-no-reference](table-no-reference.md)

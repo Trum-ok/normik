@@ -201,3 +201,43 @@ def test_the_same_rule_stays_off_under_the_report_standard(tmp_path: Path) -> No
     chosen = {impl.id for impl in select_rules(registry, profile=load_profile("base"))}
 
     assert "formula-sequence-comma" not in chosen
+
+
+LONGTABLE = """\
+\\begin{longtable}{ll}
+  \\caption{Показатели} \\\\
+  Показатель & Значение \\\\
+  \\endhead
+  Масса, кг & 12,5 \\\\
+\\end{longtable}
+"""
+
+
+def test_continuation_is_required_by_the_report_standard(tmp_path: Path) -> None:
+    found = findings(tmp_path, LONGTABLE, "base", "table-continuation")
+
+    assert [(f.clause, f.source) for f in found] == [("6.6.3", "ГОСТ 7.32-2017")]
+
+
+def test_continuation_is_not_required_by_the_eskd_standard(tmp_path: Path) -> None:
+    """ГОСТ Р 2.105 надпись при машинной подготовке документа не требует."""
+    registry = load_rules()
+    chosen = {impl.id for impl in select_rules(registry, profile=load_profile(ESKD))}
+
+    assert "table-continuation" not in chosen
+
+
+def test_regulation_enables_a_rule_outside_every_standard(tmp_path: Path) -> None:
+    """Оборот ссылки на рисунок задаёт положение, а не стандарт."""
+    registry = load_rules()
+    under_base = {impl.id for impl in select_rules(registry, profile=load_profile("base"))}
+    under_bmstu = {impl.id for impl in select_rules(registry, profile=load_profile(BMSTU))}
+
+    assert "figure-reference-form" not in under_base
+    assert "figure-reference-form" in under_bmstu
+
+    text = "Схема приведена на рисунке 2.\n"
+    found = findings(tmp_path, text, BMSTU, "figure-reference-form")
+    assert [(f.clause, f.source) for f in found] == [
+        ("10.5", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
+    ]
