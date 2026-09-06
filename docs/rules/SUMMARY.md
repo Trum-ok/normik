@@ -14,6 +14,11 @@
 * Перечисления
     * [enumeration-label](enumeration-label.md)
     * [enumeration-letters](enumeration-letters.md)
+    * [enumeration-lowercase](enumeration-lowercase.md)
+    * [enumeration-marker-nested](enumeration-marker-nested.md)
+    * [enumeration-marker-referenced](enumeration-marker-referenced.md)
+    * [enumeration-opening-colon](enumeration-opening-colon.md)
+    * [enumeration-single-item](enumeration-single-item.md)
 * Реферат
     * [abstract-text-position](abstract-text-position.md)
     * [abstract-volume-info](abstract-volume-info.md)

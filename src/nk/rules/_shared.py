@@ -543,6 +543,35 @@ def listing_dash(
 
 ITEM_COMMAND = "item"
 
+#: Окружения, набирающие список перечислений.
+LIST_ENVIRONMENTS = frozenset({"itemize", "enumerate", "description"})
+
+#: Список, элементы которого помечены маркером, а не буквой или номером.
+MARKED_LIST_ENVIRONMENTS = frozenset({"itemize"})
+
+
+def list_items(environment: Environment) -> tuple[Command, ...]:
+    """Элементы этого списка, без элементов вложенных в него списков."""
+    return tuple(command for command in environment.commands if command.name == ITEM_COMMAND)
+
+
+#: Команда элемента вместе с необязательным обозначением: текст идёт следом.
+_ITEM_START = re.compile(r"\\item\s*(?:\[[^\]]*\])?\s*")
+
+
+def item_text(doc: Document, command: Command) -> str:
+    """Текст элемента перечисления с той строки, где он начат.
+
+    Продолжение на следующих строках не берётся: правилам нужен зачин элемента,
+    а собрать его целиком мешают вложенные списки и команды.
+    """
+    line = doc.line_at(command.path, command.lineno)
+    if line is None:
+        return ""
+    match = _ITEM_START.search(line.stripped)
+    return visible_text(line.stripped[match.end() :]).strip() if match else ""
+
+
 #: Обозначение элемента перечисления: буква или число, за которыми может стоять
 #: скобка или точка.
 _ENUMERATION_LABEL = re.compile(r"^\s*(?P<mark>[A-Za-zА-Яа-яЁё]|\d+)\s*(?P<tail>[).]?)\s*$")

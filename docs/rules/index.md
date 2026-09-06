@@ -35,6 +35,11 @@
 |---|---|---|---|
 | [`enumeration-label`](enumeration-label.md) | ГОСТ 7.32-2017 п. 6.4.6 | error | Элемент перечисления обозначен не по форме |
 | [`enumeration-letters`](enumeration-letters.md) | ГОСТ 7.32-2017 п. 6.4.6 | error | В перечислении использована недопустимая буква |
+| [`enumeration-lowercase`](enumeration-lowercase.md) | ГОСТ Р 2.105-2019 п. 6.7.1 | warning | Элемент перечисления начат с прописной буквы |
+| [`enumeration-marker-nested`](enumeration-marker-nested.md) | ГОСТ Р 2.105-2019 п. 6.7.4 | error | Элемент маркированного списка разбит на подсписок |
+| [`enumeration-marker-referenced`](enumeration-marker-referenced.md) | ГОСТ Р 2.105-2019 п. 6.7.4 | error | На элемент маркированного списка дана ссылка |
+| [`enumeration-opening-colon`](enumeration-opening-colon.md) | ГОСТ Р 2.105-2019 п. 6.7.1 | error | Перед списком перечислений нет вводной формулировки с двоеточием |
+| [`enumeration-single-item`](enumeration-single-item.md) | ГОСТ Р 2.105-2019 п. 6.7.1 | error | В списке перечислений меньше двух элементов |
 
 ## Реферат
 

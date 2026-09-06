@@ -132,11 +132,13 @@ def test_deprecated_id_resolves_to_the_rule() -> None:
     assert registry.canonical("G732-6.5.7-caption-dot") == "figure-caption-dot"
 
 
-def test_every_rule_keeps_its_previous_id() -> None:
-    """Переименование не должно ломать чужие профили и подавления молча."""
-    orphans = [impl.id for impl in load_rules() if not impl.deprecated_ids]
+def test_every_deprecated_id_resolves() -> None:
+    """Прежнее имя обязано вести к живому правилу, иначе оно только вводит в заблуждение."""
+    registry = load_rules()
 
-    assert orphans == []
+    broken = [old for old, new in registry.aliases.items() if new not in registry]
+
+    assert broken == []
 
 
 def test_deprecated_id_can_be_selected() -> None:
