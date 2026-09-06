@@ -86,6 +86,7 @@
     * [appendix-sequence](appendix-sequence.md)
     * [appendix-status](appendix-status.md)
 * Изложение текста
+    * [evaluative-word](evaluative-word.md)
     * [first-person-pronoun](first-person-pronoun.md)
     * [first-person-verb](first-person-verb.md)
     * [math-sign-without-value](math-sign-without-value.md)
@@ -93,6 +94,7 @@
     * [standard-without-number](standard-without-number.md)
     * [unit-in-range](unit-in-range.md)
     * [unit-in-series](unit-in-series.md)
+    * [vague-quantifier](vague-quantifier.md)
 * Типографика
     * [initials-nbsp](initials-nbsp.md)
     * [particle-nbsp](particle-nbsp.md)

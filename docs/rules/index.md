@@ -143,6 +143,7 @@
 
 | ID | Источник | Пункты | Уровень | Название |
 |---|---|---|---|---|
+| [`evaluative-word`](evaluative-word.md) | положение вуза | — | <span class="nk-severity nk-severity--warning">warning</span> | Свойство названо оценкой, а не показателем |
 | [`first-person-pronoun`](first-person-pronoun.md) | положение вуза | — | <span class="nk-severity nk-severity--warning">warning</span> | Текст изложен от первого лица: местоимение |
 | [`first-person-verb`](first-person-verb.md) | положение вуза | — | <span class="nk-severity nk-severity--warning">warning</span> | Текст изложен от первого лица: глагол |
 | [`math-sign-without-value`](math-sign-without-value.md) | стандарт | ГОСТ Р 2.105-2019 п. 5.2.4 | <span class="nk-severity nk-severity--warning">warning</span> | Математический знак приведён без числового значения |
@@ -150,6 +151,7 @@
 | [`standard-without-number`](standard-without-number.md) | стандарт | ГОСТ Р 2.105-2019 п. 5.2.4 | <span class="nk-severity nk-severity--warning">warning</span> | Обозначение стандарта приведено без регистрационного номера |
 | [`unit-in-range`](unit-in-range.md) | стандарт | ГОСТ Р 2.105-2019 п. 6.16.5 | <span class="nk-severity nk-severity--warning">warning</span> | Единица величины повторена при обеих границах диапазона |
 | [`unit-in-series`](unit-in-series.md) | стандарт | ГОСТ Р 2.105-2019 п. 6.16.4 | <span class="nk-severity nk-severity--warning">warning</span> | Единица величины повторена при каждом значении ряда |
+| [`vague-quantifier`](vague-quantifier.md) | положение вуза | — | <span class="nk-severity nk-severity--warning">warning</span> | Мера приведена без числа |
 
 ## Типографика
 
