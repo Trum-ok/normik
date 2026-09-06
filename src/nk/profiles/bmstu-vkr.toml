@@ -4,7 +4,7 @@
 # требований задаёт само. Профиль настраивает правила 7.32 под то, что написано
 # в положении; пункты в находках остаются пунктами 7.32.
 #
-#   nk check chapters --profile mgtu-vkr
+#   nk check chapters --profile bmstu-vkr
 
 name = "МГТУ, ВКР"
 extends = "base"
