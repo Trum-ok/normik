@@ -21,7 +21,6 @@ SHORTHANDS = frozenset("=|-~<>,'`\"")
 
 @rule(
     id="NK-STYLE-quotes",
-    clause="",
     severity=Severity.INFO,
     title="Прямые кавычки вместо «ёлочек»",
     fixable=True,

@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import G732
 
 #: «в формуле 1», «по формуле~\ref{eq:x}» — номер приводится без скобок.
 BARE_REFERENCE = re.compile(r"формул\w*\s*~?\s*(?:\d|(?P<ref>\\ref)\b)", re.IGNORECASE)
@@ -14,7 +15,7 @@ BARE_REFERENCE = re.compile(r"формул\w*\s*~?\s*(?:\d|(?P<ref>\\ref)\b)", r
 
 @rule(
     id="G732-6.8.4-formula-reference-format",
-    clause="6.8.4",
+    standards={G732: "6.8.4"},
     severity=Severity.ERROR,
     title="Номер формулы в ссылке приведён без скобок",
     fixable=True,

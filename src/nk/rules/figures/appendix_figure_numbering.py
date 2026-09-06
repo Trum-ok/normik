@@ -6,12 +6,13 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.numbering import FIGURE
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import appendix_numbering
 
 
 @rule(
     id="G732-6.5.5-appendix-numbering",
-    clause="6.5.5",
+    standards={G732: "6.5.5"},
     severity=Severity.ERROR,
     title="Иллюстрация приложения нумеруется без его обозначения",
 )

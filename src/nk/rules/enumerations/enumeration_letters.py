@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import ITEM_COMMAND, parse_enumeration_label
 
 #: Буквы, которые в перечислениях не используют.
@@ -13,7 +14,7 @@ FORBIDDEN_LETTERS = frozenset("ёзйочъыь")
 
 @rule(
     id="G732-6.4.6-enumeration-letters",
-    clause="6.4.6",
+    standards={G732: "6.4.6"},
     severity=Severity.ERROR,
     title="В перечислении использована недопустимая буква",
 )

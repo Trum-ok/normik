@@ -5,6 +5,8 @@
 
 1.1 — добавлено поле ``suppressed`` со счётчиками скрытых находок.
 1.2 — у находки появился признак ``fixable``, в сводке — их число.
+1.3 — у находки появился ``source``: чей это пункт. Стандарт задаёт профиль,
+поэтому одно и то же правило под разными профилями даёт разные пункты.
 """
 
 import json
@@ -13,7 +15,7 @@ from typing import Any
 from nk.core.finding import Finding
 from nk.core.runner import RunResult
 
-SCHEMA_VERSION = "1.2"
+SCHEMA_VERSION = "1.3"
 TOOL_NAME = "nk"
 
 
@@ -45,6 +47,7 @@ def _finding(finding: Finding) -> dict[str, Any]:
     return {
         "rule_id": finding.rule_id,
         "clause": finding.clause,
+        "source": finding.source,
         "severity": finding.severity.value,
         "message": finding.message,
         "requirement": finding.requirement,

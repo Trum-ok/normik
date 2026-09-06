@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._text import is_code
 
 #: Строка, начинающаяся со слова «Примечание» или «Примечания».
@@ -15,7 +16,7 @@ NOTE_HEADER = re.compile(r"^\s*(примечани[ея])\b", re.IGNORECASE)
 
 @rule(
     id="G732-6.7.2-note-capital",
-    clause="6.7.2",
+    standards={G732: "6.7.2"},
     severity=Severity.ERROR,
     title="Слово «Примечание» набрано со строчной буквы",
     fixable=True,

@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import (
     FIGURE_ENVIRONMENTS,
     HYPHENATION_MARKER,
@@ -16,7 +17,7 @@ from nk.rules._shared import (
 
 @rule(
     id="G732-6.5.8-caption-hyphenation",
-    clause="6.5.8",
+    standards={G732: "6.5.8"},
     severity=Severity.ERROR,
     title="В наименовании рисунка задан перенос слова",
     fixable=True,

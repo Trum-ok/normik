@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import (
     appendix_spans,
     leading_text,
@@ -16,7 +17,7 @@ from nk.rules._shared import (
 
 @rule(
     id="G732-6.17.3-appendix-page-break",
-    clause="6.17.3",
+    standards={G732: "6.17.3"},
     severity=Severity.ERROR,
     title="Приложение не начинается с новой страницы",
     fixable=True,

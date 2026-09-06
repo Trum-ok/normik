@@ -7,6 +7,7 @@ from nk.core.finding import Finding, Severity
 from nk.core.profile import Profile, ProfileError
 from nk.core.registry import load_rules, select_rules, validate_profile
 from nk.core.rule import REGISTRY, RuleRegistry, UnknownRuleError, rule
+from nk.core.standards import G732
 
 
 @pytest.fixture
@@ -15,7 +16,7 @@ def three_rules(registry: RuleRegistry) -> RuleRegistry:
 
         @rule(
             id=rule_id,
-            clause="6.1",
+            standards={G732: "6.1"},
             severity=Severity.INFO,
             title=rule_id,
             registry=registry,
@@ -82,7 +83,6 @@ def test_validate_profile_rejects_typos(three_rules: RuleRegistry) -> None:
 def test_default_off_rule_is_skipped(registry: RuleRegistry) -> None:
     @rule(
         id="NK-STYLE-шумное",
-        clause="",
         severity=Severity.INFO,
         title="Шумное правило",
         default_off=True,
@@ -97,7 +97,6 @@ def test_default_off_rule_is_skipped(registry: RuleRegistry) -> None:
 def test_profile_enables_a_default_off_rule(registry: RuleRegistry) -> None:
     @rule(
         id="NK-STYLE-шумное",
-        clause="",
         severity=Severity.INFO,
         title="Шумное правило",
         default_off=True,
@@ -113,7 +112,6 @@ def test_profile_enables_a_default_off_rule(registry: RuleRegistry) -> None:
 def test_select_overrides_default_off(registry: RuleRegistry) -> None:
     @rule(
         id="NK-STYLE-шумное",
-        clause="",
         severity=Severity.INFO,
         title="Шумное правило",
         default_off=True,

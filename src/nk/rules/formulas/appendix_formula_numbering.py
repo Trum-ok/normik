@@ -6,12 +6,13 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.numbering import EQUATION
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import appendix_numbering
 
 
 @rule(
     id="G732-6.8.5-appendix-numbering",
-    clause="6.8.5",
+    standards={G732: "6.8.5"},
     severity=Severity.ERROR,
     title="Формула приложения нумеруется без обозначения приложения",
 )

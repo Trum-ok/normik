@@ -9,6 +9,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import RuleRegistry, rule
 from nk.core.runner import run
+from nk.core.standards import G732
 from nk.parse.tex import parse, parse_findings
 
 
@@ -27,7 +28,7 @@ def finding(rule_id: str, lineno: int, severity: Severity = Severity.ERROR) -> F
 def declare(registry: RuleRegistry, rule_id: str, produce) -> None:
     @rule(
         id=rule_id,
-        clause="6.5.7",
+        standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title=rule_id,
         registry=registry,

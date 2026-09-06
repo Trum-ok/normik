@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import keyword_lists
 
 DEFAULT_MIN = 5
@@ -13,7 +14,7 @@ DEFAULT_MAX = 15
 
 @rule(
     id="G732-5.3.2.1-keywords-count",
-    clause="5.3.2.1",
+    standards={G732: "5.3.2.1"},
     severity=Severity.ERROR,
     title="Число ключевых слов вне допустимого диапазона",
     params={"keywords_min": DEFAULT_MIN, "keywords_max": DEFAULT_MAX},

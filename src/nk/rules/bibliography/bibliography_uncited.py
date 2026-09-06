@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import BIBITEM_COMMAND, BIBLIOGRAPHY_ENVIRONMENT, cited_keys
 
 
 @rule(
     id="G732-6.16-bibitem-uncited",
-    clause="6.16",
+    standards={G732: "6.16"},
     severity=Severity.WARNING,
     title="На запись списка источников нет ссылок в тексте",
 )

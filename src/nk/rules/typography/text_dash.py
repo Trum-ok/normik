@@ -19,7 +19,6 @@ LONELY_HYPHEN = re.compile(r"(?<!-)(?<!\w)-(?!-)(?=\s)")
 
 @rule(
     id="NK-STYLE-dash",
-    clause="",
     severity=Severity.INFO,
     title="Дефис вместо тире",
     fixable=True,

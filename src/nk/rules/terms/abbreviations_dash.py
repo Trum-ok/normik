@@ -6,12 +6,13 @@ from nk.core.document import Document
 from nk.core.elements import ABBREVIATIONS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import listing_dash
 
 
 @rule(
     id="G732-6.15-abbreviations-dash",
-    clause="6.15",
+    standards={G732: "6.15"},
     severity=Severity.WARNING,
     title="В перечне сокращений расшифровка отделена дефисом",
     fixable=True,

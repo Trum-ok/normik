@@ -6,6 +6,7 @@ from nk.core.document import Document
 from nk.core.elements import TERMS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import section_lines, structural_headings
 
 OPENING = "применяют следующие термины"
@@ -13,7 +14,7 @@ OPENING = "применяют следующие термины"
 
 @rule(
     id="G732-5.5.2-terms-opening",
-    clause="5.5.2",
+    standards={G732: "5.5.2"},
     severity=Severity.ERROR,
     title="Перечень терминов не начинается с установленной фразы",
 )

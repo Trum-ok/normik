@@ -11,6 +11,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from nk.core import standards
 from nk.core.elements import DEFAULT_ELEMENTS, ROLES, Elements, ElementsError, normalize_element
 from nk.core.finding import Severity
 from nk.core.headings import DEFAULT_APPENDIX_LETTERS
@@ -30,11 +31,12 @@ PYPROJECT_SECTION = "tool.nk"
 CONFIG_NAMES = ("nk.toml", ".nk.toml", PYPROJECT)
 
 _TOP_LEVEL_KEYS = frozenset(
-    {"name", "extends", "disable", "enable", "rules", "elements", "appendix"}
+    {"name", "extends", "standard", "source", "disable", "enable", "rules", "elements", "appendix"}
 )
-_RULE_KEYS = frozenset({"severity", "params"})
+_RULE_KEYS = frozenset({"severity", "params", "clause"})
 _ELEMENT_KEYS = frozenset({"aliases", "order", "roles"})
 _APPENDIX_KEYS = frozenset({"letters"})
+_SOURCE_KEYS = frozenset({"title"})
 
 
 class ProfileError(ValueError):
@@ -62,6 +64,15 @@ class Profile:
     appendix_letters: str = DEFAULT_APPENDIX_LETTERS
     """Обозначения приложений по порядку: каждый знак строки — одно обозначение."""
 
+    standard: standards.Standard = standards.DEFAULT
+    """Стандарт, по которому проверяется отчёт: его пункты попадают в находки."""
+
+    source_title: str = ""
+    """Свой источник требований профиля — положение вуза и тому подобное."""
+
+    clauses: Mapping[str, str] = field(default_factory=dict)
+    """Пункты своего источника по правилам: перекрывают пункт стандарта."""
+
     source: Path | None = None
     """Файл, из которого прочитан профиль; ``None`` — встроенный."""
 
@@ -83,9 +94,28 @@ class Profile:
     def params_for(self, rule_id: str) -> Params:
         return self.params.get(rule_id, {})
 
+    def requirement(self, rule_id: str, clauses: Mapping[str, str]) -> tuple[str, str]:
+        """Пункт и источник требования для находки.
+
+        Пункт, объявленный самим профилем, старше пункта стандарта: требование
+        кафедры или вуза расходится со стандартом именно там, где объявлено.
+        Пункта нет — нет и источника: у типографики его не бывает.
+        """
+        own = self.clauses.get(rule_id)
+        if own is not None:
+            return own, self.source_title
+        clause = clauses.get(self.standard.id, standards.NO_CLAUSE)
+        return clause, self.standard.title if clause else ""
+
     def mentioned_rules(self) -> frozenset[str]:
         """Правила, названные профилем явно — для проверки на опечатки в идентификаторах."""
-        return frozenset(self.disabled | self.enabled | self.severities.keys() | self.params.keys())
+        return frozenset(
+            self.disabled
+            | self.enabled
+            | self.severities.keys()
+            | self.params.keys()
+            | self.clauses.keys()
+        )
 
     def resolve(self, defaults: Mapping[str, Params]) -> "Profile":
         """Слить значения по умолчанию из объявлений правил с переопределениями профиля."""
@@ -100,6 +130,9 @@ class Profile:
             params=merged,
             elements=self.elements,
             appendix_letters=self.appendix_letters,
+            standard=self.standard,
+            source_title=self.source_title,
+            clauses=self.clauses,
             source=self.source,
         )
 
@@ -238,6 +271,15 @@ def _parse(text: str, origin: str, section: bool = False) -> dict[str, Any]:
             f"профиль {origin}: [elements], неизвестные ключи {sorted(unknown_elements)}"
         )
 
+    source_section = data.get("source", {})
+    if not isinstance(source_section, dict):
+        raise ProfileError(f"профиль {origin}: секция [source] должна быть таблицей")
+    unknown_source = source_section.keys() - _SOURCE_KEYS
+    if unknown_source:
+        raise ProfileError(
+            f"профиль {origin}: [source], неизвестные ключи {sorted(unknown_source)}"
+        )
+
     appendix = data.get("appendix", {})
     if not isinstance(appendix, dict):
         raise ProfileError(f"профиль {origin}: секция [appendix] должна быть таблицей")
@@ -279,6 +321,8 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
         "rules": rules,
         "elements": _merge_elements(parent.get("elements", {}), child.get("elements", {})),
         "appendix": {**parent.get("appendix", {}), **child.get("appendix", {})},
+        "standard": child.get("standard", parent.get("standard")),
+        "source": {**parent.get("source", {}), **child.get("source", {})},
     }
 
 
@@ -300,6 +344,7 @@ def _merge_elements(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, 
 def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
     severities: dict[str, Severity] = {}
     params: dict[str, Params] = {}
+    clauses: dict[str, str] = {}
     for rule_id, section in data.get("rules", {}).items():
         raw = section.get("severity")
         if raw is not None:
@@ -307,6 +352,16 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
         rule_params = section.get("params")
         if rule_params:
             params[rule_id] = rule_params
+        clause = section.get("clause")
+        if clause is not None:
+            clauses[rule_id] = str(clause)
+
+    source_title = str(data.get("source", {}).get("title", ""))
+    if clauses and not source_title:
+        raise ProfileError(
+            f"пункты объявлены для правил {sorted(clauses)}, а источник не назван: "
+            'добавьте [source] title = "…" — иначе непонятно, чей это пункт'
+        )
 
     return Profile(
         name=str(data.get("name") or DEFAULT_PROFILE),
@@ -316,8 +371,20 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
         params=params,
         elements=_elements(data.get("elements", {})),
         appendix_letters=_appendix_letters(data.get("appendix", {})),
+        standard=_standard(data.get("standard")),
+        source_title=source_title,
+        clauses=clauses,
         source=source,
     )
+
+
+def _standard(raw: object) -> standards.Standard:
+    if raw is None:
+        return standards.DEFAULT
+    try:
+        return standards.get(str(raw))
+    except standards.UnknownStandardError as error:
+        raise ProfileError(f"профиль: {error}") from error
 
 
 def _elements(raw: dict[str, Any]) -> Elements:

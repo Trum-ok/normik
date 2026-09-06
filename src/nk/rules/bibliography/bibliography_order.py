@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import (
     BIBITEM_COMMAND,
     BIBLIOGRAPHY_ENVIRONMENT,
@@ -15,7 +16,7 @@ from nk.rules._shared import (
 
 @rule(
     id="G732-6.16-bibliography-order",
-    clause="6.16",
+    standards={G732: "6.16"},
     severity=Severity.ERROR,
     title="Записи списка источников идут не в порядке появления ссылок",
 )

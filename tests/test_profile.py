@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from nk.core import standards
 from nk.core.elements import DEFAULT_ELEMENTS, TERMS_ROLE
 from nk.core.finding import Severity
 from nk.core.profile import Profile, ProfileError, discover, load_profile
@@ -385,6 +386,82 @@ def test_appendix_letters_are_inherited(tmp_path: Path) -> None:
 
 def test_resolve_keeps_appendix_letters() -> None:
     assert Profile(appendix_letters="XYZ").resolve({}).appendix_letters == "XYZ"
+
+
+def test_standard_is_read_from_the_profile(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", 'standard = "GR2105"\n')
+
+    assert load_profile(path).standard is standards.GR2105
+
+
+def test_standard_defaults_to_the_report_standard() -> None:
+    assert Profile().standard is standards.DEFAULT
+
+
+def test_unknown_standard_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", 'standard = "G0000"\n')
+
+    with pytest.raises(ProfileError, match="неизвестный стандарт"):
+        load_profile(path)
+
+
+def test_clause_without_a_named_source_is_rejected(tmp_path: Path) -> None:
+    """Пункт без источника непонятно чей."""
+    path = write(tmp_path, "источник.toml", '[rules."G732-6.2.3-heading-dot"]\nclause = "9.3"\n')
+
+    with pytest.raises(ProfileError, match="источник не назван"):
+        load_profile(path)
+
+
+def test_own_clause_wins_over_the_standard(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "источник.toml",
+        '[source]\ntitle = "Положение"\n\n[rules."heading-dot"]\nclause = "9.3"\n',
+    )
+
+    profile = load_profile(path)
+
+    assert profile.requirement("heading-dot", {"G732": "6.2.3"}) == ("9.3", "Положение")
+
+
+def test_clause_of_the_active_standard_is_used_by_default() -> None:
+    clauses = {"G732": "6.5.7", "GR2105": "6.9.4"}
+
+    assert Profile().requirement("caption-dot", clauses) == ("6.5.7", "ГОСТ 7.32-2017")
+    assert Profile(standard=standards.GR2105).requirement("caption-dot", clauses) == (
+        "6.9.4",
+        "ГОСТ Р 2.105-2019",
+    )
+
+
+def test_rule_outside_the_active_standard_has_neither_clause_nor_source() -> None:
+    """Иначе типографика ссылалась бы на стандарт, который её не регулирует."""
+    profile = Profile(standard=standards.GR2105)
+
+    assert profile.requirement("keywords-count", {"G732": "5.3.2.1"}) == ("", "")
+    assert profile.requirement("unit-nbsp", {}) == ("", "")
+
+
+def test_standard_and_source_are_inherited(tmp_path: Path) -> None:
+    write(tmp_path, "основа.toml", 'standard = "GR2105"\n\n[source]\ntitle = "Положение"\n')
+    path = write(tmp_path, "кафедра.toml", 'extends = "основа.toml"\n')
+
+    profile = load_profile(path)
+
+    assert profile.standard is standards.GR2105
+    assert profile.source_title == "Положение"
+
+
+def test_own_clauses_are_checked_against_the_registry(tmp_path: Path) -> None:
+    """Опечатка в идентификаторе не должна молча терять пункт."""
+    path = write(
+        tmp_path,
+        "источник.toml",
+        '[source]\ntitle = "Положение"\n\n[rules."опечатка"]\nclause = "9.3"\n',
+    )
+
+    assert "опечатка" in load_profile(path).mentioned_rules()
 
 
 def test_discover_finds_nk_toml(tmp_path: Path) -> None:

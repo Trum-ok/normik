@@ -1,5 +1,6 @@
 from support import BAD, GOOD, RuleFixture, fixture_directories
 
+from nk.core import standards
 from nk.core.fixer import plan
 from nk.core.registry import load_rules
 from nk.parse.tex import parse
@@ -33,8 +34,11 @@ def test_findings_are_self_contained(rule_fixture: RuleFixture) -> None:
         assert finding.message.strip(), f"{where}: пустое message"
         assert finding.requirement.strip(), f"{where}: пустое requirement"
         assert finding.context, f"{where}: пустой context"
-        assert finding.clause == rule_fixture.rule.clause, (
-            f"{where}: clause разошёлся с объявлением"
+        assert finding.clause == rule_fixture.rule.clause_for(standards.DEFAULT.id), (
+            f"{where}: пункт разошёлся с объявлением правила"
+        )
+        assert bool(finding.source) == bool(finding.clause), (
+            f"{where}: пункт без источника либо источник без пункта"
         )
         if not rule_fixture.rule.allow_missing_suggestion:
             assert finding.suggestion, (

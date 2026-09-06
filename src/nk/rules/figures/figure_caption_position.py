@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import FIGURE_ENVIRONMENTS, captions, first_graphic_line
 
 
 @rule(
     id="G732-6.5.7-caption-position",
-    clause="6.5.7",
+    standards={G732: "6.5.7"},
     severity=Severity.ERROR,
     title="Наименование рисунка расположено выше изображения",
 )

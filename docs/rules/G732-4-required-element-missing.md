@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | Категория | Структура отчёта |
-| Пункт ГОСТ 7.32-2017 | 4 |
+| Пункты | ГОСТ 7.32-2017 п. 4 |
 | Уровень по умолчанию | `error` |
 | Объявлено в | `nk.rules.structure.required_elements` |
 | Фикстуры | `tests/fixtures/G732-4-required-element-missing/` |

@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import FIGURE_ENVIRONMENTS, capitalize_first, caption_findings, first_letter
 
 
 @rule(
     id="G732-6.5.8-caption-capital",
-    clause="6.5.8",
+    standards={G732: "6.5.8"},
     severity=Severity.ERROR,
     title="Наименование рисунка начинается со строчной буквы",
     fixable=True,

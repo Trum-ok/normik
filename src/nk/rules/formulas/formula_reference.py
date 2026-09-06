@@ -6,6 +6,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.math import MATH_ENVIRONMENTS
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import (
     is_numbered_environment,
     labels,
@@ -17,7 +18,7 @@ REQUIREMENT = "Порядковый номер присваивают форму
 
 @rule(
     id="G732-6.8.3-formula-no-reference",
-    clause="6.8.3",
+    standards={G732: "6.8.3"},
     severity=Severity.WARNING,
     title="Формула пронумерована, но ссылки на неё нет",
 )

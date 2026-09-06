@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import BIBLIOGRAPHY_ENVIRONMENT, BIBTEX_COMMANDS, ordered_commands
 
 
 @rule(
     id="G732-6.16-bibtex-order-unverifiable",
-    clause="6.16",
+    standards={G732: "6.16"},
     severity=Severity.INFO,
     title="Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется",
 )

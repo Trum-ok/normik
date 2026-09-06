@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import FIGURE_ENVIRONMENTS, float_no_reference
 
 REQUIREMENT = "На все иллюстрации в отчёте должны быть даны ссылки со словом «рисунок» и номером."
@@ -12,7 +13,7 @@ REQUIREMENT = "На все иллюстрации в отчёте должны �
 
 @rule(
     id="G732-6.5.1-figure-no-reference",
-    clause="6.5.1",
+    standards={G732: "6.5.1"},
     severity=Severity.ERROR,
     title="На рисунок нет ссылки в тексте",
 )

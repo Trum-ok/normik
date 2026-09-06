@@ -30,7 +30,6 @@ _PROCLITIC = re.compile(
 
 @rule(
     id="NK-STYLE-preposition-nbsp",
-    clause="",
     severity=Severity.INFO,
     title="Предлог не привязан к следующему слову",
     fixable=True,

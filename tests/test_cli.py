@@ -10,6 +10,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import RuleRegistry, rule
+from nk.core.standards import G732
 
 RULE_ID = "G732-6.5.7-caption-dot"
 
@@ -49,7 +50,7 @@ def failing_rule(monkeypatch: pytest.MonkeyPatch) -> None:
 
     @rule(
         id="G732-6.5.7-падает",
-        clause="6.5.7",
+        standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title="падает",
         registry=registry,
@@ -170,7 +171,7 @@ def test_json_output_is_parseable(report: Path) -> None:
     result = runner.invoke(app, ["check", str(report), "--format", "json"])
 
     payload = json.loads(result.stdout)
-    assert payload["schema_version"] == "1.2"
+    assert payload["schema_version"] == "1.3"
     assert payload["summary"]["error"] == 1
     assert payload["findings"][0]["rule_id"] == RULE_ID
     assert payload["findings"][0]["clause"] == "6.5.7"
@@ -196,7 +197,8 @@ def test_profile_show_lists_the_active_set() -> None:
 
     assert result.exit_code == EXIT_OK
     assert "Профиль: base" in result.stdout
-    assert "Источник: встроенный" in result.stdout
+    assert "Файл: встроенный" in result.stdout
+    assert "Стандарт: ГОСТ 7.32-2017" in result.stdout
     assert RULE_ID in result.stdout
 
 
@@ -343,7 +345,7 @@ def test_fix_reports_a_rule_opened_by_a_fix(
 
     @rule(
         id="G732-6.5.7-точка-тест",
-        clause="6.5.7",
+        standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title="Точка в наименовании",
         fixable=True,
@@ -368,7 +370,7 @@ def test_fix_reports_a_rule_opened_by_a_fix(
 
     @rule(
         id="G732-6.5.8-восклицание-тест",
-        clause="6.5.8",
+        standards={G732: "6.5.8"},
         severity=Severity.ERROR,
         title="Восклицание в наименовании",
         registry=registry,

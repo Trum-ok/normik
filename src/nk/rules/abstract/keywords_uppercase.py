@@ -6,6 +6,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import KeywordList, keyword_lists
 
 #: Обратная косая и доллар выдают команду или формулу: их регистр менять нельзя.
@@ -14,7 +15,7 @@ MARKUP = ("\\", "$")
 
 @rule(
     id="G732-6.12.2-keywords-uppercase",
-    clause="6.12.2",
+    standards={G732: "6.12.2"},
     severity=Severity.ERROR,
     title="Ключевые слова набраны не прописными буквами",
     fixable=True,

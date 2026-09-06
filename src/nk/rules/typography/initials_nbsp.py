@@ -18,7 +18,6 @@ _SURNAME = re.compile(r"[А-ЯЁA-Z][а-яёa-z]")
 
 @rule(
     id="NK-STYLE-initials-nbsp",
-    clause="",
     severity=Severity.INFO,
     title="Инициалы не привязаны к фамилии",
     fixable=True,

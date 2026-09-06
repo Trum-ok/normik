@@ -122,3 +122,22 @@ def test_appendix_numbering_follows_the_profile_designations(tmp_path: Path) -> 
     """Обозначение приложения из профиля попадает в номер рисунка."""
     assert appendix_figure_number(tmp_path, "1", BMSTU) == ["1.1"]
     assert appendix_figure_number(tmp_path, "А", "base") == ["А.1"]
+
+
+def test_finding_cites_the_regulation_where_it_diverges(tmp_path: Path) -> None:
+    """Там, где положение расходится со стандартом, находка ссылается на положение."""
+    text = REPORT.replace("ПРИЛОЖЕНИЕ 1", "ПРИЛОЖЕНИЕ 2")
+
+    found = findings(tmp_path, text, BMSTU, "G732-6.17.4-appendix-sequence")
+
+    assert [(f.clause, f.source) for f in found] == [
+        ("10.11", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
+    ]
+
+
+def test_the_same_rule_cites_the_standard_under_base(tmp_path: Path) -> None:
+    text = REPORT.replace("ПРИЛОЖЕНИЕ 1", "ПРИЛОЖЕНИЕ Б")
+
+    found = findings(tmp_path, text, "base", "G732-6.17.4-appendix-sequence")
+
+    assert [(f.clause, f.source) for f in found] == [("6.17.4", "ГОСТ 7.32-2017")]

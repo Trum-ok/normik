@@ -6,11 +6,12 @@ from nk.core.document import Document, Span
 from nk.core.finding import Finding, Severity
 from nk.core.numbering import FIGURE
 from nk.core.rule import rule
+from nk.core.standards import G732
 
 
 @rule(
     id="G732-6.5.4-numbering-scheme-mixed",
-    clause="6.5.4",
+    standards={G732: "6.5.4"},
     severity=Severity.ERROR,
     title="Схема нумерации иллюстраций задана в документе несколько раз",
 )

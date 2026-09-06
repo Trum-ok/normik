@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import TABLE_ENVIRONMENTS, float_position
 
 
 @rule(
     id="G732-6.6.2-table-position",
-    clause="6.6.2",
+    standards={G732: "6.6.2"},
     severity=Severity.ERROR,
     title="Таблица размещена выше первой ссылки на неё",
 )

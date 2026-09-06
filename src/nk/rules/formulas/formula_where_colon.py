@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._text import is_code
 
 WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
@@ -14,7 +15,7 @@ WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
 
 @rule(
     id="G732-6.8.2-where-colon",
-    clause="6.8.2",
+    standards={G732: "6.8.2"},
     severity=Severity.ERROR,
     title="Пояснение к формуле начинается со слова «где» с двоеточием",
     fixable=True,

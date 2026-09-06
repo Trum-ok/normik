@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Command, Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import (
     APPENDIX_DESIGNATION,
     SECTION_LEVEL,
@@ -27,7 +28,7 @@ PAGE_STARTS = ("\\begin{document}", "\\end{titlepage}", "\\maketitle", "\\titlep
 
 @rule(
     id="G732-6.2.1-section-page-break",
-    clause="6.2.1",
+    standards={G732: "6.2.1"},
     severity=Severity.ERROR,
     title="Раздел не начинается с новой страницы",
     fixable=True,

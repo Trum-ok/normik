@@ -5,7 +5,7 @@
 """
 
 import inspect
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
@@ -14,6 +14,7 @@ from nk.core.document import Document, Line, Span
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.profile import Params
+from nk.core.standards import NO_CLAUSE, Standard
 
 
 class RuleCallable(Protocol):
@@ -29,7 +30,7 @@ class Rule(Protocol):
     """Контракт правила."""
 
     id: str
-    clause: str
+    clauses: Mapping[str, str]
     severity: Severity
     title: str
 
@@ -57,10 +58,15 @@ class RuleImpl:
     """
 
     id: str
-    clause: str
     severity: Severity
     title: str
     func: RuleCallable
+    clauses: Mapping[str, str] = field(default_factory=dict)
+    """Пункт требования в каждом стандарте, где оно записано; ключ — имя стандарта.
+
+    Пусто — требование не из стандарта: типографика.
+    """
+
     description: str = ""
     """Развёрнутое описание на Markdown: докстринг функции правила, источник страницы в документации."""
     default_params: Params = field(default_factory=dict)
@@ -84,6 +90,10 @@ class RuleImpl:
     def category(self) -> str:
         """Чем правило регулирует оформление: каталог, в котором оно лежит."""
         return of_module(self.module)
+
+    def clause_for(self, standard_id: str) -> str:
+        """Пункт требования в этом стандарте либо пустая строка."""
+        return self.clauses.get(standard_id, NO_CLAUSE)
 
     def params(self, doc: Document) -> Params:
         """Значения по умолчанию, перекрытые профилем документа."""
@@ -109,9 +119,11 @@ class RuleImpl:
         строку, — передаётся готовый :class:`~nk.core.finding.Fix`.
         """
         lineno = at.lineno if isinstance(at, Line) else at.start
+        clause, source = doc.profile.requirement(self.id, self.clauses)
         return Finding(
             rule_id=self.id,
-            clause=self.clause,
+            clause=clause,
+            source=source,
             severity=doc.profile.severity_for(self.id, self.severity),
             message=message,
             requirement=requirement,
@@ -177,9 +189,9 @@ REGISTRY = RuleRegistry()
 def rule(
     *,
     id: str,
-    clause: str,
     severity: Severity,
     title: str,
+    standards: Mapping[Standard, str] | None = None,
     params: Params | None = None,
     allow_missing_suggestion: bool = False,
     fixable: bool = False,
@@ -190,7 +202,7 @@ def rule(
 
         @rule(
             id="G732-6.5.7-caption-dot",
-            clause="6.5.7",
+            standards={G732: "6.5.7"},
             severity=Severity.ERROR,
             title="Подпись рисунка заканчивается точкой",
         )
@@ -206,7 +218,7 @@ def rule(
     def decorate(func: RuleCallable) -> RuleImpl:
         impl = RuleImpl(
             id=id,
-            clause=clause,
+            clauses={item.id: clause for item, clause in (standards or {}).items()},
             severity=severity,
             title=title,
             func=func,

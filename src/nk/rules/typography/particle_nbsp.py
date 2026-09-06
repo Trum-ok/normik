@@ -17,7 +17,6 @@ _ENCLITIC = re.compile(r"(?<=\w)( )(?:" + "|".join(ENCLITICS) + r")(?![\w~-])", 
 
 @rule(
     id="NK-STYLE-particle-nbsp",
-    clause="",
     severity=Severity.INFO,
     title="Частица не привязана к предыдущему слову",
     fixable=True,

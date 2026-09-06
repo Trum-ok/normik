@@ -6,6 +6,7 @@ from nk.core.document import Document
 from nk.core.elements import Elements
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import is_full_document, structural_headings
 
 
@@ -17,7 +18,7 @@ def _established_order(elements: Elements) -> str:
 
 @rule(
     id="G732-4-elements-order",
-    clause="4",
+    standards={G732: "4"},
     severity=Severity.ERROR,
     title="Структурные элементы идут не в установленном порядке",
 )

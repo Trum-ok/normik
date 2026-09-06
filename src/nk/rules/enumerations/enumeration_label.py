@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Command, Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import DASH, ITEM_COMMAND, parse_enumeration_label
 
 #: Знаки, которыми маркер перечисления записывают вместо тире.
@@ -18,7 +19,7 @@ REQUIREMENT = (
 
 @rule(
     id="G732-6.4.6-enumeration-label",
-    clause="6.4.6",
+    standards={G732: "6.4.6"},
     severity=Severity.ERROR,
     title="Элемент перечисления обозначен не по форме",
     fixable=True,

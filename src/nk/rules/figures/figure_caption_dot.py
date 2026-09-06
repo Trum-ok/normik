@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_findings, one_line
 
 
 @rule(
     id="G732-6.5.7-caption-dot",
-    clause="6.5.7",
+    standards={G732: "6.5.7"},
     severity=Severity.ERROR,
     title="Наименование рисунка заканчивается точкой",
     fixable=True,

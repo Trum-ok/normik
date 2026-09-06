@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import heading_text, headings, normalize_heading
 
 DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)")
@@ -13,7 +14,7 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)")
 
 @rule(
     id="G732-6.17.4-appendix-letter",
-    clause="6.17.4",
+    standards={G732: "6.17.4"},
     severity=Severity.ERROR,
     title="Приложение обозначено недопустимой буквой",
 )

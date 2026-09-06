@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import heading_text, headings, is_numbered, structural_element
 
 
 @rule(
     id="G732-6.2.1-structural-heading-numbered",
-    clause="6.2.1",
+    standards={G732: "6.2.1"},
     severity=Severity.ERROR,
     title="Заголовок структурного элемента пронумерован",
     fixable=True,

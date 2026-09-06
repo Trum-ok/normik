@@ -5,12 +5,13 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import HYPHENATION_MARKER, heading_text, headings, without_hyphenation
 
 
 @rule(
     id="G732-6.2.4-heading-hyphenation",
-    clause="6.2.4",
+    standards={G732: "6.2.4"},
     severity=Severity.ERROR,
     title="В заголовке задан перенос слова",
     fixable=True,

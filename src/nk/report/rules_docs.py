@@ -7,7 +7,7 @@
 from collections.abc import Iterable
 from pathlib import Path
 
-from nk.core import categories
+from nk.core import categories, standards
 from nk.core.rule import RuleImpl
 from nk.report import examples
 
@@ -27,8 +27,8 @@ INDEX_HEADER = """\
 отключается или переоценивается [профилем](../profiles.md).
 """
 
-#: Пункт стандарта, которого у правила нет: типографика им не регулируется.
-NO_CLAUSE_LABEL = "вне стандарта"
+#: Правило, которого нет ни в одном стандарте: типографика им не регулируется.
+NO_CLAUSE_LABEL = "вне стандартов"
 
 
 def render_pages(rules: Iterable[RuleImpl], *, fixtures_root: Path | None = None) -> dict[str, str]:
@@ -75,12 +75,12 @@ def render_index(rules: Iterable[RuleImpl]) -> str:
             [
                 f"## {category.title}",
                 "",
-                "| ID | Пункт | Уровень | Название |",
+                "| ID | Пункты | Уровень | Название |",
                 "|---|---|---|---|",
             ]
         )
         lines.extend(
-            f"| [`{impl.id}`]({impl.id}.md) | {impl.clause or NO_CLAUSE_LABEL} "
+            f"| [`{impl.id}`]({impl.id}.md) | {_clauses(impl)} "
             f"| {impl.severity.value} | {impl.title} |"
             for impl in section
         )
@@ -111,7 +111,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
         "| | |",
         "|---|---|",
         f"| Категория | {categories.title(impl.category)} |",
-        f"| Пункт ГОСТ 7.32-2017 | {impl.clause or NO_CLAUSE_LABEL} |",
+        f"| Пункты | {_clauses(impl)} |",
         f"| Уровень по умолчанию | `{impl.severity.value}` |",
         f"| Объявлено в | `{impl.module}` |",
         f"| Фикстуры | `tests/fixtures/{impl.id}/` |",
@@ -147,6 +147,15 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
     lines.extend(_example_section(impl, fixtures_root))
     lines.extend(_profile_section(impl))
     return "\n".join(lines)
+
+
+def _clauses(impl: RuleImpl) -> str:
+    """Стандарты и пункты правила: одно требование бывает записано в нескольких."""
+    if not impl.clauses:
+        return NO_CLAUSE_LABEL
+    return ", ".join(
+        f"{standards.get(key).title} п. {clause}" for key, clause in sorted(impl.clauses.items())
+    )
 
 
 def _params_section(impl: RuleImpl) -> list[str]:

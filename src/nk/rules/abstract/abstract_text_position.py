@@ -6,6 +6,7 @@ from nk.core.document import Document, Line
 from nk.core.elements import ABSTRACT_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import (
     KEYWORDS_PREFIX,
     VOLUME_ITEM,
@@ -17,7 +18,7 @@ from nk.rules._shared import (
 
 @rule(
     id="G732-6.12.3-abstract-text-position",
-    clause="6.12.3",
+    standards={G732: "6.12.3"},
     severity=Severity.ERROR,
     title="Текст реферата начинается до перечня ключевых слов",
 )

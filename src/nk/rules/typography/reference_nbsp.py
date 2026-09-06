@@ -18,7 +18,6 @@ BEFORE_NUMBER = re.compile(
 
 @rule(
     id="NK-STYLE-reference-nbsp",
-    clause="",
     severity=Severity.INFO,
     title="Номер в ссылке отделён разрывным пробелом",
     fixable=True,

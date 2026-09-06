@@ -30,7 +30,6 @@ _BEFORE_UNIT = re.compile(
 
 @rule(
     id="NK-STYLE-unit-nbsp",
-    clause="",
     severity=Severity.INFO,
     title="Число не привязано к единице измерения",
     fixable=True,

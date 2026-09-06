@@ -6,6 +6,7 @@ from nk.core.document import Document
 from nk.core.elements import ABBREVIATIONS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import section_lines, structural_headings
 
 OPENING = "применяют следующие сокращения"
@@ -13,7 +14,7 @@ OPENING = "применяют следующие сокращения"
 
 @rule(
     id="G732-5.6.1-abbreviations-opening",
-    clause="5.6.1",
+    standards={G732: "5.6.1"},
     severity=Severity.ERROR,
     title="Перечень сокращений не начинается с установленной фразы",
 )

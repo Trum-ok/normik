@@ -14,12 +14,13 @@ from nk.core.rule import (
     UnknownRuleError,
     rule,
 )
+from nk.core.standards import G732
 
 
 def test_decorator_registers_rule_with_metadata(registry: RuleRegistry) -> None:
     @rule(
         id="G732-6.5.7-caption-dot",
-        clause="6.5.7",
+        standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title="Подпись рисунка заканчивается точкой",
         registry=registry,
@@ -28,7 +29,7 @@ def test_decorator_registers_rule_with_metadata(registry: RuleRegistry) -> None:
         return ()
 
     assert registry.get("G732-6.5.7-caption-dot") is caption_dot
-    assert caption_dot.clause == "6.5.7"
+    assert caption_dot.clause_for(G732.id) == "6.5.7"
     assert caption_dot.severity is Severity.ERROR
     assert isinstance(caption_dot, Rule)
 
@@ -37,7 +38,7 @@ def test_duplicate_id_is_an_error(registry: RuleRegistry) -> None:
     def declare() -> None:
         @rule(
             id="G732-дубль",
-            clause="6.5.7",
+            standards={G732: "6.5.7"},
             severity=Severity.ERROR,
             title="Правило",
             registry=registry,
@@ -60,7 +61,7 @@ def test_registry_is_sorted_by_id(registry: RuleRegistry) -> None:
 
         @rule(
             id=rule_id,
-            clause="6.1",
+            standards={G732: "6.1"},
             severity=Severity.INFO,
             title=rule_id,
             registry=registry,
@@ -76,7 +77,7 @@ def test_registry_is_sorted_by_id(registry: RuleRegistry) -> None:
 def _caption_dot_rule(registry: RuleRegistry):
     @rule(
         id="G732-6.5.7-caption-dot",
-        clause="6.5.7",
+        standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title="Подпись рисунка заканчивается точкой",
         registry=registry,
@@ -129,7 +130,7 @@ def test_finding_severity_follows_profile_override(registry: RuleRegistry) -> No
 def test_params_merge_declaration_defaults_with_profile(registry: RuleRegistry) -> None:
     @rule(
         id="G732-5.3.2.1-keywords-count",
-        clause="5.3.2.1",
+        standards={G732: "5.3.2.1"},
         severity=Severity.ERROR,
         title="Число ключевых слов вне допустимого диапазона",
         params={"keywords_min": 5, "keywords_max": 15},
@@ -148,7 +149,7 @@ def test_params_merge_declaration_defaults_with_profile(registry: RuleRegistry) 
 def test_registry_collects_default_params(registry: RuleRegistry) -> None:
     @rule(
         id="G732-с-параметрами",
-        clause="5.3.2.1",
+        standards={G732: "5.3.2.1"},
         severity=Severity.ERROR,
         title="Правило с параметрами",
         params={"limit": 3},
@@ -159,7 +160,7 @@ def test_registry_collects_default_params(registry: RuleRegistry) -> None:
 
     @rule(
         id="G732-без-параметров",
-        clause="6.1",
+        standards={G732: "6.1"},
         severity=Severity.INFO,
         title="Правило без параметров",
         registry=registry,

@@ -6,12 +6,13 @@ from nk.core.document import Document
 from nk.core.elements import TERMS_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import listing_order
 
 
 @rule(
     id="G732-6.14-terms-order",
-    clause="6.14",
+    standards={G732: "6.14"},
     severity=Severity.ERROR,
     title="Термины в перечне идут не по алфавиту",
 )

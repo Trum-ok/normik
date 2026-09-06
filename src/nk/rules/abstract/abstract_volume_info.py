@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.elements import ABSTRACT_ROLE
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import section_lines, structural_headings
 
 #: «Отчёт 45 с.», «45~с.» — неразрывный пробел ставит сюда правка типографики.
@@ -15,7 +16,7 @@ VOLUME = re.compile(r"\d+\s*~?\s*с\.")
 
 @rule(
     id="G732-5.3.2-abstract-volume-info",
-    clause="5.3.2",
+    standards={G732: "5.3.2"},
     severity=Severity.ERROR,
     title="В реферате нет сведений об объёме отчёта",
 )

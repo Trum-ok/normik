@@ -9,6 +9,7 @@ from nk.core.finding import Finding, Fix, Severity
 from nk.core.math import MATH_ENVIRONMENTS
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import G732
 
 REQUIREMENT = "Выше и ниже каждой формулы оставляют не менее одной свободной строки."
 INSIDE_ARGUMENT = (
@@ -20,7 +21,7 @@ BLANK_LINE = "\n\n"
 
 @rule(
     id="G732-6.8.1-blank-line-around",
-    clause="6.8.1",
+    standards={G732: "6.8.1"},
     severity=Severity.ERROR,
     title="Формула не отделена свободной строкой",
     fixable=True,

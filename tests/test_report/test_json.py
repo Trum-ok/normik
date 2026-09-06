@@ -5,7 +5,7 @@ from nk.core.runner import RunResult
 from nk.report import json as json_report
 
 EXPECTED = {
-    "schema_version": "1.2",
+    "schema_version": "1.3",
     "tool": {"name": "nk", "version": __version__},
     "profile": "base",
     "summary": {"error": 1, "warning": 1, "info": 1, "files_checked": 12, "fixable": 0},
@@ -14,6 +14,7 @@ EXPECTED = {
         {
             "rule_id": "G732-6.2.4-heading-hyphenation",
             "clause": "6.2.4",
+            "source": "",
             "severity": "info",
             "message": "Подпись рисунка заканчивается точкой и использует дефис вместо тире",
             "requirement": "Форма «Рисунок N — Название», тире с пробелами, без точки в конце",
@@ -34,6 +35,7 @@ EXPECTED = {
         {
             "rule_id": "G732-6.5.7-caption-dot",
             "clause": "6.5.7",
+            "source": "",
             "severity": "error",
             "message": "Подпись рисунка заканчивается точкой и использует дефис вместо тире",
             "requirement": "Форма «Рисунок N — Название», тире с пробелами, без точки в конце",
@@ -54,6 +56,7 @@ EXPECTED = {
         {
             "rule_id": "G732-6.6.2-table-no-reference",
             "clause": "6.6.2",
+            "source": "",
             "severity": "warning",
             "message": "Подпись рисунка заканчивается точкой и использует дефис вместо тире",
             "requirement": "Форма «Рисунок N — Название», тире с пробелами, без точки в конце",

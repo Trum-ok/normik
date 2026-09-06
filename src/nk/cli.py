@@ -10,6 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from nk import __version__
+from nk.core import categories, standards
 from nk.core.baseline import Baseline, BaselineError
 from nk.core.diagnostics import INTERNAL
 from nk.core.finding import Severity
@@ -69,11 +70,11 @@ def rules_list() -> None:
 
     table = Table(box=None, pad_edge=False)
     table.add_column("ID")
-    table.add_column("Пункт")
+    table.add_column("Категория")
     table.add_column("Уровень")
     table.add_column("Название")
     for impl in registry:
-        table.add_row(impl.id, impl.clause, impl.severity.value, impl.title)
+        table.add_row(impl.id, categories.title(impl.category), impl.severity.value, impl.title)
     console.print(table)
 
 
@@ -88,7 +89,9 @@ def rules_show(rule_id: str = typer.Argument(..., help="Идентификато
         raise typer.Exit(EXIT_INTERNAL_ERROR) from None
 
     console.print(f"[bold]{impl.id}[/bold] — {impl.title}")
-    console.print(f"Пункт ГОСТ 7.32-2017: {impl.clause}")
+    console.print(f"Категория: {categories.title(impl.category)}")
+    for standard_id, clause in sorted(impl.clauses.items()):
+        console.print(f"{standards.get(standard_id).title}: п. {clause}")
     console.print(f"Уровень по умолчанию: {impl.severity.value}")
     console.print(f"Объявлено в: {impl.module}")
     if impl.description:
@@ -124,7 +127,10 @@ def profile_show(
     active = {impl.id for impl in select_rules(registry, profile=profile)}
 
     console.print(f"Профиль: [bold]{profile.name}[/bold]")
-    console.print(f"Источник: {_source(profile)}")
+    console.print(f"Файл: {_source(profile)}")
+    console.print(f"Стандарт: {profile.standard.title}")
+    if profile.source_title:
+        console.print(f"Свой источник: {profile.source_title}")
     console.print(f"Правил включено: {len(active)} из {len(registry)}")
     if not len(registry):
         return

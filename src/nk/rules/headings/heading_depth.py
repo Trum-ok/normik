@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import heading_level, heading_text, headings
 
 #: Раздел, подраздел, пункт, подпункт — четыре уровня, как в примере 4.2.1.1.
@@ -13,7 +14,7 @@ DEFAULT_MAX_DEPTH = 4
 
 @rule(
     id="G732-6.4.5-heading-depth",
-    clause="6.4.5",
+    standards={G732: "6.4.5"},
     severity=Severity.WARNING,
     title="Глубина рубрикации превышает четыре уровня",
     params={"max_depth": DEFAULT_MAX_DEPTH},

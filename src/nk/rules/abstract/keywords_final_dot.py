@@ -7,6 +7,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
 from nk.core.rule import rule
+from nk.core.standards import G732
 from nk.rules._shared import KeywordList, keyword_lists
 
 #: Точка в самом конце перечня: за ней остаются лишь пробелы и закрывающие скобки.
@@ -15,7 +16,7 @@ FINAL_DOT = re.compile(r"\.(?=[\s}]*$)")
 
 @rule(
     id="G732-6.12.2-keywords-final-dot",
-    clause="6.12.2",
+    standards={G732: "6.12.2"},
     severity=Severity.ERROR,
     title="Перечень ключевых слов заканчивается точкой",
     fixable=True,
