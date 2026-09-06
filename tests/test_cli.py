@@ -188,7 +188,7 @@ def test_rules_show_reports_the_declaration() -> None:
 
     assert result.exit_code == EXIT_OK
     assert "6.5.7" in result.stdout
-    assert "nk.rules.elements.figure_caption_dot" in result.stdout
+    assert "nk.rules.figures.figure_caption_dot" in result.stdout
 
 
 def test_profile_show_lists_the_active_set() -> None:

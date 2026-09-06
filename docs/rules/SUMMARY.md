@@ -1,13 +1,8 @@
 * [Обзор](index.md)
-* Раздел 4. Структура отчёта
+* Структура отчёта
     * [G732-4-elements-order](G732-4-elements-order.md)
     * [G732-4-required-element-missing](G732-4-required-element-missing.md)
-* Раздел 5. Структурные элементы
-    * [G732-5.3.2-abstract-volume-info](G732-5.3.2-abstract-volume-info.md)
-    * [G732-5.3.2.1-keywords-count](G732-5.3.2.1-keywords-count.md)
-    * [G732-5.5.2-terms-opening](G732-5.5.2-terms-opening.md)
-    * [G732-5.6.1-abbreviations-opening](G732-5.6.1-abbreviations-opening.md)
-* Раздел 6. Правила оформления
+* Заголовки и рубрикация
     * [G732-6.2.1-section-page-break](G732-6.2.1-section-page-break.md)
     * [G732-6.2.1-structural-heading-case](G732-6.2.1-structural-heading-case.md)
     * [G732-6.2.1-structural-heading-numbered](G732-6.2.1-structural-heading-numbered.md)
@@ -16,8 +11,24 @@
     * [G732-6.2.4-heading-hyphenation](G732-6.2.4-heading-hyphenation.md)
     * [G732-6.4.1-manual-section-number](G732-6.4.1-manual-section-number.md)
     * [G732-6.4.5-heading-depth](G732-6.4.5-heading-depth.md)
+* Перечисления
     * [G732-6.4.6-enumeration-label](G732-6.4.6-enumeration-label.md)
     * [G732-6.4.6-enumeration-letters](G732-6.4.6-enumeration-letters.md)
+* Реферат
+    * [G732-5.3.2-abstract-volume-info](G732-5.3.2-abstract-volume-info.md)
+    * [G732-5.3.2.1-keywords-count](G732-5.3.2.1-keywords-count.md)
+    * [G732-6.12.1-abstract-volume-inline](G732-6.12.1-abstract-volume-inline.md)
+    * [G732-6.12.2-keywords-final-dot](G732-6.12.2-keywords-final-dot.md)
+    * [G732-6.12.2-keywords-uppercase](G732-6.12.2-keywords-uppercase.md)
+    * [G732-6.12.3-abstract-text-position](G732-6.12.3-abstract-text-position.md)
+* Термины и сокращения
+    * [G732-5.5.2-terms-opening](G732-5.5.2-terms-opening.md)
+    * [G732-5.6.1-abbreviations-opening](G732-5.6.1-abbreviations-opening.md)
+    * [G732-6.14-terms-dash](G732-6.14-terms-dash.md)
+    * [G732-6.14-terms-order](G732-6.14-terms-order.md)
+    * [G732-6.15-abbreviations-dash](G732-6.15-abbreviations-dash.md)
+    * [G732-6.15-abbreviations-order](G732-6.15-abbreviations-order.md)
+* Иллюстрации
     * [G732-6.5.1-figure-no-reference](G732-6.5.1-figure-no-reference.md)
     * [G732-6.5.1-figure-position](G732-6.5.1-figure-position.md)
     * [G732-6.5.1-reference-word](G732-6.5.1-reference-word.md)
@@ -28,6 +39,7 @@
     * [G732-6.5.7-caption-position](G732-6.5.7-caption-position.md)
     * [G732-6.5.8-caption-capital](G732-6.5.8-caption-capital.md)
     * [G732-6.5.8-caption-hyphenation](G732-6.5.8-caption-hyphenation.md)
+* Таблицы
     * [G732-6.6.2-reference-word](G732-6.6.2-reference-word.md)
     * [G732-6.6.2-table-no-reference](G732-6.6.2-table-no-reference.md)
     * [G732-6.6.2-table-position](G732-6.6.2-table-position.md)
@@ -37,26 +49,22 @@
     * [G732-6.6.3-caption-position](G732-6.6.3-caption-position.md)
     * [G732-6.6.4-appendix-numbering](G732-6.6.4-appendix-numbering.md)
     * [G732-6.6.6-table-diagonal](G732-6.6.6-table-diagonal.md)
-    * [G732-6.7.2-note-capital](G732-6.7.2-note-capital.md)
-    * [G732-6.7.3-note-dash](G732-6.7.3-note-dash.md)
-    * [G732-6.7.4-footnote-space](G732-6.7.4-footnote-space.md)
+* Формулы
     * [G732-6.8.1-blank-line-around](G732-6.8.1-blank-line-around.md)
     * [G732-6.8.2-where-colon](G732-6.8.2-where-colon.md)
     * [G732-6.8.3-formula-no-reference](G732-6.8.3-formula-no-reference.md)
     * [G732-6.8.4-formula-reference-format](G732-6.8.4-formula-reference-format.md)
     * [G732-6.8.5-appendix-numbering](G732-6.8.5-appendix-numbering.md)
-    * [G732-6.9.1-cite-unresolved](G732-6.9.1-cite-unresolved.md)
-    * [G732-6.12.1-abstract-volume-inline](G732-6.12.1-abstract-volume-inline.md)
-    * [G732-6.12.2-keywords-final-dot](G732-6.12.2-keywords-final-dot.md)
-    * [G732-6.12.2-keywords-uppercase](G732-6.12.2-keywords-uppercase.md)
-    * [G732-6.12.3-abstract-text-position](G732-6.12.3-abstract-text-position.md)
-    * [G732-6.14-terms-dash](G732-6.14-terms-dash.md)
-    * [G732-6.14-terms-order](G732-6.14-terms-order.md)
-    * [G732-6.15-abbreviations-dash](G732-6.15-abbreviations-dash.md)
-    * [G732-6.15-abbreviations-order](G732-6.15-abbreviations-order.md)
+* Примечания и сноски
+    * [G732-6.7.2-note-capital](G732-6.7.2-note-capital.md)
+    * [G732-6.7.3-note-dash](G732-6.7.3-note-dash.md)
+    * [G732-6.7.4-footnote-space](G732-6.7.4-footnote-space.md)
+* Источники и ссылки на них
     * [G732-6.16-bibitem-uncited](G732-6.16-bibitem-uncited.md)
     * [G732-6.16-bibliography-order](G732-6.16-bibliography-order.md)
     * [G732-6.16-bibtex-order-unverifiable](G732-6.16-bibtex-order-unverifiable.md)
+    * [G732-6.9.1-cite-unresolved](G732-6.9.1-cite-unresolved.md)
+* Приложения
     * [G732-6.17.2-appendix-no-reference](G732-6.17.2-appendix-no-reference.md)
     * [G732-6.17.2-appendix-order](G732-6.17.2-appendix-order.md)
     * [G732-6.17.3-appendix-page-break](G732-6.17.3-appendix-page-break.md)

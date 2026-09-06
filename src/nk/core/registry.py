@@ -8,11 +8,12 @@ import importlib
 import pkgutil
 from collections.abc import Iterable
 
+from nk.core.categories import BY_NAME, PACKAGE, UnknownCategoryError
 from nk.core.diagnostics import INTERNAL
 from nk.core.profile import Profile, ProfileError
 from nk.core.rule import REGISTRY, RuleImpl, RuleRegistry, UnknownRuleError
 
-RULES_PACKAGE = "nk.rules"
+RULES_PACKAGE = PACKAGE
 
 
 def load_rules(package: str = RULES_PACKAGE, registry: RuleRegistry | None = None) -> RuleRegistry:
@@ -23,7 +24,26 @@ def load_rules(package: str = RULES_PACKAGE, registry: RuleRegistry | None = Non
             continue
         importlib.import_module(module.name)
     # Явное сравнение с None: пустой реестр ложен из-за __len__.
-    return REGISTRY if registry is None else registry
+    loaded = REGISTRY if registry is None else registry
+    _require_categories(loaded)
+    return loaded
+
+
+def _require_categories(registry: RuleRegistry) -> None:
+    """Каталог правила обязан быть объявленной категорией.
+
+    Иначе правило, положенное мимо категории, выпало бы из документации молча.
+    """
+    misplaced = sorted(
+        f"{impl.id} ({impl.module})"
+        for impl in registry.all()
+        if impl.module.startswith(f"{PACKAGE}.") and impl.category not in BY_NAME
+    )
+    if misplaced:
+        allowed = ", ".join(BY_NAME)
+        raise UnknownCategoryError(
+            f"правила лежат вне категорий: {misplaced}; допустимые каталоги: {allowed}"
+        )
 
 
 def select_rules(

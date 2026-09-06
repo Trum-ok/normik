@@ -7,6 +7,7 @@
 from collections.abc import Iterable
 from pathlib import Path
 
+from nk.core import categories
 from nk.core.rule import RuleImpl
 from nk.report import examples
 
@@ -19,27 +20,15 @@ INDEX_HEADER = """\
 Проверяются только исходники `.tex`. Требования, проверяемые по скомпилированному
 документу — поля, гарнитуры, кегль, колонцифры, — в область видимости не входят.
 
-Идентификатор правила состоит из префикса `G732`, пункта ГОСТ 7.32-2017
-и мнемонического суффикса: на один пункт стандарта может приходиться
-несколько независимых проверок.
+Правила разложены по тому, что они регулируют, а не по разделам стандарта:
+у разных стандартов разделы разные, а иллюстрации остаются иллюстрациями.
 
 Уровень `error` влияет на код возврата, `warning` и `info` — нет. Любое правило
 отключается или переоценивается [профилем](../profiles.md).
 """
 
-#: Разделы оглавления по первому числу пункта стандарта.
-SECTIONS: tuple[tuple[str, str], ...] = (
-    ("4", "Раздел 4. Структура отчёта"),
-    ("5", "Раздел 5. Структурные элементы"),
-    ("6", "Раздел 6. Правила оформления"),
-    ("", "Типографика"),
-)
-
 #: Пункт стандарта, которого у правила нет: типографика им не регулируется.
 NO_CLAUSE_LABEL = "вне стандарта"
-
-#: Сортировочный вес правил без пункта: они идут после всех разделов.
-MAX_CLAUSE = 99
 
 
 def render_pages(rules: Iterable[RuleImpl], *, fixtures_root: Path | None = None) -> dict[str, str]:
@@ -75,29 +64,39 @@ def write_pages(
 
 
 def render_index(rules: Iterable[RuleImpl]) -> str:
-    lines = [
-        INDEX_HEADER,
-        "| ID | Пункт | Уровень | Название |",
-        "|---|---|---|---|",
-    ]
-    for impl in _ordered(rules):
-        lines.append(
+    """Обзор раздела: правила по категориям, каждая своей таблицей."""
+    ordered = _ordered(rules)
+    lines = [INDEX_HEADER]
+    for category in categories.CATEGORIES:
+        section = [impl for impl in ordered if impl.category == category.name]
+        if not section:
+            continue
+        lines.extend(
+            [
+                f"## {category.title}",
+                "",
+                "| ID | Пункт | Уровень | Название |",
+                "|---|---|---|---|",
+            ]
+        )
+        lines.extend(
             f"| [`{impl.id}`]({impl.id}.md) | {impl.clause or NO_CLAUSE_LABEL} "
             f"| {impl.severity.value} | {impl.title} |"
+            for impl in section
         )
-    lines.append("")
+        lines.append("")
     return "\n".join(lines)
 
 
 def render_summary(rules: Iterable[RuleImpl]) -> str:
-    """Оглавление раздела для `mkdocs-literate-nav`."""
+    """Оглавление раздела для `mkdocs-literate-nav`, по категориям правил."""
     ordered = _ordered(rules)
     lines = [f"* [Обзор]({INDEX_PAGE})"]
-    for prefix, title in SECTIONS:
-        section = [impl for impl in ordered if impl.clause.split(".")[0] == prefix]
+    for category in categories.CATEGORIES:
+        section = [impl for impl in ordered if impl.category == category.name]
         if not section:
             continue
-        lines.append(f"* {title}")
+        lines.append(f"* {category.title}")
         lines.extend(f"    * [{impl.id}]({impl.id}.md)" for impl in section)
     lines.append("")
     return "\n".join(lines)
@@ -111,6 +110,7 @@ def render_rule(impl: RuleImpl, *, fixtures_root: Path | None = None) -> str:
         "",
         "| | |",
         "|---|---|",
+        f"| Категория | {categories.title(impl.category)} |",
         f"| Пункт ГОСТ 7.32-2017 | {impl.clause or NO_CLAUSE_LABEL} |",
         f"| Уровень по умолчанию | `{impl.severity.value}` |",
         f"| Объявлено в | `{impl.module}` |",
@@ -200,14 +200,5 @@ def _profile_section(impl: RuleImpl) -> list[str]:
 
 
 def _ordered(rules: Iterable[RuleImpl]) -> list[RuleImpl]:
-    return sorted(rules, key=lambda impl: (_clause_key(impl.clause), impl.id))
-
-
-def _clause_key(clause: str) -> tuple[int, ...]:
-    """Пункты сортируются как числа, а не как строки: 6.10 идёт после 6.9.
-
-    Правила без пункта стандарта уходят в конец.
-    """
-    if not clause:
-        return (MAX_CLAUSE,)
-    return tuple(int(part) if part.isdigit() else 0 for part in clause.split("."))
+    """Правила по категориям в объявленном порядке, внутри категории — по имени."""
+    return sorted(rules, key=lambda impl: (categories.rank(impl.category), impl.id))

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from nk.core import categories
 from nk.core.registry import load_rules
 from nk.report import examples, rules_docs
 
@@ -70,6 +71,15 @@ def test_example_is_absent_without_fixtures(tmp_path: Path) -> None:
     assert examples.load("G732-нет-такого", tmp_path) is None
 
 
-def test_clauses_are_sorted_numerically() -> None:
-    assert rules_docs._clause_key("6.10") > rules_docs._clause_key("6.9")
-    assert rules_docs._clause_key("6.2.1") > rules_docs._clause_key("6.2")
+def test_summary_groups_rules_by_category() -> None:
+    summary = _pages()[rules_docs.SUMMARY_PAGE]
+
+    for category in categories.CATEGORIES:
+        assert f"* {category.title}" in summary, category.name
+
+
+def test_every_rule_belongs_to_a_declared_category() -> None:
+    """Правило вне категории выпало бы из оглавления молча."""
+    misplaced = [impl.id for impl in load_rules() if impl.category not in categories.BY_NAME]
+
+    assert misplaced == []

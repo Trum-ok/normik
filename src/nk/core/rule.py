@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
+from nk.core.categories import of_module
 from nk.core.document import Document, Line, Span
 from nk.core.finding import Finding, Fix, Severity
 from nk.core.position import Region
@@ -78,6 +79,11 @@ class RuleImpl:
     @property
     def module(self) -> str:
         return getattr(self.func, "__module__", "<unknown>")
+
+    @property
+    def category(self) -> str:
+        """Чем правило регулирует оформление: каталог, в котором оно лежит."""
+        return of_module(self.module)
 
     def params(self, doc: Document) -> Params:
         """Значения по умолчанию, перекрытые профилем документа."""
