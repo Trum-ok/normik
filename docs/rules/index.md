@@ -157,10 +157,10 @@
 
 | ID | Источник | Пункты | Уровень | Название |
 |---|---|---|---|---|
-| [`initials-nbsp`](initials-nbsp.md) | вне стандартов | — | <span class="nk-severity nk-severity--info">info</span> | Инициалы не привязаны к фамилии |
-| [`particle-nbsp`](particle-nbsp.md) | вне стандартов | — | <span class="nk-severity nk-severity--info">info</span> | Частица не привязана к предыдущему слову |
-| [`preposition-nbsp`](preposition-nbsp.md) | вне стандартов | — | <span class="nk-severity nk-severity--info">info</span> | Предлог не привязан к следующему слову |
-| [`reference-nbsp`](reference-nbsp.md) | вне стандартов | — | <span class="nk-severity nk-severity--info">info</span> | Номер в ссылке отделён разрывным пробелом |
-| [`text-dash`](text-dash.md) | вне стандартов | — | <span class="nk-severity nk-severity--info">info</span> | Дефис вместо тире |
-| [`text-quotes`](text-quotes.md) | вне стандартов | — | <span class="nk-severity nk-severity--info">info</span> | Прямые кавычки вместо «ёлочек» |
-| [`unit-nbsp`](unit-nbsp.md) | вне стандартов | ГОСТ Р 2.105-2019 п. 6.16.6 | <span class="nk-severity nk-severity--info">info</span> | Число не привязано к единице измерения |
+| [`initials-nbsp`](initials-nbsp.md) | общее | — | <span class="nk-severity nk-severity--info">info</span> | Инициалы не привязаны к фамилии |
+| [`particle-nbsp`](particle-nbsp.md) | общее | — | <span class="nk-severity nk-severity--info">info</span> | Частица не привязана к предыдущему слову |
+| [`preposition-nbsp`](preposition-nbsp.md) | общее | — | <span class="nk-severity nk-severity--info">info</span> | Предлог не привязан к следующему слову |
+| [`reference-nbsp`](reference-nbsp.md) | общее | — | <span class="nk-severity nk-severity--info">info</span> | Номер в ссылке отделён разрывным пробелом |
+| [`text-dash`](text-dash.md) | общее | — | <span class="nk-severity nk-severity--info">info</span> | Дефис вместо тире |
+| [`text-quotes`](text-quotes.md) | общее | — | <span class="nk-severity nk-severity--info">info</span> | Прямые кавычки вместо «ёлочек» |
+| [`unit-nbsp`](unit-nbsp.md) | общее | ГОСТ Р 2.105-2019 п. 6.16.6 | <span class="nk-severity nk-severity--info">info</span> | Число не привязано к единице измерения |

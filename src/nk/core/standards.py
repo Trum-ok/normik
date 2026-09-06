@@ -46,7 +46,7 @@ class Origin(StrEnum):
 #: Как происхождение требования называют в документации и в выводе.
 ORIGIN_LABELS: dict[Origin, str] = {
     Origin.STANDARD: "стандарт",
-    Origin.UNIVERSAL: "вне стандартов",
+    Origin.UNIVERSAL: "общее",
     Origin.REGULATION: "положение вуза",
 }
 
