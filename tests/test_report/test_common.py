@@ -6,7 +6,7 @@ from helpers import make_finding
 from nk.core.finding import Fix
 from nk.core.position import Region
 from nk.core.runner import RunResult
-from nk.report.common import caret_line, context_lines, fixable_line
+from nk.report.common import caret_line, context_lines, fixable_line, total_line
 
 FIX = Fix(region=Region.in_line(Path("report.tex"), 145, 3, 4), replacement="—")
 
@@ -51,29 +51,28 @@ def test_caret_stays_one_character_even_when_the_fix_is_wider() -> None:
     assert caret_line(finding, "на рис. 1") == "  ^"
 
 
-def test_fixable_line_counts_and_offers_the_command() -> None:
+def test_fixable_line_counts_without_the_share() -> None:
+    """Знаменатель стоит строкой выше, в итоге прогона: «1 из 2» повторяло бы его."""
     result = RunResult(
         profile="base",
         findings=(replace(make_finding(), fix=FIX), make_finding(rule_id="G732-другое")),
     )
 
-    assert fixable_line(result, "nk check report.tex") == (
-        "Исправимо машинно: 1 из 2. Применить: nk check report.tex --fix, "
-        "посмотреть правки: --diff."
-    )
+    assert fixable_line(result) == "Исправимо ключом --fix: 1"
 
 
 def test_no_fixable_line_when_nothing_is_fixable() -> None:
     result = RunResult(profile="base", findings=(make_finding(),))
 
-    assert fixable_line(result, "nk check report.tex") is None
+    assert fixable_line(result) is None
 
 
-def test_fix_is_not_offered_twice() -> None:
-    """Ключ уже отдан: оставшееся им не берётся, советовать его снова незачем."""
-    result = RunResult(profile="base", findings=(replace(make_finding(), fix=FIX),))
+def test_total_line_counts_applied_fixes() -> None:
+    """После правок счёт применённого стоит в итоге, а не отдельной строкой."""
+    result = RunResult(profile="base", findings=(make_finding(),))
 
-    assert fixable_line(result, "nk check report.tex --fix") == "Исправимо машинно: 1 из 1."
+    assert total_line(result) == "Итого: 1 error, 0 warning, 0 info."
+    assert total_line(result, fixed=2) == "Итого: 1 error, 0 warning, 0 info (исправлено 2)."
 
 
 def test_caret_follows_the_window_of_a_long_line() -> None:

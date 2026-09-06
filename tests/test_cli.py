@@ -304,7 +304,7 @@ def test_fix_rewrites_the_source(report: Path) -> None:
     result = runner.invoke(app, ["check", str(report), "--fix"])
 
     assert result.exit_code == EXIT_OK
-    assert "Исправлено находок: 1." in result.stdout
+    assert "(исправлено 1)" in result.stdout
     assert "\\caption{Схема установки}" in report.read_text(encoding="utf-8")
 
 

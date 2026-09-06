@@ -155,21 +155,28 @@ def field_lines(label: str, value: str, indent: str) -> list[str]:
 
 
 FIX_FLAG = "--fix"
-DIFF_FLAG = "--diff"
 
 
-def fixable_line(result: RunResult, command: str | None = None) -> str | None:
-    """Сколько находок правятся машинно и чем это сделать.
+def total_line(result: RunResult, fixed: int = 0) -> str:
+    """Итог прогона, а после ``--fix`` — ещё и сколько правок применено.
 
-    Ключ ``--fix`` в уже отданной команде означает, что правки применены, а
-    оставшееся ими не берётся: советовать тот же ключ повторно незачем.
+    Отдельной строкой счёт правок повторял бы сам итог: в ``result`` уже
+    перепроверенное состояние, то есть «осталось» — это и есть итог.
+    """
+    applied = f" (исправлено {fixed})" if fixed else ""
+    return f"Итого: {summary_line(result.summary)}{applied}."
+
+
+def fixable_line(result: RunResult) -> str | None:
+    """Сколько находок снимает ключ ``--fix``.
+
+    Без доли «N из M»: знаменатель уже стоит строкой выше, в итоге прогона.
+    Команда целиком тоже не повторяется — пользователь только что её набрал,
+    и от неё нужно ровно одно слово: имя ключа.
     """
     if not result.fixable:
         return None
-    counted = f"Исправимо машинно: {result.fixable} из {len(result.findings)}"
-    if command is None or FIX_FLAG in command.split():
-        return f"{counted}."
-    return f"{counted}. Применить: {command} {FIX_FLAG}, посмотреть правки: {DIFF_FLAG}."
+    return f"Исправимо ключом {FIX_FLAG}: {result.fixable}"
 
 
 def suppressed_line(suppressed: Suppressed) -> str | None:

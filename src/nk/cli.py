@@ -243,11 +243,12 @@ def check(
         _report_failures(result)
         raise typer.Exit(EXIT_INTERNAL_ERROR if result.failed_rules else EXIT_OK)
 
+    fixed = 0
     if fix:
-        result = _apply_fixes(check_run, result)
+        result, fixed = _apply_fixes(check_run, result)
 
     if not quiet:
-        _report(result, output_format, limit)
+        _report(result, output_format, limit, fixed)
     raise typer.Exit(_exit_code(result))
 
 
@@ -302,7 +303,7 @@ def _diff(check_run: _Check, result: RunResult) -> str:
     return diff(overlay)
 
 
-def _apply_fixes(check_run: _Check, result: RunResult) -> RunResult:
+def _apply_fixes(check_run: _Check, result: RunResult) -> tuple[RunResult, int]:
     """Применять правки, пока они находятся, и перепроверять исходники.
 
     Проходов несколько: пересекающиеся правки в один проход не применяются,
@@ -332,10 +333,8 @@ def _apply_fixes(check_run: _Check, result: RunResult) -> RunResult:
             break
         result = check_run()
 
-    if applied:
-        console.print(f"Исправлено находок: {applied}.")
     _report_fix_result(result, before=before, incomplete=incomplete)
-    return result
+    return result, applied
 
 
 def _report_fix_result(result: RunResult, before: set[str], incomplete: bool) -> None:
@@ -354,8 +353,7 @@ def _report_fix_result(result: RunResult, before: set[str], incomplete: bool) ->
     remaining = sum(1 for finding in result.findings if finding.fix is not None)
     if incomplete and remaining:
         err_console.print(
-            f"Правки применены не полностью: осталось с машинной правкой {remaining}. "
-            "Повторите запуск."
+            f"Правки применены не полностью: осталось исправимых {remaining}. Повторите запуск."
         )
 
 
@@ -366,16 +364,16 @@ def _write_baseline(path: Path, result: RunResult) -> None:
     console.print(f"Записано находок в снимок: {len(result.findings)} → {path}")
 
 
-def _report(result: RunResult, output_format: OutputFormat, limit: int) -> None:
+def _report(result: RunResult, output_format: OutputFormat, limit: int, fixed: int = 0) -> None:
     # agent и json пишутся в stdout напрямую: Rich переносил бы длинные строки,
     # а оба формата копируются и разбираются как есть.
     command = " ".join(["nk", *sys.argv[1:]])
     if output_format is OutputFormat.JSON:
         sys.stdout.write(json_report.render(result))
     elif output_format is OutputFormat.AGENT:
-        sys.stdout.write(agent.render(result, command=command, limit=limit))
+        sys.stdout.write(agent.render(result, command=command, limit=limit, fixed=fixed))
     else:
-        human.render(result, console, command=command)
+        human.render(result, console, fixed=fixed)
 
 
 def _source(profile: Profile) -> str:

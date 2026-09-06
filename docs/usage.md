@@ -104,8 +104,8 @@ chapters/method.tex
       9 | \end{figure}
 
 Итого: 1 error, 0 warning, 0 info.
-Исправимо машинно: 1 из 1. Применить: nk check chapters --fix, посмотреть правки: --diff.
-Машинный вывод: --format json, вывод для агента: --format agent
+Исправимо ключом --fix: 1
+Другие форматы: --format json | agent
 ```
 
 ### `agent`
@@ -130,7 +130,7 @@ chapters/method.tex:8:3  error  figure-caption-dot
     9 | \end{figure}
 
 Итого: 1 error, 0 warning, 0 info.
-Исправимо машинно: 1 из 1. Применить: nk check chapters --format agent --fix, посмотреть правки: --diff.
+Исправимо ключом --fix: 1
 ```
 
 Число находок в этом формате ограничено: длинный вывод вытесняет из контекста
@@ -179,9 +179,8 @@ nk check chapters --fix
 
 ```console
 $ nk check chapters --fix
-Исправлено находок: 12.
 
-Итого: 3 error, 0 warning, 0 info.
+Итого: 3 error, 0 warning, 0 info (исправлено 12).
 ```
 
 Правится только то, для чего замена однозначна. «Перенести подпись ниже рисунка»,

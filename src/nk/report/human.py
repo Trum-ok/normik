@@ -18,8 +18,8 @@ from nk.report.common import (
     finding_fields,
     fixable_line,
     group_by_file,
-    summary_line,
     suppressed_line,
+    total_line,
 )
 
 SEVERITY_STYLES: dict[Severity, str] = {
@@ -32,7 +32,7 @@ MARKER = "> "
 INDENT = "  "
 
 
-def render(result: RunResult, console: Console, command: str | None = None) -> None:
+def render(result: RunResult, console: Console, fixed: int = 0) -> None:
     room = _room(console, result)
     for path, findings in group_by_file(result.findings):
         console.print()
@@ -41,8 +41,8 @@ def render(result: RunResult, console: Console, command: str | None = None) -> N
             _print_finding(console, finding, room)
 
     console.print()
-    console.print(f"Итого: {summary_line(result.summary)}.")
-    fixable = fixable_line(result, command)
+    console.print(total_line(result, fixed))
+    fixable = fixable_line(result)
     if fixable:
         console.print(Text(fixable, style="dim"))
     hidden = suppressed_line(result.suppressed)
@@ -53,9 +53,7 @@ def render(result: RunResult, console: Console, command: str | None = None) -> N
             Text(f"Правило {failed.rule_id} упало и пропущено: {failed.error}", style="yellow")
         )
     if result.findings:
-        console.print(
-            Text("Машинный вывод: --format json, вывод для агента: --format agent", style="dim")
-        )
+        console.print(Text("Другие форматы: --format json | agent", style="dim"))
 
 
 #: Что занимает строку контекста кроме самого текста: отступ, номер и « | ».

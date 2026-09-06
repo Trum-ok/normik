@@ -16,15 +16,15 @@ from nk.report.common import (
     finding_fields,
     fixable_line,
     group_by_file,
-    summary_line,
     suppressed_line,
+    total_line,
 )
 
 #: Сколько находок показывать по умолчанию. Простыня на тысячу строк бесполезна.
 DEFAULT_LIMIT = 50
 
 
-def render(result: RunResult, *, command: str, limit: int = DEFAULT_LIMIT) -> str:
+def render(result: RunResult, *, command: str, limit: int = DEFAULT_LIMIT, fixed: int = 0) -> str:
     shown, hidden = _limit(result.findings, limit)
     lines = [
         f"Команда: {command}",
@@ -37,8 +37,8 @@ def render(result: RunResult, *, command: str, limit: int = DEFAULT_LIMIT) -> st
             lines.extend(_render_finding(path, finding))
 
     lines.append("")
-    lines.append(f"Итого: {summary_line(result.summary)}.")
-    fixable = fixable_line(result, command)
+    lines.append(total_line(result, fixed))
+    fixable = fixable_line(result)
     if fixable:
         lines.append(fixable)
     hidden_by_config = suppressed_line(result.suppressed)
