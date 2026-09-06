@@ -344,6 +344,49 @@ def test_resolve_keeps_the_element_dictionary() -> None:
     assert profile.resolve({}).elements == elements
 
 
+def test_appendix_letters_are_read_from_the_profile(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", '[appendix]\nletters = "123456789"\n')
+
+    assert load_profile(path).appendix_letters == "123456789"
+
+
+def test_appendix_letters_default_to_cyrillic() -> None:
+    assert Profile().appendix_letters.startswith("АБВ")
+
+
+def test_repeated_appendix_letter_is_rejected(tmp_path: Path) -> None:
+    """По обозначению определяется место приложения, а у повторённого мест два."""
+    path = write(tmp_path, "источник.toml", '[appendix]\nletters = "ABA"\n')
+
+    with pytest.raises(ProfileError, match="знаки повторяются"):
+        load_profile(path)
+
+
+def test_empty_appendix_letters_are_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", '[appendix]\nletters = "  "\n')
+
+    with pytest.raises(ProfileError, match="обозначать приложения нечем"):
+        load_profile(path)
+
+
+def test_unknown_key_in_appendix_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", "[appendix]\nextra = 1\n")
+
+    with pytest.raises(ProfileError, match="неизвестные ключи"):
+        load_profile(path)
+
+
+def test_appendix_letters_are_inherited(tmp_path: Path) -> None:
+    write(tmp_path, "основа.toml", '[appendix]\nletters = "123456789"\n')
+    path = write(tmp_path, "кафедра.toml", 'extends = "основа.toml"\n')
+
+    assert load_profile(path).appendix_letters == "123456789"
+
+
+def test_resolve_keeps_appendix_letters() -> None:
+    assert Profile(appendix_letters="XYZ").resolve({}).appendix_letters == "XYZ"
+
+
 def test_discover_finds_nk_toml(tmp_path: Path) -> None:
     write(tmp_path, "nk.toml", 'name = "Кафедра N"\n')
     (tmp_path / "chapters").mkdir()

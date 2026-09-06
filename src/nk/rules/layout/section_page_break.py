@@ -16,6 +16,7 @@ from nk.rules._shared import (
     page_break_fix,
     previous_content,
     starts_page,
+    structural_element,
 )
 
 #: Команды, которые начинают страницу сами и разрыва перед собой не требуют.
@@ -30,7 +31,7 @@ PAGE_STARTS = ("\\begin{document}", "\\end{titlepage}", "\\maketitle", "\\titlep
     severity=Severity.ERROR,
     title="Раздел не начинается с новой страницы",
     fixable=True,
-    params={"breaking_commands": list(BREAKING_COMMANDS)},
+    params={"breaking_commands": list(BREAKING_COMMANDS), "structural_only": False},
 )
 def section_page_break(doc: Document) -> Iterable[Finding]:
     r"""Проверяет разрыв страницы перед рубрикой уровня раздела — и структурного
@@ -43,6 +44,9 @@ def section_page_break(doc: Document) -> Iterable[Finding]:
     Макрос, объявленный в `.sty`, парсеру не виден — такие команды перечисляют
     параметром `breaking_commands`.
 
+    Параметр `structural_only` сужает правило до структурных элементов: разделы
+    основной части с новой страницы требует не всякий источник требований.
+
     ## Почему это нарушение
 
     Каждый структурный элемент и каждый раздел основной части начинают
@@ -53,9 +57,18 @@ def section_page_break(doc: Document) -> Iterable[Finding]:
 
     Добавить `\newpage` перед заголовком раздела.
     """
-    breaking = tuple(section_page_break.params(doc)["breaking_commands"])
+    params = section_page_break.params(doc)
+    breaking = tuple(params["breaking_commands"])
+    structural_only = bool(params["structural_only"])
+    requirement = (
+        "Каждый структурный элемент начинают с новой страницы."
+        if structural_only
+        else "Каждый структурный элемент и каждый раздел основной части начинают с новой страницы."
+    )
     for command in ordered_headings(doc):
         if heading_level(doc, command) != SECTION_LEVEL:
+            continue
+        if structural_only and structural_element(doc, heading_text(command)) is None:
             continue
         if doc.headings.breaks_page(command.name) or _breaks_itself(command, breaking):
             continue
@@ -69,10 +82,7 @@ def section_page_break(doc: Document) -> Iterable[Finding]:
             doc,
             command.span,
             message="Перед заголовком раздела нет разрыва страницы.",
-            requirement=(
-                "Каждый структурный элемент и каждый раздел основной части "
-                "начинают с новой страницы."
-            ),
+            requirement=requirement,
             suggestion="\\newpage",
             col=command.col,
             fix=page_break_fix(doc, command),

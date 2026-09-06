@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass
 
 from nk.core.document import Command, Document, Environment
-from nk.core.headings import APPENDIX_LETTERS, is_heading_call
+from nk.core.headings import is_heading_call
 from nk.core.numbering import EQUATION, FIGURE, TABLE, Numbered, Numbering, Scheme, SchemeChange
 
 #: Окружения, дающие номер объекту соответствующего вида.
@@ -54,6 +54,7 @@ class _Event:
 def build_numbering(doc: Document) -> Numbering:
     """Пройти документ и раздать плавающим объектам номера."""
     events = sorted(_events(doc), key=lambda event: event.order)
+    letters = doc.profile.appendix_letters
 
     schemes: dict[str, Scheme] = dict.fromkeys((FIGURE, TABLE, EQUATION), Scheme.CONTINUOUS)
     counters: dict[str, int] = dict.fromkeys((FIGURE, TABLE, EQUATION), 0)
@@ -78,13 +79,13 @@ def build_numbering(doc: Document) -> Numbering:
             if heading is not None:
                 in_appendices = True
                 appendix = heading
-                appendix_index = _letter_index(heading, appendix_index)
+                appendix_index = _letter_index(letters, heading, appendix_index)
                 counters = _reset(counters, schemes)
                 continue
 
             if command.name in SECTION_COMMANDS and is_heading_call(command):
                 if in_appendices:
-                    appendix, appendix_index = _next_appendix(appendix_index)
+                    appendix, appendix_index = _next_appendix(letters, appendix_index)
                 else:
                     section += 1
                 counters = _reset(counters, schemes)
@@ -144,13 +145,13 @@ def _reset(counters: dict[str, int], schemes: dict[str, Scheme]) -> dict[str, in
     }
 
 
-def _next_appendix(index: int) -> tuple[str, int]:
-    letter = APPENDIX_LETTERS[index] if index < len(APPENDIX_LETTERS) else APPENDIX_LETTERS[-1]
+def _next_appendix(letters: str, index: int) -> tuple[str, int]:
+    letter = letters[index] if index < len(letters) else letters[-1]
     return letter, index + 1
 
 
-def _letter_index(letter: str, fallback: int) -> int:
-    return APPENDIX_LETTERS.index(letter) + 1 if letter in APPENDIX_LETTERS else fallback + 1
+def _letter_index(letters: str, letter: str, fallback: int) -> int:
+    return letters.index(letter) + 1 if letter in letters else fallback + 1
 
 
 def _appendix_heading(command: Command) -> str | None:

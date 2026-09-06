@@ -5,7 +5,6 @@ from collections.abc import Iterable
 
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
-from nk.core.headings import APPENDIX_LETTERS
 from nk.core.rule import rule
 from nk.rules._shared import (
     heading_text,
@@ -13,7 +12,7 @@ from nk.rules._shared import (
     ordered_headings,
 )
 
-DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
+DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)$")
 
 
 @rule(
@@ -24,9 +23,11 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
     fixable=True,
 )
 def appendix_sequence(doc: Document) -> Iterable[Finding]:
-    """Идёт по заголовкам приложений в порядке следования и сверяет букву с ожидаемой:
-    после А идёт Б, после Б — В, с пропуском букв, которые в обозначениях не
-    используются.
+    """Идёт по заголовкам приложений в порядке следования и сверяет обозначение
+    с ожидаемым: после А идёт Б, после Б — В, с пропуском букв, которые в
+    обозначениях не используются. Набор обозначений и их порядок задаёт
+    [профиль](../profiles.md#обозначения-приложений); обозначение вне набора
+    пропускается — о нём сообщает отдельное правило.
 
     ## Почему это нарушение
 
@@ -38,15 +39,16 @@ def appendix_sequence(doc: Document) -> Iterable[Finding]:
     Перенумеровать приложения подряд начиная с А. Если приложение убрано,
     обозначения следующих сдвигаются.
     """
+    letters = doc.profile.appendix_letters
     position = 0
     for command in ordered_headings(doc):
         match = DESIGNATION.match(normalize_heading(heading_text(command)))
         if match is None:
             continue
         letter = match.group(1)
-        if letter not in APPENDIX_LETTERS:
+        if letter not in letters:
             continue
-        expected = APPENDIX_LETTERS[position]
+        expected = letters[position]
         if letter == expected:
             position += 1
             continue
@@ -55,11 +57,11 @@ def appendix_sequence(doc: Document) -> Iterable[Finding]:
             command.span,
             message=f"После предыдущего приложения ожидалось «{expected}», а стоит «{letter}».",
             requirement=(
-                "Приложения обозначают буквами кириллицы начиная с А, "
+                f"Приложения обозначают по порядку начиная с «{letters[0]}», "
                 "не пропуская последовательность."
             ),
             suggestion=f"\\{command.name}{{ПРИЛОЖЕНИЕ {expected}}}",
             col=command.col,
             fix=command.region,
         )
-        position = APPENDIX_LETTERS.index(letter) + 1
+        position = letters.index(letter) + 1

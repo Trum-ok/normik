@@ -13,6 +13,7 @@ from typing import Any
 
 from nk.core.elements import DEFAULT_ELEMENTS, ROLES, Elements, ElementsError, normalize_element
 from nk.core.finding import Severity
+from nk.core.headings import DEFAULT_APPENDIX_LETTERS
 
 #: ``Any`` — параметры приходят из TOML, их типы определяет автор правила, а не ядро.
 ParamValue = Any
@@ -28,9 +29,12 @@ PYPROJECT_SECTION = "tool.nk"
 #: Имена конфигурационных файлов в порядке предпочтения внутри одного каталога.
 CONFIG_NAMES = ("nk.toml", ".nk.toml", PYPROJECT)
 
-_TOP_LEVEL_KEYS = frozenset({"name", "extends", "disable", "enable", "rules", "elements"})
+_TOP_LEVEL_KEYS = frozenset(
+    {"name", "extends", "disable", "enable", "rules", "elements", "appendix"}
+)
 _RULE_KEYS = frozenset({"severity", "params"})
 _ELEMENT_KEYS = frozenset({"aliases", "order", "roles"})
+_APPENDIX_KEYS = frozenset({"letters"})
 
 
 class ProfileError(ValueError):
@@ -54,6 +58,9 @@ class Profile:
     params: Mapping[str, Params] = field(default_factory=dict)
     elements: Elements = DEFAULT_ELEMENTS
     """Словарь структурных элементов: состав, порядок, роли и синонимы кафедры."""
+
+    appendix_letters: str = DEFAULT_APPENDIX_LETTERS
+    """Обозначения приложений по порядку: каждый знак строки — одно обозначение."""
 
     source: Path | None = None
     """Файл, из которого прочитан профиль; ``None`` — встроенный."""
@@ -92,6 +99,7 @@ class Profile:
             severities=self.severities,
             params=merged,
             elements=self.elements,
+            appendix_letters=self.appendix_letters,
             source=self.source,
         )
 
@@ -229,6 +237,15 @@ def _parse(text: str, origin: str, section: bool = False) -> dict[str, Any]:
         raise ProfileError(
             f"профиль {origin}: [elements], неизвестные ключи {sorted(unknown_elements)}"
         )
+
+    appendix = data.get("appendix", {})
+    if not isinstance(appendix, dict):
+        raise ProfileError(f"профиль {origin}: секция [appendix] должна быть таблицей")
+    unknown_appendix = appendix.keys() - _APPENDIX_KEYS
+    if unknown_appendix:
+        raise ProfileError(
+            f"профиль {origin}: [appendix], неизвестные ключи {sorted(unknown_appendix)}"
+        )
     return data
 
 
@@ -261,6 +278,7 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
         "enable": [*parent.get("enable", []), *child.get("enable", [])],
         "rules": rules,
         "elements": _merge_elements(parent.get("elements", {}), child.get("elements", {})),
+        "appendix": {**parent.get("appendix", {}), **child.get("appendix", {})},
     }
 
 
@@ -297,6 +315,7 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
         severities=severities,
         params=params,
         elements=_elements(data.get("elements", {})),
+        appendix_letters=_appendix_letters(data.get("appendix", {})),
         source=source,
     )
 
@@ -317,6 +336,26 @@ def _elements(raw: dict[str, Any]) -> Elements:
         return Elements(order=order, roles=roles, aliases=_aliases(raw.get("aliases", {}), order))
     except ElementsError as error:
         raise ProfileError(f"профиль: [elements] {error}") from error
+
+
+def _appendix_letters(raw: dict[str, Any]) -> str:
+    """Обозначения приложений: знаки строки по порядку — А, Б, В либо A, B, C.
+
+    Повтор знака запрещён: по обозначению определяется место приложения
+    в последовательности, а у повторённого знака мест было бы два.
+    """
+    if "letters" not in raw:
+        return DEFAULT_APPENDIX_LETTERS
+    letters = raw["letters"]
+    if not isinstance(letters, str):
+        raise ProfileError("профиль: [appendix] letters должен быть строкой обозначений")
+    stripped = "".join(letters.split())
+    if not stripped:
+        raise ProfileError("профиль: [appendix] letters пуст, обозначать приложения нечем")
+    repeated = sorted({letter for letter in stripped if stripped.count(letter) > 1})
+    if repeated:
+        raise ProfileError(f"профиль: [appendix] letters, знаки повторяются: {repeated}")
+    return stripped
 
 
 def _kept_roles(order: Mapping[str, int]) -> dict[str, frozenset[str]]:
