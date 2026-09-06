@@ -270,8 +270,8 @@ nk check chapters --baseline .nk-baseline.json
 ## Сведения о правилах
 
 ```bash
-nk rules list             # перечень: идентификатор, пункт, уровень, название
-nk rules show RULE_ID     # подробности по одному правилу
+nk rules list             # перечень: идентификатор, категория, уровень, название
+nk rules show RULE_ID     # подробности: источник требования, пункты, параметры
 nk profile show -p PATH   # итоговый набор правил после применения профиля
 ```
 
