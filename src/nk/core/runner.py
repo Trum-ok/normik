@@ -62,7 +62,7 @@ class RunResult:
 
     @property
     def fixable(self) -> int:
-        """Сколько находок правятся машинно ключом ``--fix``."""
+        """Сколько находок снимает ключ ``--fix``."""
         return sum(1 for finding in self.findings if finding.fix is not None)
 
     @property
