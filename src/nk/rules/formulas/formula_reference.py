@@ -17,10 +17,11 @@ REQUIREMENT = "Порядковый номер присваивают форму
 
 
 @rule(
-    id="G732-6.8.3-formula-no-reference",
+    id="formula-no-reference",
     standards={G732: "6.8.3"},
     severity=Severity.WARNING,
     title="Формула пронумерована, но ссылки на неё нет",
+    deprecated_ids=("G732-6.8.3-formula-no-reference",),
 )
 def formula_no_reference(doc: Document) -> Iterable[Finding]:
     """Ищет формулы в нумерующих окружениях, на которые в тексте нет ссылки.

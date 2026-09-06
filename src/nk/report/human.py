@@ -11,6 +11,7 @@ from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
     SEVERITY_LABELS,
+    citation,
     context_lines,
     field_lines,
     finding_fields,
@@ -62,6 +63,9 @@ def _print_finding(console: Console, finding: Finding) -> None:
     header = Text(f"{INDENT}{position}  ")
     header.append(SEVERITY_LABELS[finding.severity], style=style)
     header.append(f"  {finding.rule_id}", style="dim")
+    source = citation(finding)
+    if source:
+        header.append(f"  ({source})", style="dim")
     console.print(header)
     for label, value in finding_fields(finding):
         for text in field_lines(label, value, INDENT * 2):

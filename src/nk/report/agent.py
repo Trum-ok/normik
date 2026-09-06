@@ -10,6 +10,7 @@ from nk.core.finding import Finding, Severity
 from nk.core.runner import RunResult
 from nk.report.common import (
     SEVERITY_LABELS,
+    citation,
     context_lines,
     field_lines,
     finding_fields,
@@ -57,7 +58,9 @@ def _render_finding(path: Path, finding: Finding) -> list[str]:
     if finding.col is not None:
         position = f"{position}:{finding.col}"
 
-    lines = [f"{position}  {SEVERITY_LABELS[finding.severity]}  {finding.rule_id}"]
+    source = citation(finding)
+    header = f"{position}  {SEVERITY_LABELS[finding.severity]}  {finding.rule_id}"
+    lines = [f"{header}  ({source})" if source else header]
     for label, value in finding_fields(finding):
         lines.extend(field_lines(label, value, "  "))
     if finding.context:

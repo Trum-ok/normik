@@ -10,11 +10,12 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, capitalize_first, caption_find
 
 
 @rule(
-    id="G732-6.5.8-caption-capital",
+    id="figure-caption-capital",
     standards={G732: "6.5.8"},
     severity=Severity.ERROR,
     title="Наименование рисунка начинается со строчной буквы",
     fixable=True,
+    deprecated_ids=("G732-6.5.8-caption-capital",),
 )
 def figure_caption_capital(doc: Document) -> Iterable[Finding]:
     """Проверяет первую букву наименования рисунка. Наименование, начинающееся

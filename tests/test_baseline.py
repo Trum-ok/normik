@@ -9,7 +9,7 @@ REPORT = Path("report.tex")
 
 
 def make_finding(
-    rule_id: str = "G732-6.5.7-caption-dot",
+    rule_id: str = "figure-caption-dot",
     lineno: int = 10,
     excerpt: str = "  \\caption{Схема установки.}",
     path: Path = REPORT,

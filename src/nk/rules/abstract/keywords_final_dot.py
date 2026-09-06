@@ -15,11 +15,12 @@ FINAL_DOT = re.compile(r"\.(?=[\s}]*$)")
 
 
 @rule(
-    id="G732-6.12.2-keywords-final-dot",
+    id="keywords-final-dot",
     standards={G732: "6.12.2"},
     severity=Severity.ERROR,
     title="Перечень ключевых слов заканчивается точкой",
     fixable=True,
+    deprecated_ids=("G732-6.12.2-keywords-final-dot",),
 )
 def keywords_final_dot(doc: Document) -> Iterable[Finding]:
     """Проверяет последний элемент перечня ключевых слов на точку в конце.

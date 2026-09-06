@@ -10,10 +10,11 @@ from nk.rules._shared import BIBITEM_COMMAND, BIBLIOGRAPHY_ENVIRONMENT, cited_ke
 
 
 @rule(
-    id="G732-6.16-bibitem-uncited",
+    id="bibitem-uncited",
     standards={G732: "6.16"},
     severity=Severity.WARNING,
     title="На запись списка источников нет ссылок в тексте",
+    deprecated_ids=("G732-6.16-bibitem-uncited",),
 )
 def bibitem_uncited(doc: Document) -> Iterable[Finding]:
     """Ищет записи списка источников, на которые в тексте нет ни одной ссылки.

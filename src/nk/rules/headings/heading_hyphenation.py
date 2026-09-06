@@ -10,11 +10,12 @@ from nk.rules._shared import HYPHENATION_MARKER, heading_text, headings, without
 
 
 @rule(
-    id="G732-6.2.4-heading-hyphenation",
+    id="heading-hyphenation",
     standards={G732: "6.2.4"},
     severity=Severity.ERROR,
     title="В заголовке задан перенос слова",
     fixable=True,
+    deprecated_ids=("G732-6.2.4-heading-hyphenation",),
 )
 def heading_hyphenation(doc: Document) -> Iterable[Finding]:
     r"""Ищет в заголовке заданную вручную точку переноса `\-`.

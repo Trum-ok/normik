@@ -14,16 +14,16 @@ standard = "G732"
 # цель, методы, результаты и область применения — перечня ключевых слов в
 # составе нет (п. 9.3).
 disable = [
-  "G732-5.3.2.1-keywords-count",
-  "G732-6.12.2-keywords-final-dot",
-  "G732-6.12.2-keywords-uppercase",
+  "keywords-count",
+  "keywords-final-dot",
+  "keywords-uppercase",
   # Порядок источников — алфавитный либо по появлению ссылок, на выбор автора
   # (п. 10.10). Выбор из двух порядков по исходникам не проверяется.
-  "G732-6.16-bibliography-order",
+  "bibliography-order",
   # Установленной вводной фразы перечни не имеют: положение описывает только
   # столбец с расшифровками справа через тире (п. 10.9).
-  "G732-5.5.2-terms-opening",
-  "G732-5.6.1-abbreviations-opening",
+  "terms-opening",
+  "abbreviations-opening",
 ]
 
 # Там, где положение расходится со стандартом, находка обязана ссылаться на
@@ -43,23 +43,23 @@ title = "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-
 [appendix]
 letters = "123456789"
 
-[rules."G732-6.17.4-appendix-letter"]
+[rules."appendix-letter"]
 clause = "10.11"
 
-[rules."G732-6.17.4-appendix-sequence"]
+[rules."appendix-sequence"]
 clause = "10.11"
 
 # Разделы основной части с новой страницы положение не требует: это сказано
 # только про структурные элементы.
-[rules."G732-6.2.1-section-page-break"]
+[rules."section-page-break"]
 clause = "9.3"
 
-[rules."G732-6.2.1-section-page-break".params]
+[rules."section-page-break".params]
 structural_only = true
 
 # Реферат и перечень обозначений положение оставляет на усмотрение кафедры
 # (п. 9.3), поэтому обязательными они не считаются.
-[rules."G732-4-required-element-missing".params]
+[rules."required-element-missing".params]
 required = [
   "СОДЕРЖАНИЕ",
   "ВВЕДЕНИЕ",

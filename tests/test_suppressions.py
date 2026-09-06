@@ -1,8 +1,10 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from nk.core.finding import Finding, Severity
+from nk.core.suppressions import Suppression, Suppressions
 from nk.parse.suppressions import collect
 from nk.parse.tex import parse
 
@@ -37,32 +39,30 @@ def test_directive_with_rule_ids(tmp_path: Path) -> None:
     (item,) = collect(
         lines_of(
             tmp_path,
-            "\\caption{Схема.} % nk: ignore G732-6.5.7-caption-dot, G732-6.5.8-caption-capital\n",
+            "\\caption{Схема.} % nk: ignore figure-caption-dot, figure-caption-capital\n",
         )
     ).items
 
-    assert item.rule_ids == {"G732-6.5.7-caption-dot", "G732-6.5.8-caption-capital"}
+    assert item.rule_ids == {"figure-caption-dot", "figure-caption-capital"}
 
 
 def test_reason_is_separated_from_ids(tmp_path: Path) -> None:
     (item,) = collect(
         lines_of(
             tmp_path,
-            "\\caption{Схема.} % nk: ignore G732-6.5.7-caption-dot -- на кафедре так принято\n",
+            "\\caption{Схема.} % nk: ignore figure-caption-dot -- на кафедре так принято\n",
         )
     ).items
 
-    assert item.rule_ids == {"G732-6.5.7-caption-dot"}
+    assert item.rule_ids == {"figure-caption-dot"}
     assert item.reason == "на кафедре так принято"
 
 
 def test_ignore_file_scope(tmp_path: Path) -> None:
-    (item,) = collect(
-        lines_of(tmp_path, "% nk: ignore-file G732-6.5.1-reference-word\nтекст\n")
-    ).items
+    (item,) = collect(lines_of(tmp_path, "% nk: ignore-file figure-reference-word\nтекст\n")).items
 
     assert item.scope == "file"
-    assert item.rule_ids == {"G732-6.5.1-reference-word"}
+    assert item.rule_ids == {"figure-reference-word"}
 
 
 def test_escaped_percent_is_not_a_directive(tmp_path: Path) -> None:
@@ -100,3 +100,24 @@ def test_unused_tracks_matches(tmp_path: Path) -> None:
     suppressions.match(make_finding(tmp_path / "report.tex", 1))
 
     assert [item.lineno for item in suppressions.unused()] == [2]
+
+
+def test_suppression_by_the_previous_rule_id_still_works() -> None:
+    """Директива в чужом отчёте написана старым именем и обязана работать."""
+    path = Path("report.tex")
+    suppressions = Suppressions(
+        items=(
+            Suppression(
+                path=path,
+                lineno=5,
+                scope="line",
+                rule_ids=frozenset({"G732-6.5.7-caption-dot"}),
+            ),
+        )
+    )
+    finding = replace(make_finding(path, 5), rule_id="figure-caption-dot")
+
+    renamed = suppressions.renamed({"G732-6.5.7-caption-dot": "figure-caption-dot"})
+
+    assert suppressions.match(finding) is None
+    assert renamed.match(finding) is not None

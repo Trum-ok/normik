@@ -34,9 +34,9 @@ nk check chapters --profile profiles/my-department.toml
 ```toml
 [tool.nk]
 name = "Кафедра N"
-disable = ["G732-6.5.1-reference-word"]
+disable = ["figure-reference-word"]
 
-[tool.nk.rules."G732-5.3.2.1-keywords-count".params]
+[tool.nk.rules."keywords-count".params]
 keywords_max = 20
 
 [tool.nk.elements.aliases]
@@ -52,18 +52,18 @@ name = "Кафедра N"
 extends = "base"
 
 # Отключить правила целиком.
-disable = ["G732-6.5.1-reference-word"]
+disable = ["figure-reference-word"]
 
 # Понизить уровень: нарушение показывается, но не влияет на код возврата.
-[rules."G732-6.4.5-heading-depth"]
+[rules."heading-depth"]
 severity = "info"
 
 # Поднять уровень.
-[rules."G732-6.6.2-reference-word"]
+[rules."table-reference-word"]
 severity = "error"
 
 # Переопределить параметры. Незаданные берутся из объявления правила.
-[rules."G732-5.3.2.1-keywords-count".params]
+[rules."keywords-count".params]
 keywords_max = 20
 
 # Наименования структурных элементов, принятые кафедрой вместо стандартных.
@@ -135,7 +135,7 @@ keywords_max = 20
 оставались бы элементы источника, от которого уходили.
 
 Порядок из профиля попадает и в текст находки: правило
-[`G732-4-elements-order`](rules/G732-4-elements-order.md) называет тот порядок,
+[`elements-order`](rules/elements-order.md) называет тот порядок,
 по которому проверяется этот отчёт.
 
 ### Роли
@@ -170,18 +170,18 @@ appendix = ["ПРИЛОЖЕНИЕ"]
 а наименование в ней обязано быть в `order`.
 
 Состав обязательных элементов задаётся параметрами правила
-[`G732-4-required-element-missing`](rules/G732-4-required-element-missing.md).
+[`required-element-missing`](rules/required-element-missing.md).
 Убрать одно требование, оставив остальные:
 
 ```toml
-[rules."G732-4-required-element-missing".params]
+[rules."required-element-missing".params]
 excluded = ["РЕФЕРАТ"]
 ```
 
 Задать перечень целиком:
 
 ```toml
-[rules."G732-4-required-element-missing".params]
+[rules."required-element-missing".params]
 required = ["СОДЕРЖАНИЕ", "ВВЕДЕНИЕ", "ЗАКЛЮЧЕНИЕ", "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"]
 ```
 
@@ -215,7 +215,7 @@ standard = "G732"
 [source]
 title = "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024"
 
-[rules."G732-6.17.4-appendix-sequence"]
+[rules."appendix-sequence"]
 clause = "10.11"
 ```
 
@@ -268,7 +268,7 @@ nk check chapters --profile bmstu-vkr
 name = "Кафедра ИУ-N"
 extends = "bmstu-vkr"
 
-disable = ["G732-6.5.1-reference-word"]
+disable = ["figure-reference-word"]
 ```
 
 ## Правила, выключенные по умолчанию
@@ -277,11 +277,11 @@ disable = ["G732-6.5.1-reference-word"]
 выключены по умолчанию и включаются явно:
 
 ```toml
-enable = ["NK-STYLE-preposition-nbsp"]
+enable = ["preposition-nbsp"]
 ```
 
 На странице такого правила стоит пометка о том, что оно выключено. Ключ
-`--select` тоже включает их: `nk check chapters --select NK-STYLE-preposition-nbsp`.
+`--select` тоже включает их: `nk check chapters --select preposition-nbsp`.
 
 ## Проверка профиля
 
@@ -302,7 +302,7 @@ nk profile show --profile profiles/my-department.toml
 
 - **Требования кафедры расходятся со стандартом.** Например, принято сокращение
   «рис.» в ссылках: правило
-  [`G732-6.5.1-reference-word`](rules/G732-6.5.1-reference-word.md)
+  [`figure-reference-word`](rules/figure-reference-word.md)
   отключается.
 - **Пороги.** Диапазон числа ключевых слов, предельная глубина рубрикации —
   параметры, а не константы.

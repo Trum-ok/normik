@@ -21,11 +21,12 @@ MAX_PLAIN_DIGITS = 2
 
 
 @rule(
-    id="G732-6.4.1-manual-section-number",
+    id="manual-section-number",
     standards={G732: "6.4.1"},
     severity=Severity.ERROR,
     title="Номер раздела вписан в заголовок вручную",
     fixable=True,
+    deprecated_ids=("G732-6.4.1-manual-section-number",),
 )
 def manual_section_number(doc: Document) -> Iterable[Finding]:
     """Ищет заголовки, начинающиеся с номера, вписанного руками: «1 Введение»,

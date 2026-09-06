@@ -1,6 +1,7 @@
 """Команды CLI. Вся логика — в ядре; здесь только разбор аргументов и вывод."""
 
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -119,6 +120,7 @@ def profile_show(
     try:
         profile = load_profile(profile_source, search_from=[Path.cwd()])
         validate_profile(profile, registry)
+        profile = profile.renamed(registry.aliases)
     except ProfileError as error:
         err_console.print(f"Профиль: {error}")
         raise typer.Exit(EXIT_INTERNAL_ERROR) from None
@@ -198,6 +200,7 @@ def check(
     try:
         profile = load_profile(profile_source, search_from=paths)
         validate_profile(profile, registry)
+        profile = profile.renamed(registry.aliases)
         selected_rules, _ = partition_ids(_split(select))
         ignored_rules, ignored_internal = partition_ids(_split(ignore))
         rules = select_rules(
@@ -218,6 +221,7 @@ def check(
         baseline=baseline,
         ignored=ignored_internal | (profile.disabled & frozenset(INTERNAL)),
         known_ids=frozenset(impl.id for impl in registry) | frozenset(INTERNAL),
+        aliases=registry.aliases,
         # Снимок фиксируется по всем находкам: иначе его содержимое зависело бы
         # от ключа --severity, с которым его записали.
         threshold=Severity.INFO if write_baseline is not None else severity,
@@ -269,6 +273,7 @@ class _Check:
     baseline: Baseline | None
     ignored: frozenset[str]
     known_ids: frozenset[str]
+    aliases: Mapping[str, str]
     threshold: Severity
 
     def __call__(self, overlay: dict[Path, str] | None = None) -> RunResult:
@@ -278,7 +283,7 @@ class _Check:
             self.rules,
             extra_findings=parse_findings(parsed),
             threshold=self.threshold,
-            suppressions=parsed.suppressions,
+            suppressions=parsed.suppressions.renamed(self.aliases),
             baseline=self.baseline,
             ignored=self.ignored,
             known_ids=self.known_ids,

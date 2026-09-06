@@ -48,7 +48,7 @@ def test_summary_lists_every_rule() -> None:
 
 
 def test_example_drops_test_markers() -> None:
-    example = examples.load("G732-6.5.7-caption-dot", FIXTURES)
+    example = examples.load("figure-caption-dot", FIXTURES)
     assert example is not None
     assert examples.EXPECT_MARKER not in example.bad
 

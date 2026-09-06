@@ -79,6 +79,10 @@ class RuleImpl:
     default_off: bool = False
     """Правило включается только явно — профилем или ключом ``--select``."""
 
+    deprecated_ids: tuple[str, ...] = ()
+    """Прежние идентификаторы правила: они остаются рабочими в ключах, профилях
+    и директивах подавления, чтобы переименование не ломало чужие исходники."""
+
     def __call__(self, doc: Document) -> Iterator[Finding]:
         yield from self.func(doc)
 
@@ -142,6 +146,7 @@ class RuleRegistry:
 
     def __init__(self) -> None:
         self._rules: dict[str, RuleImpl] = {}
+        self._aliases: dict[str, str] = {}
 
     def register(self, impl: RuleImpl) -> RuleImpl:
         """Добавить правило. Дубль идентификатора — ошибка, а не перезапись."""
@@ -151,12 +156,29 @@ class RuleRegistry:
                 f"правило {impl.id!r} уже объявлено в {existing.module}, "
                 f"повторное объявление в {impl.module}"
             )
+        for old in impl.deprecated_ids:
+            taken = self._rules.get(old) or self._rules.get(self._aliases.get(old, ""))
+            if taken is not None:
+                raise DuplicateRuleError(
+                    f"прежний идентификатор {old!r} правила {impl.id!r} "
+                    f"занят правилом {taken.id!r} из {taken.module}"
+                )
+            self._aliases[old] = impl.id
         self._rules[impl.id] = impl
         return impl
 
+    @property
+    def aliases(self) -> Mapping[str, str]:
+        """Прежние идентификаторы и их нынешние имена."""
+        return dict(self._aliases)
+
+    def canonical(self, rule_id: str) -> str:
+        """Нынешнее имя правила: прежний идентификатор разворачивается в него."""
+        return self._aliases.get(rule_id, rule_id)
+
     def get(self, rule_id: str) -> RuleImpl:
         try:
-            return self._rules[rule_id]
+            return self._rules[self.canonical(rule_id)]
         except KeyError:
             raise UnknownRuleError(rule_id) from None
 
@@ -171,9 +193,10 @@ class RuleRegistry:
 
     def clear(self) -> None:
         self._rules.clear()
+        self._aliases.clear()
 
     def __contains__(self, rule_id: object) -> bool:
-        return rule_id in self._rules
+        return rule_id in self._rules or rule_id in self._aliases
 
     def __len__(self) -> int:
         return len(self._rules)
@@ -196,6 +219,7 @@ def rule(
     allow_missing_suggestion: bool = False,
     fixable: bool = False,
     default_off: bool = False,
+    deprecated_ids: tuple[str, ...] = (),
     registry: RuleRegistry | None = None,
 ) -> Callable[[RuleCallable], RuleImpl]:
     """Объявить правило::
@@ -227,6 +251,7 @@ def rule(
             allow_missing_suggestion=allow_missing_suggestion,
             fixable=fixable,
             default_off=default_off,
+            deprecated_ids=deprecated_ids,
         )
         # Явное сравнение с None: пустой реестр ложен из-за __len__.
         target = REGISTRY if registry is None else registry

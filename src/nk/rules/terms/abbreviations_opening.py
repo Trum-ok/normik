@@ -13,10 +13,11 @@ OPENING = "применяют следующие сокращения"
 
 
 @rule(
-    id="G732-5.6.1-abbreviations-opening",
+    id="abbreviations-opening",
     standards={G732: "5.6.1"},
     severity=Severity.ERROR,
     title="Перечень сокращений не начинается с установленной фразы",
+    deprecated_ids=("G732-5.6.1-abbreviations-opening",),
 )
 def abbreviations_opening(doc: Document) -> Iterable[Finding]:
     """Ищет в теле перечня сокращений и обозначений вводную фразу — строку со словами

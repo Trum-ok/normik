@@ -14,11 +14,12 @@ MARKUP = ("\\", "$")
 
 
 @rule(
-    id="G732-6.12.2-keywords-uppercase",
+    id="keywords-uppercase",
     standards={G732: "6.12.2"},
     severity=Severity.ERROR,
     title="Ключевые слова набраны не прописными буквами",
     fixable=True,
+    deprecated_ids=("G732-6.12.2-keywords-uppercase",),
 )
 def keywords_uppercase(doc: Document) -> Iterable[Finding]:
     r"""Проверяет, что каждое ключевое слово набрано прописными буквами.

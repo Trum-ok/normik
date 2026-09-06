@@ -6,7 +6,7 @@ from nk.core.fixer import plan
 from nk.core.registry import load_rules
 from nk.parse.tex import parse
 
-DOT = "G732-6.5.7-caption-dot"
+DOT = "figure-caption-dot"
 
 
 def fixed(tmp_path: Path, rule_id: str, text: str) -> str:

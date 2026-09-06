@@ -29,11 +29,12 @@ _PROCLITIC = re.compile(
 
 
 @rule(
-    id="NK-STYLE-preposition-nbsp",
+    id="preposition-nbsp",
     severity=Severity.INFO,
     title="Предлог не привязан к следующему слову",
     fixable=True,
     default_off=True,
+    deprecated_ids=("NK-STYLE-preposition-nbsp",),
 )
 def preposition_nbsp(doc: Document) -> Iterable[Finding]:
     """Находит короткий предлог или союз, отделённый от следующего слова обычным пробелом.

@@ -12,10 +12,11 @@ DIAGONAL_COMMANDS = frozenset({"diagbox", "backslashbox", "slashbox"})
 
 
 @rule(
-    id="G732-6.6.6-table-diagonal",
+    id="table-diagonal",
     standards={G732: "6.6.6"},
     severity=Severity.ERROR,
     title="Шапка таблицы разделена диагональной линией",
+    deprecated_ids=("G732-6.6.6-table-diagonal",),
 )
 def table_diagonal(doc: Document) -> Iterable[Finding]:
     r"""Ищет команды, которые делят ячейку шапки диагональю: `\diagbox`,

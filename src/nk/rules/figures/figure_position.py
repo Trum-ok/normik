@@ -10,10 +10,11 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, float_position
 
 
 @rule(
-    id="G732-6.5.1-figure-position",
+    id="figure-position",
     standards={G732: "6.5.1"},
     severity=Severity.ERROR,
     title="Иллюстрация размещена выше первой ссылки на неё",
+    deprecated_ids=("G732-6.5.1-figure-position",),
 )
 def figure_position(doc: Document) -> Iterable[Finding]:
     r"""Сопоставляет положение рисунка с положением первой ссылки на него. Находка

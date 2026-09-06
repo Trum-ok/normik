@@ -13,11 +13,12 @@ DEFAULT_MAX = 15
 
 
 @rule(
-    id="G732-5.3.2.1-keywords-count",
+    id="keywords-count",
     standards={G732: "5.3.2.1"},
     severity=Severity.ERROR,
     title="Число ключевых слов вне допустимого диапазона",
     params={"keywords_min": DEFAULT_MIN, "keywords_max": DEFAULT_MAX},
+    deprecated_ids=("G732-5.3.2.1-keywords-count",),
 )
 def keywords_count(doc: Document) -> Iterable[Finding]:
     """Считает элементы перечня ключевых слов в реферате и сравнивает с допустимым

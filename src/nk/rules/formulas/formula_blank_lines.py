@@ -20,11 +20,12 @@ BLANK_LINE = "\n\n"
 
 
 @rule(
-    id="G732-6.8.1-blank-line-around",
+    id="formula-blank-line-around",
     standards={G732: "6.8.1"},
     severity=Severity.ERROR,
     title="Формула не отделена свободной строкой",
     fixable=True,
+    deprecated_ids=("G732-6.8.1-blank-line-around",),
 )
 def formula_blank_lines(doc: Document) -> Iterable[Finding]:
     """Проверяет строки непосредственно выше и ниже выключной формулы. Формула,

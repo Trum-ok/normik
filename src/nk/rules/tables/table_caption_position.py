@@ -10,10 +10,11 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, captions, first_tabular_line
 
 
 @rule(
-    id="G732-6.6.3-caption-position",
+    id="table-caption-position",
     standards={G732: "6.6.3"},
     severity=Severity.ERROR,
     title="Наименование таблицы расположено ниже самой таблицы",
+    deprecated_ids=("G732-6.6.3-caption-position",),
 )
 def table_caption_position(doc: Document) -> Iterable[Finding]:
     r"""Сравнивает положение `\caption` с началом самой таблицы внутри окружения.

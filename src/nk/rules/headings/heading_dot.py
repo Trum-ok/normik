@@ -10,11 +10,12 @@ from nk.rules._shared import heading_text, headings, one_line
 
 
 @rule(
-    id="G732-6.2.3-heading-dot",
+    id="heading-dot",
     standards={G732: "6.2.3"},
     severity=Severity.ERROR,
     title="Заголовок заканчивается точкой",
     fixable=True,
+    deprecated_ids=("G732-6.2.3-heading-dot",),
 )
 def heading_dot(doc: Document) -> Iterable[Finding]:
     """Проверяет заголовки разделов, подразделов и структурных элементов на точку

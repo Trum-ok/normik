@@ -3,9 +3,9 @@
 Формы::
 
     \\caption{Схема установки.}   % nk: ignore
-    \\caption{Схема установки.}   % nk: ignore G732-6.5.7-caption-dot
-    \\caption{Схема установки.}   % nk: ignore G732-6.5.7-caption-dot -- на кафедре так принято
-    % nk: ignore-file G732-6.5.1-reference-word
+    \\caption{Схема установки.}   % nk: ignore figure-caption-dot
+    \\caption{Схема установки.}   % nk: ignore figure-caption-dot -- на кафедре так принято
+    % nk: ignore-file figure-reference-word
 
 ``ignore`` действует на строку, в которой стоит, ``ignore-file`` — на весь файл
 независимо от места. Без перечня идентификаторов подавляются все находки.

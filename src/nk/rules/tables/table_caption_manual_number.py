@@ -14,11 +14,12 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Таблица|Табл\.)\s*[0-9А-ЯA-Z][0
 
 
 @rule(
-    id="G732-6.6.3-caption-manual-number",
+    id="table-caption-manual-number",
     standards={G732: "6.6.3"},
     severity=Severity.ERROR,
     title="Номер таблицы вписан в наименование вручную",
     fixable=True,
+    deprecated_ids=("G732-6.6.3-caption-manual-number",),
 )
 def table_caption_manual_number(doc: Document) -> Iterable[Finding]:
     r"""Ищет наименования, начинающиеся со слова «Таблица» или сокращения «Табл.»

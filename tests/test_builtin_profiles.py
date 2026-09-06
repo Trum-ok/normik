@@ -69,32 +69,28 @@ REPORT = """\
 
 
 def test_annotation_counts_as_the_abstract(tmp_path: Path) -> None:
-    assert findings(tmp_path, REPORT, BMSTU, "G732-4-required-element-missing") == []
+    assert findings(tmp_path, REPORT, BMSTU, "required-element-missing") == []
 
 
 def test_digits_are_valid_appendix_designations(tmp_path: Path) -> None:
-    assert findings(tmp_path, REPORT, BMSTU, "G732-6.17.4-appendix-letter") == []
+    assert findings(tmp_path, REPORT, BMSTU, "appendix-letter") == []
 
 
 def test_cyrillic_appendix_letter_is_a_finding_under_bmstu(tmp_path: Path) -> None:
     text = REPORT.replace("ПРИЛОЖЕНИЕ 1", "ПРИЛОЖЕНИЕ А")
 
-    messages = [
-        finding.message
-        for finding in findings(tmp_path, text, BMSTU, "G732-6.17.4-appendix-letter")
-    ]
+    messages = [finding.message for finding in findings(tmp_path, text, BMSTU, "appendix-letter")]
 
     assert messages == ["Приложение обозначено как «А»."]
 
 
 def test_section_of_the_main_part_needs_no_page_break_under_bmstu(tmp_path: Path) -> None:
-    assert findings(tmp_path, REPORT, BMSTU, "G732-6.2.1-section-page-break") == []
+    assert findings(tmp_path, REPORT, BMSTU, "section-page-break") == []
 
 
 def test_the_same_section_needs_one_under_base(tmp_path: Path) -> None:
     messages = [
-        finding.lineno
-        for finding in findings(tmp_path, REPORT, "base", "G732-6.2.1-section-page-break")
+        finding.lineno for finding in findings(tmp_path, REPORT, "base", "section-page-break")
     ]
 
     assert messages == [10]
@@ -128,7 +124,7 @@ def test_finding_cites_the_regulation_where_it_diverges(tmp_path: Path) -> None:
     """Там, где положение расходится со стандартом, находка ссылается на положение."""
     text = REPORT.replace("ПРИЛОЖЕНИЕ 1", "ПРИЛОЖЕНИЕ 2")
 
-    found = findings(tmp_path, text, BMSTU, "G732-6.17.4-appendix-sequence")
+    found = findings(tmp_path, text, BMSTU, "appendix-sequence")
 
     assert [(f.clause, f.source) for f in found] == [
         ("10.11", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
@@ -138,6 +134,6 @@ def test_finding_cites_the_regulation_where_it_diverges(tmp_path: Path) -> None:
 def test_the_same_rule_cites_the_standard_under_base(tmp_path: Path) -> None:
     text = REPORT.replace("ПРИЛОЖЕНИЕ 1", "ПРИЛОЖЕНИЕ Б")
 
-    found = findings(tmp_path, text, "base", "G732-6.17.4-appendix-sequence")
+    found = findings(tmp_path, text, "base", "appendix-sequence")
 
     assert [(f.clause, f.source) for f in found] == [("6.17.4", "ГОСТ 7.32-2017")]

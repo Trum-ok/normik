@@ -11,10 +11,11 @@ from nk.rules._shared import listing_order
 
 
 @rule(
-    id="G732-6.15-abbreviations-order",
+    id="abbreviations-order",
     standards={G732: "6.15"},
     severity=Severity.ERROR,
     title="Сокращения в перечне идут не по алфавиту",
+    deprecated_ids=("G732-6.15-abbreviations-order",),
 )
 def abbreviations_order(doc: Document) -> Iterable[Finding]:
     """Сравнивает сокращения перечня между собой по алфавиту. Записью считается

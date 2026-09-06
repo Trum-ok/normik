@@ -20,10 +20,11 @@ SHORTHANDS = frozenset("=|-~<>,'`\"")
 
 
 @rule(
-    id="NK-STYLE-quotes",
+    id="text-quotes",
     severity=Severity.INFO,
     title="Прямые кавычки вместо «ёлочек»",
     fixable=True,
+    deprecated_ids=("NK-STYLE-quotes",),
 )
 def text_quotes(doc: Document) -> Iterable[Finding]:
     """Находит прямую кавычку `"` в тексте отчёта.

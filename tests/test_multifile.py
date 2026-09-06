@@ -52,11 +52,11 @@ def findings(tmp_path: Path, rule_id: str, files: dict[str, str] | None = None) 
 
 
 def test_structural_elements_set_by_a_template_macro_are_found(tmp_path: Path) -> None:
-    assert findings(tmp_path, "G732-4-required-element-missing") == []
+    assert findings(tmp_path, "required-element-missing") == []
 
 
 def test_element_order_follows_the_includes_not_the_file_names(tmp_path: Path) -> None:
-    assert findings(tmp_path, "G732-4-elements-order") == []
+    assert findings(tmp_path, "elements-order") == []
 
 
 def test_missing_element_is_still_reported(tmp_path: Path) -> None:
@@ -64,7 +64,7 @@ def test_missing_element_is_still_reported(tmp_path: Path) -> None:
     del files["введение.tex"]
     files["отчёт.tex"] = files["отчёт.tex"].replace("\\include{введение}\n", "")
 
-    found = findings(tmp_path, "G732-4-required-element-missing", files)
+    found = findings(tmp_path, "required-element-missing", files)
 
     assert [finding.message for finding in found] == [
         "В отчёте нет структурного элемента «ВВЕДЕНИЕ»."
@@ -78,7 +78,7 @@ def test_order_violation_between_files_is_reported(tmp_path: Path) -> None:
         "\\include{заключение}\n\\include{основная}\n\\include{введение}\n",
     )
 
-    found = findings(tmp_path, "G732-4-elements-order", files)
+    found = findings(tmp_path, "elements-order", files)
 
     assert [finding.message for finding in found] == [
         "Элемент «ВВЕДЕНИЕ» стоит после «ЗАКЛЮЧЕНИЕ»."

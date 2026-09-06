@@ -14,11 +14,12 @@ MANUAL_NUMBER = re.compile(r"^\s*(?:Рисунок|Рис\.)\s*[0-9А-ЯA-Z][0-9
 
 
 @rule(
-    id="G732-6.5.7-caption-manual-number",
+    id="figure-caption-manual-number",
     standards={G732: "6.5.7"},
     severity=Severity.ERROR,
     title="Номер рисунка вписан в наименование вручную",
     fixable=True,
+    deprecated_ids=("G732-6.5.7-caption-manual-number",),
 )
 def figure_caption_manual_number(doc: Document) -> Iterable[Finding]:
     r"""Ищет наименования, начинающиеся со слова «Рисунок» или сокращения «Рис.»

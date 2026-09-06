@@ -10,10 +10,11 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, captions, first_graphic_line
 
 
 @rule(
-    id="G732-6.5.7-caption-position",
+    id="figure-caption-position",
     standards={G732: "6.5.7"},
     severity=Severity.ERROR,
     title="Наименование рисунка расположено выше изображения",
+    deprecated_ids=("G732-6.5.7-caption-position",),
 )
 def figure_caption_position(doc: Document) -> Iterable[Finding]:
     r"""Сравнивает положение `\caption` с первой строкой, вставляющей изображение,

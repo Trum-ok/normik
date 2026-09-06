@@ -11,10 +11,11 @@ from nk.rules._shared import appendix_numbering
 
 
 @rule(
-    id="G732-6.8.5-appendix-numbering",
+    id="formula-appendix-numbering",
     standards={G732: "6.8.5"},
     severity=Severity.ERROR,
     title="Формула приложения нумеруется без обозначения приложения",
+    deprecated_ids=("G732-6.8.5-appendix-numbering",),
 )
 def appendix_formula_numbering(doc: Document) -> Iterable[Finding]:
     """Проверяет, что формулы внутри приложения нумеруются с его обозначением.

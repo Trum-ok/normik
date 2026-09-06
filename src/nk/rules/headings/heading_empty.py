@@ -13,10 +13,11 @@ TITLED_DEPTH = 2
 
 
 @rule(
-    id="G732-6.2.2-heading-empty",
+    id="heading-empty",
     standards={G732: "6.2.2"},
     severity=Severity.ERROR,
     title="Раздел или подраздел без заголовка",
+    deprecated_ids=("G732-6.2.2-heading-empty",),
 )
 def heading_empty(doc: Document) -> Iterable[Finding]:
     """Ищет разделы и подразделы с пустым заголовком: команда есть, текста в ней нет

@@ -4,9 +4,10 @@ from nk.core.finding import Finding, Severity
 
 
 def make_finding(
-    rule_id: str = "G732-6.5.7-caption-dot",
+    rule_id: str = "figure-caption-dot",
     *,
     clause: str = "6.5.7",
+    source: str = "ГОСТ 7.32-2017",
     severity: Severity = Severity.ERROR,
     path: str = "chapters/02-method.tex",
     lineno: int = 145,
@@ -15,6 +16,7 @@ def make_finding(
     return Finding(
         rule_id=rule_id,
         clause=clause,
+        source=source,
         severity=severity,
         message="Подпись рисунка заканчивается точкой и использует дефис вместо тире",
         requirement="Форма «Рисунок N — Название», тире с пробелами, без точки в конце",

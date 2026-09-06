@@ -19,10 +19,11 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+([А-Я])$")
 
 
 @rule(
-    id="G732-6.17.2-appendix-no-reference",
+    id="appendix-no-reference",
     standards={G732: "6.17.2"},
     severity=Severity.ERROR,
     title="На приложение нет ссылки в тексте",
+    deprecated_ids=("G732-6.17.2-appendix-no-reference",),
 )
 def appendix_no_reference(doc: Document) -> Iterable[Finding]:
     """Собирает буквы приложений из заголовков и упоминания вида «в приложении А» из

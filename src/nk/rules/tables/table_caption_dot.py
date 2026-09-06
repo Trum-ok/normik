@@ -10,11 +10,12 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, caption_findings, one_line
 
 
 @rule(
-    id="G732-6.6.3-caption-dot",
+    id="table-caption-dot",
     standards={G732: "6.6.3"},
     severity=Severity.ERROR,
     title="Наименование таблицы заканчивается точкой",
     fixable=True,
+    deprecated_ids=("G732-6.6.3-caption-dot",),
 )
 def table_caption_dot(doc: Document) -> Iterable[Finding]:
     r"""Проверяет наименование таблицы на точку в конце.

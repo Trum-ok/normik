@@ -13,11 +13,12 @@ DEFAULT_MAX_DEPTH = 4
 
 
 @rule(
-    id="G732-6.4.5-heading-depth",
+    id="heading-depth",
     standards={G732: "6.4.5"},
     severity=Severity.WARNING,
     title="Глубина рубрикации превышает четыре уровня",
     params={"max_depth": DEFAULT_MAX_DEPTH},
+    deprecated_ids=("G732-6.4.5-heading-depth",),
 )
 def heading_depth(doc: Document) -> Iterable[Finding]:
     """Считает уровень рубрики по команде заголовка и сравнивает с предельным.

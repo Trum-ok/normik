@@ -12,15 +12,17 @@ def result() -> RunResult:
         findings=(
             make_finding(),
             make_finding(
-                "G732-6.6.2-table-no-reference",
+                "table-no-reference",
                 clause="6.6.2",
+                source="ГОСТ 7.32-2017",
                 severity=Severity.WARNING,
                 lineno=160,
                 col=None,
             ),
             make_finding(
-                "G732-6.2.4-heading-hyphenation",
+                "heading-hyphenation",
                 clause="6.2.4",
+                source="ГОСТ 7.32-2017",
                 severity=Severity.INFO,
                 path="chapters/01-intro.tex",
                 lineno=12,

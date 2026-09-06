@@ -11,11 +11,12 @@ from nk.rules._shared import listing_dash
 
 
 @rule(
-    id="G732-6.14-terms-dash",
+    id="terms-dash",
     standards={G732: "6.14"},
     severity=Severity.WARNING,
     title="В перечне терминов определение отделено дефисом",
     fixable=True,
+    deprecated_ids=("G732-6.14-terms-dash",),
 )
 def terms_dash(doc: Document) -> Iterable[Finding]:
     """Проверяет знак, отделяющий термин от расшифровки.

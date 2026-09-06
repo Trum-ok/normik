@@ -13,10 +13,11 @@ SHORT_FORM = re.compile(r"\bтабл\.\s*~?\s*(?:\d|\\(?:ref|autoref|cref))", re
 
 
 @rule(
-    id="G732-6.6.2-reference-word",
+    id="table-reference-word",
     standards={G732: "6.6.2"},
     severity=Severity.WARNING,
     title="В ссылке на таблицу использовано сокращение «табл.»",
+    deprecated_ids=("G732-6.6.2-reference-word",),
 )
 def table_reference_word(doc: Document) -> Iterable[Finding]:
     """Ищет в тексте сокращение «табл.» перед номером или ссылкой.

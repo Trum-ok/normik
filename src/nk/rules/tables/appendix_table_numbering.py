@@ -11,10 +11,11 @@ from nk.rules._shared import appendix_numbering
 
 
 @rule(
-    id="G732-6.6.4-appendix-numbering",
+    id="table-appendix-numbering",
     standards={G732: "6.6.4"},
     severity=Severity.ERROR,
     title="Таблица приложения нумеруется без его обозначения",
+    deprecated_ids=("G732-6.6.4-appendix-numbering",),
 )
 def appendix_table_numbering(doc: Document) -> Iterable[Finding]:
     """Проверяет, что таблицы внутри приложения нумеруются с его обозначением.

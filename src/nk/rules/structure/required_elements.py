@@ -48,11 +48,12 @@ REQUIRED = (
 
 
 @rule(
-    id="G732-4-required-element-missing",
+    id="required-element-missing",
     standards={G732: "4"},
     severity=Severity.ERROR,
     title="Отсутствует обязательный структурный элемент",
     params={"required": list(REQUIRED), "excluded": []},
+    deprecated_ids=("G732-4-required-element-missing",),
 )
 def required_element_missing(doc: Document) -> Iterable[Finding]:
     """Проверяет наличие структурных элементов, обнаружимых по исходникам: реферата,

@@ -13,10 +13,11 @@ OPENING = "применяют следующие термины"
 
 
 @rule(
-    id="G732-5.5.2-terms-opening",
+    id="terms-opening",
     standards={G732: "5.5.2"},
     severity=Severity.ERROR,
     title="Перечень терминов не начинается с установленной фразы",
+    deprecated_ids=("G732-5.5.2-terms-opening",),
 )
 def terms_opening(doc: Document) -> Iterable[Finding]:
     """Ищет в теле перечня терминов и определений вводную фразу — строку со словами

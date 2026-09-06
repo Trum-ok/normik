@@ -12,9 +12,9 @@ EXPECTED = {
     "suppressed": {"inline": 0, "baseline": 0},
     "findings": [
         {
-            "rule_id": "G732-6.2.4-heading-hyphenation",
+            "rule_id": "heading-hyphenation",
             "clause": "6.2.4",
-            "source": "",
+            "source": "ГОСТ 7.32-2017",
             "severity": "info",
             "message": "Подпись рисунка заканчивается точкой и использует дефис вместо тире",
             "requirement": "Форма «Рисунок N — Название», тире с пробелами, без точки в конце",
@@ -33,9 +33,9 @@ EXPECTED = {
             "fixable": False,
         },
         {
-            "rule_id": "G732-6.5.7-caption-dot",
+            "rule_id": "figure-caption-dot",
             "clause": "6.5.7",
-            "source": "",
+            "source": "ГОСТ 7.32-2017",
             "severity": "error",
             "message": "Подпись рисунка заканчивается точкой и использует дефис вместо тире",
             "requirement": "Форма «Рисунок N — Название», тире с пробелами, без точки в конце",
@@ -54,9 +54,9 @@ EXPECTED = {
             "fixable": False,
         },
         {
-            "rule_id": "G732-6.6.2-table-no-reference",
+            "rule_id": "table-no-reference",
             "clause": "6.6.2",
-            "source": "",
+            "source": "ГОСТ 7.32-2017",
             "severity": "warning",
             "message": "Подпись рисунка заканчивается точкой и использует дефис вместо тире",
             "requirement": "Форма «Рисунок N — Название», тире с пробелами, без точки в конце",

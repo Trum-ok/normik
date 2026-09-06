@@ -10,11 +10,12 @@ from nk.rules._shared import heading_text, headings, is_numbered, structural_ele
 
 
 @rule(
-    id="G732-6.2.1-structural-heading-numbered",
+    id="structural-heading-numbered",
     standards={G732: "6.2.1"},
     severity=Severity.ERROR,
     title="Заголовок структурного элемента пронумерован",
     fixable=True,
+    deprecated_ids=("G732-6.2.1-structural-heading-numbered",),
 )
 def structural_heading_numbered(doc: Document) -> Iterable[Finding]:
     """Ищет заголовки структурных элементов, заданные нумерованной формой команды

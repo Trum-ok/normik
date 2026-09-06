@@ -13,10 +13,11 @@ FORBIDDEN_LETTERS = frozenset("ёзйочъыь")
 
 
 @rule(
-    id="G732-6.4.6-enumeration-letters",
+    id="enumeration-letters",
     standards={G732: "6.4.6"},
     severity=Severity.ERROR,
     title="В перечислении использована недопустимая буква",
+    deprecated_ids=("G732-6.4.6-enumeration-letters",),
 )
 def enumeration_letters(doc: Document) -> Iterable[Finding]:
     r"""Проверяет буквенные обозначения элементов перечисления, заданные явно —

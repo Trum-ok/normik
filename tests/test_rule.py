@@ -19,7 +19,7 @@ from nk.core.standards import G732
 
 def test_decorator_registers_rule_with_metadata(registry: RuleRegistry) -> None:
     @rule(
-        id="G732-6.5.7-caption-dot",
+        id="figure-caption-dot",
         standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title="Подпись рисунка заканчивается точкой",
@@ -28,7 +28,7 @@ def test_decorator_registers_rule_with_metadata(registry: RuleRegistry) -> None:
     def caption_dot(doc: Document) -> Iterable[Finding]:
         return ()
 
-    assert registry.get("G732-6.5.7-caption-dot") is caption_dot
+    assert registry.get("figure-caption-dot") is caption_dot
     assert caption_dot.clause_for(G732.id) == "6.5.7"
     assert caption_dot.severity is Severity.ERROR
     assert isinstance(caption_dot, Rule)
@@ -76,7 +76,7 @@ def test_registry_is_sorted_by_id(registry: RuleRegistry) -> None:
 
 def _caption_dot_rule(registry: RuleRegistry):
     @rule(
-        id="G732-6.5.7-caption-dot",
+        id="figure-caption-dot",
         standards={G732: "6.5.7"},
         severity=Severity.ERROR,
         title="Подпись рисунка заканчивается точкой",
@@ -107,7 +107,7 @@ def test_finding_helper_fills_metadata_from_declaration(
 
     assert len(findings) == 1
     finding = findings[0]
-    assert finding.rule_id == "G732-6.5.7-caption-dot"
+    assert finding.rule_id == "figure-caption-dot"
     assert finding.clause == "6.5.7"
     assert finding.severity is Severity.ERROR
     assert finding.path == Path("report.tex")
@@ -120,7 +120,7 @@ def test_finding_helper_fills_metadata_from_declaration(
 
 def test_finding_severity_follows_profile_override(registry: RuleRegistry) -> None:
     caption_dot = _caption_dot_rule(registry)
-    profile = Profile(severities={"G732-6.5.7-caption-dot": Severity.WARNING})
+    profile = Profile(severities={"figure-caption-dot": Severity.WARNING})
     doc = make_document("\\caption{Схема.}\n", profile=profile)
 
     findings = list(caption_dot(doc))
@@ -129,7 +129,7 @@ def test_finding_severity_follows_profile_override(registry: RuleRegistry) -> No
 
 def test_params_merge_declaration_defaults_with_profile(registry: RuleRegistry) -> None:
     @rule(
-        id="G732-5.3.2.1-keywords-count",
+        id="keywords-count",
         standards={G732: "5.3.2.1"},
         severity=Severity.ERROR,
         title="Число ключевых слов вне допустимого диапазона",
@@ -141,7 +141,7 @@ def test_params_merge_declaration_defaults_with_profile(registry: RuleRegistry) 
 
     doc = make_document(
         "текст\n",
-        profile=Profile(params={"G732-5.3.2.1-keywords-count": {"keywords_max": 20}}),
+        profile=Profile(params={"keywords-count": {"keywords_max": 20}}),
     )
     assert keywords_count.params(doc) == {"keywords_min": 5, "keywords_max": 20}
 

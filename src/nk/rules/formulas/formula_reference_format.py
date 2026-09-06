@@ -14,11 +14,12 @@ BARE_REFERENCE = re.compile(r"формул\w*\s*~?\s*(?:\d|(?P<ref>\\ref)\b)", r
 
 
 @rule(
-    id="G732-6.8.4-formula-reference-format",
+    id="formula-reference-format",
     standards={G732: "6.8.4"},
     severity=Severity.ERROR,
     title="Номер формулы в ссылке приведён без скобок",
     fixable=True,
+    deprecated_ids=("G732-6.8.4-formula-reference-format",),
 )
 def formula_reference_format(doc: Document) -> Iterable[Finding]:
     r"""Ищет ссылки на номер формулы, приведённые без скобок: «в формуле 1»,

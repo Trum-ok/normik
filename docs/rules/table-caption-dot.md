@@ -1,0 +1,71 @@
+# table-caption-dot
+
+**Наименование таблицы заканчивается точкой.**
+
+| | |
+|---|---|
+| Категория | Таблицы |
+| Пункты | ГОСТ 7.32-2017 п. 6.6.3 |
+| Уровень по умолчанию | `error` |
+| Объявлено в | `nk.rules.tables.table_caption_dot` |
+| Фикстуры | `tests/fixtures/table-caption-dot/` |
+| Автоисправление | да, ключом `--fix` |
+
+Проверяет наименование таблицы на точку в конце.
+
+## Почему это нарушение
+
+Наименование таблицы приводят с прописной буквы без точки в конце.
+
+## Как исправить
+
+Убрать точку в конце `\caption`.
+
+## Нарушение
+
+```latex
+\begin{table}
+  \caption{Результаты измерений погрешности.}
+  \label{tab:results}
+  \begin{tabular}{ll}
+    а & б \\
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \caption{Метка внутри подписи.\label{tab:inside}}
+  \begin{tabular}{ll}
+    а & б \\
+  \end{tabular}
+\end{table}
+```
+
+## Как правильно
+
+```latex
+\begin{table}
+  \caption{Результаты измерений погрешности}
+  \label{tab:results}
+  \begin{tabular}{ll}
+    а & б \\
+  \end{tabular}
+\end{table}
+
+Подпись рисунка проверяется отдельным правилом по п. 6.5.7.
+
+\begin{figure}
+  \includegraphics{img/plot.png}
+  \caption{Зависимость погрешности.}
+\end{figure}
+```
+
+## Настройка
+
+Отключить правило либо изменить его уровень [профилем](../profiles.md):
+
+```toml
+disable = ["table-caption-dot"]
+
+[rules."table-caption-dot"]
+severity = "info"
+```

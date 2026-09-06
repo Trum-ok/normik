@@ -6,7 +6,7 @@
 import os
 import tomllib
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from importlib import resources
 from pathlib import Path
 from typing import Any
@@ -115,6 +115,27 @@ class Profile:
             | self.severities.keys()
             | self.params.keys()
             | self.clauses.keys()
+        )
+
+    def renamed(self, aliases: Mapping[str, str]) -> "Profile":
+        """Развернуть прежние идентификаторы правил в нынешние.
+
+        Профиль кафедры переживает переименование правила: иначе отключённое
+        правило молча включилось бы обратно.
+        """
+        if not aliases:
+            return self
+
+        def key(rule_id: str) -> str:
+            return aliases.get(rule_id, rule_id)
+
+        return replace(
+            self,
+            disabled=frozenset(key(item) for item in self.disabled),
+            enabled=frozenset(key(item) for item in self.enabled),
+            severities={key(item): value for item, value in self.severities.items()},
+            params={key(item): value for item, value in self.params.items()},
+            clauses={key(item): value for item, value in self.clauses.items()},
         )
 
     def resolve(self, defaults: Mapping[str, Params]) -> "Profile":

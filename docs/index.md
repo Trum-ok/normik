@@ -14,7 +14,7 @@
 ```console
 $ nk check chapters
 chapters/method.tex
-  8:3  error  G732-6.5.7-caption-dot
+  8:3  error  figure-caption-dot  (ГОСТ 7.32-2017 п. 6.5.7)
     Нарушение: Наименование рисунка заканчивается точкой.
     Требуется: Наименование рисунка приводят с прописной буквы без точки в конце.
     Исправить: \caption{Схема экспериментальной установки}
@@ -59,4 +59,4 @@ chapters/method.tex
   номера пунктов и формулируют требование своими словами.
 - Часть требований по исходникам непроверяема в принципе. Такие места правило
   либо не трогает, либо помечает уровнем `info` — как
-  [`G732-6.16-bibtex-order-unverifiable`](rules/G732-6.16-bibtex-order-unverifiable.md).
+  [`bibtex-order-unverifiable`](rules/bibtex-order-unverifiable.md).

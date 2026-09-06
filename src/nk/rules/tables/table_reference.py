@@ -12,10 +12,11 @@ REQUIREMENT = "На все таблицы в отчёте должны быть 
 
 
 @rule(
-    id="G732-6.6.2-table-no-reference",
+    id="table-no-reference",
     standards={G732: "6.6.2"},
     severity=Severity.ERROR,
     title="На таблицу нет ссылки в тексте",
+    deprecated_ids=("G732-6.6.2-table-no-reference",),
 )
 def table_no_reference(doc: Document) -> Iterable[Finding]:
     r"""Собирает метки таблиц и ссылки на них в тексте. Находка выдаётся на таблицу

@@ -10,10 +10,11 @@ from nk.rules._shared import appendix_spans, heading_text, ordered_headings
 
 
 @rule(
-    id="G732-6.17.6-appendix-numbering",
+    id="appendix-internal-numbering",
     standards={G732: "6.17.6"},
     severity=Severity.ERROR,
     title="Рубрика внутри приложения нумеруется без его обозначения",
+    deprecated_ids=("G732-6.17.6-appendix-numbering",),
 )
 def appendix_internal_numbering(doc: Document) -> Iterable[Finding]:
     """Проверяет нумерацию разделов и подразделов внутри приложения.

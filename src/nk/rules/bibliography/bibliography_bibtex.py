@@ -10,10 +10,11 @@ from nk.rules._shared import BIBLIOGRAPHY_ENVIRONMENT, BIBTEX_COMMANDS, ordered_
 
 
 @rule(
-    id="G732-6.16-bibtex-order-unverifiable",
+    id="bibtex-order-unverifiable",
     standards={G732: "6.16"},
     severity=Severity.INFO,
     title="Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется",
+    deprecated_ids=("G732-6.16-bibtex-order-unverifiable",),
 )
 def bibtex_order_unverifiable(doc: Document) -> Iterable[Finding]:
     """Сообщает, что список источников собирается BibTeX: порядок записей задаёт

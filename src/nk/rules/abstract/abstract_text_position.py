@@ -17,10 +17,11 @@ from nk.rules._shared import (
 
 
 @rule(
-    id="G732-6.12.3-abstract-text-position",
+    id="abstract-text-position",
     standards={G732: "6.12.3"},
     severity=Severity.ERROR,
     title="Текст реферата начинается до перечня ключевых слов",
+    deprecated_ids=("G732-6.12.3-abstract-text-position",),
 )
 def abstract_text_position(doc: Document) -> Iterable[Finding]:
     """Проверяет порядок компонент реферата: сведения об объёме, перечень ключевых

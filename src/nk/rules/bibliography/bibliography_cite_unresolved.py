@@ -15,10 +15,11 @@ from nk.rules._shared import (
 
 
 @rule(
-    id="G732-6.9.1-cite-unresolved",
+    id="cite-unresolved",
     standards={G732: "6.9.1"},
     severity=Severity.ERROR,
     title="Ссылка указывает на отсутствующую запись списка источников",
+    deprecated_ids=("G732-6.9.1-cite-unresolved",),
 )
 def cite_unresolved(doc: Document) -> Iterable[Finding]:
     r"""Проверяет, что каждый ключ ссылки на источник объявлен записью `\bibitem`

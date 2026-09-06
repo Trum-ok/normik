@@ -17,11 +17,12 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)$")
 
 
 @rule(
-    id="G732-6.17.4-appendix-sequence",
+    id="appendix-sequence",
     standards={G732: "6.17.4"},
     severity=Severity.ERROR,
     title="В обозначениях приложений пропущена буква",
     fixable=True,
+    deprecated_ids=("G732-6.17.4-appendix-sequence",),
 )
 def appendix_sequence(doc: Document) -> Iterable[Finding]:
     """Идёт по заголовкам приложений в порядке следования и сверяет обозначение

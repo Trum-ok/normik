@@ -16,11 +16,12 @@ from nk.rules._shared import (
 
 
 @rule(
-    id="G732-6.17.3-appendix-page-break",
+    id="appendix-page-break",
     standards={G732: "6.17.3"},
     severity=Severity.ERROR,
     title="Приложение не начинается с новой страницы",
     fixable=True,
+    deprecated_ids=("G732-6.17.3-appendix-page-break",),
 )
 def appendix_page_break(doc: Document) -> Iterable[Finding]:
     """Проверяет разрыв страницы перед заголовком приложения.

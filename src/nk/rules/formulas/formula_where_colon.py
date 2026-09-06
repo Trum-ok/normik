@@ -14,11 +14,12 @@ WHERE_WITH_COLON = re.compile(r"^\s*где\s*:", re.IGNORECASE)
 
 
 @rule(
-    id="G732-6.8.2-where-colon",
+    id="formula-where-colon",
     standards={G732: "6.8.2"},
     severity=Severity.ERROR,
     title="Пояснение к формуле начинается со слова «где» с двоеточием",
     fixable=True,
+    deprecated_ids=("G732-6.8.2-where-colon",),
 )
 def formula_where_colon(doc: Document) -> Iterable[Finding]:
     """Ищет строку, начинающуюся со слова «где» с двоеточием.

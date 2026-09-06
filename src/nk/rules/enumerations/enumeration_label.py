@@ -18,11 +18,12 @@ REQUIREMENT = (
 
 
 @rule(
-    id="G732-6.4.6-enumeration-label",
+    id="enumeration-label",
     standards={G732: "6.4.6"},
     severity=Severity.ERROR,
     title="Элемент перечисления обозначен не по форме",
     fixable=True,
+    deprecated_ids=("G732-6.4.6-enumeration-label",),
 )
 def enumeration_label(doc: Document) -> Iterable[Finding]:
     r"""Проверяет форму обозначения, заданного явно — `\item[а)]` и подобных:

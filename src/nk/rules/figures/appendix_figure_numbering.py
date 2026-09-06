@@ -11,10 +11,11 @@ from nk.rules._shared import appendix_numbering
 
 
 @rule(
-    id="G732-6.5.5-appendix-numbering",
+    id="figure-appendix-numbering",
     standards={G732: "6.5.5"},
     severity=Severity.ERROR,
     title="Иллюстрация приложения нумеруется без его обозначения",
+    deprecated_ids=("G732-6.5.5-appendix-numbering",),
 )
 def appendix_figure_numbering(doc: Document) -> Iterable[Finding]:
     """Проверяет, что иллюстрации внутри приложения нумеруются с его обозначением.

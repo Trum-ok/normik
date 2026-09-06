@@ -15,10 +15,11 @@ VOLUME = re.compile(r"\d+\s*~?\s*с\.")
 
 
 @rule(
-    id="G732-5.3.2-abstract-volume-info",
+    id="abstract-volume-info",
     standards={G732: "5.3.2"},
     severity=Severity.ERROR,
     title="В реферате нет сведений об объёме отчёта",
+    deprecated_ids=("G732-5.3.2-abstract-volume-info",),
 )
 def abstract_volume_info(doc: Document) -> Iterable[Finding]:
     """Ищет в реферате сведения об объёме — число со словом «с.», например «45 с.».

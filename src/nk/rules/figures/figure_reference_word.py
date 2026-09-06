@@ -14,10 +14,11 @@ SHORT_FORM = re.compile(r"\bрис\.\s*~?\s*(?:\d|\\(?:ref|autoref|cref))", re.I
 
 
 @rule(
-    id="G732-6.5.1-reference-word",
+    id="figure-reference-word",
     standards={G732: "6.5.1"},
     severity=Severity.WARNING,
     title="В ссылке на иллюстрацию использовано сокращение «рис.»",
+    deprecated_ids=("G732-6.5.1-reference-word",),
 )
 def figure_reference_word(doc: Document) -> Iterable[Finding]:
     """Ищет в тексте сокращение «рис.» перед номером или ссылкой.

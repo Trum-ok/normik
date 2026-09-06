@@ -10,11 +10,12 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, capitalize_first, caption_findi
 
 
 @rule(
-    id="G732-6.6.3-caption-capital",
+    id="table-caption-capital",
     standards={G732: "6.6.3"},
     severity=Severity.ERROR,
     title="Наименование таблицы начинается со строчной буквы",
     fixable=True,
+    deprecated_ids=("G732-6.6.3-caption-capital",),
 )
 def table_caption_capital(doc: Document) -> Iterable[Finding]:
     """Проверяет первую букву наименования таблицы.

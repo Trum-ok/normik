@@ -5,12 +5,12 @@
 #   name = "Кафедра N"
 #   extends = "base"
 #
-#   disable = ["G732-5.3.2-abstract-volume"]   # реферат не требуется
+#   disable = ["abstract-volume-info"]   # сведений об объёме не требуют
 #
-#   [rules."G732-6.2.4-heading-hyphenation"]
+#   [rules."heading-hyphenation"]
 #   severity = "warning"
 #
-#   [rules."G732-5.3.2.1-keywords-count".params]
+#   [rules."keywords-count".params]
 #   keywords_min = 5
 #   keywords_max = 15
 #

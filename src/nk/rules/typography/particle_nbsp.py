@@ -16,10 +16,11 @@ _ENCLITIC = re.compile(r"(?<=\w)( )(?:" + "|".join(ENCLITICS) + r")(?![\w~-])", 
 
 
 @rule(
-    id="NK-STYLE-particle-nbsp",
+    id="particle-nbsp",
     severity=Severity.INFO,
     title="Частица не привязана к предыдущему слову",
     fixable=True,
+    deprecated_ids=("NK-STYLE-particle-nbsp",),
 )
 def particle_nbsp(doc: Document) -> Iterable[Finding]:
     """Находит частицу «же», «бы» или «ли», отделённую от предыдущего слова.

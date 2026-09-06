@@ -17,10 +17,11 @@ def _established_order(elements: Elements) -> str:
 
 
 @rule(
-    id="G732-4-elements-order",
+    id="elements-order",
     standards={G732: "4"},
     severity=Severity.ERROR,
     title="Структурные элементы идут не в установленном порядке",
+    deprecated_ids=("G732-4-elements-order",),
 )
 def elements_order(doc: Document) -> Iterable[Finding]:
     """Сверяет порядок заголовков структурных элементов с установленным. Находка

@@ -10,11 +10,12 @@ from nk.rules._shared import FIGURE_ENVIRONMENTS, caption_findings, one_line
 
 
 @rule(
-    id="G732-6.5.7-caption-dot",
+    id="figure-caption-dot",
     standards={G732: "6.5.7"},
     severity=Severity.ERROR,
     title="Наименование рисунка заканчивается точкой",
     fixable=True,
+    deprecated_ids=("G732-6.5.7-caption-dot",),
 )
 def figure_caption_dot(doc: Document) -> Iterable[Finding]:
     r"""Проверяет наименование рисунка на точку в конце. Точка внутри наименования

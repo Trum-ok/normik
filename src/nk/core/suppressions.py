@@ -6,7 +6,8 @@
 Разбор комментариев — в :mod:`nk.parse.suppressions`; здесь только модель.
 """
 
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Literal
 
@@ -46,6 +47,22 @@ class Suppressions:
                 self.used.add(index)
                 return item
         return None
+
+    def renamed(self, aliases: Mapping[str, str]) -> "Suppressions":
+        """Развернуть прежние идентификаторы правил в нынешние.
+
+        Директива с прежним именем написана в чужом отчёте и обязана продолжать
+        работать: иначе переименование правила молча включило бы проверку обратно.
+        """
+        if not aliases:
+            return self
+        return Suppressions(
+            items=tuple(
+                replace(item, rule_ids=frozenset(aliases.get(name, name) for name in item.rule_ids))
+                for item in self.items
+            ),
+            used=self.used,
+        )
 
     def unused(self) -> list[Suppression]:
         return [item for index, item in enumerate(self.items) if index not in self.used]

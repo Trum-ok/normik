@@ -10,11 +10,12 @@ from nk.rules._shared import heading_text, headings, structural_element, visible
 
 
 @rule(
-    id="G732-6.2.1-structural-heading-case",
+    id="structural-heading-case",
     standards={G732: "6.2.1"},
     severity=Severity.ERROR,
     title="Заголовок структурного элемента набран не прописными буквами",
     fixable=True,
+    deprecated_ids=("G732-6.2.1-structural-heading-case",),
 )
 def structural_heading_case(doc: Document) -> Iterable[Finding]:
     r"""Проверяет регистр заголовков структурных элементов — реферата, содержания,

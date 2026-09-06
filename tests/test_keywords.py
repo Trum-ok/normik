@@ -6,8 +6,8 @@ from nk.core.fixer import plan
 from nk.core.registry import load_rules
 from nk.parse.tex import parse
 
-DOT = "G732-6.12.2-keywords-final-dot"
-UPPERCASE = "G732-6.12.2-keywords-uppercase"
+DOT = "keywords-final-dot"
+UPPERCASE = "keywords-uppercase"
 
 HEADING = "\\section*{РЕФЕРАТ}\n\n"
 

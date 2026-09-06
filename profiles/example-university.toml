@@ -11,32 +11,32 @@ extends = "base"
 # Отключить правила целиком.
 disable = [
   # На кафедре принято сокращение «рис.» в ссылках на иллюстрации.
-  "G732-6.5.1-reference-word",
+  "figure-reference-word",
   # Библиография собирается BibTeX, порядок записей проверяется вручную.
-  "G732-6.16-bibtex-order-unverifiable",
+  "bibtex-order-unverifiable",
 ]
 
 # Включить правило, выключенное по умолчанию.
-enable = ["NK-STYLE-preposition-nbsp"]
+enable = ["preposition-nbsp"]
 
 # Понизить уровень: нарушение показывается, но не влияет на код возврата.
-[rules."G732-6.4.5-heading-depth"]
+[rules."heading-depth"]
 severity = "info"
 
-[rules."G732-6.8.3-formula-no-reference"]
+[rules."formula-no-reference"]
 severity = "info"
 
 # Поднять уровень.
-[rules."G732-6.6.2-reference-word"]
+[rules."table-reference-word"]
 severity = "error"
 
 # Переопределить параметры правила. Незаданные параметры берутся из объявления.
-[rules."G732-5.3.2.1-keywords-count".params]
+[rules."keywords-count".params]
 keywords_max = 20
 
 # Убрать элемент из обязательных, оставив остальные. Полный перечень задаётся
 # ключом required.
-[rules."G732-4-required-element-missing".params]
+[rules."required-element-missing".params]
 excluded = ["РЕФЕРАТ"]
 
 # Наименования, принятые кафедрой вместо стандартных: слева — как пишет кафедра,

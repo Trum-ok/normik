@@ -29,10 +29,11 @@ _BEFORE_UNIT = re.compile(
 
 
 @rule(
-    id="NK-STYLE-unit-nbsp",
+    id="unit-nbsp",
     severity=Severity.INFO,
     title="Число не привязано к единице измерения",
     fixable=True,
+    deprecated_ids=("NK-STYLE-unit-nbsp",),
 )
 def unit_nbsp(doc: Document) -> Iterable[Finding]:
     """Находит обычный пробел между числом и следующей за ним единицей или сокращением.

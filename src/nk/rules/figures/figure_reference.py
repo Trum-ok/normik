@@ -12,10 +12,11 @@ REQUIREMENT = "На все иллюстрации в отчёте должны �
 
 
 @rule(
-    id="G732-6.5.1-figure-no-reference",
+    id="figure-no-reference",
     standards={G732: "6.5.1"},
     severity=Severity.ERROR,
     title="На рисунок нет ссылки в тексте",
+    deprecated_ids=("G732-6.5.1-figure-no-reference",),
 )
 def figure_no_reference(doc: Document) -> Iterable[Finding]:
     r"""Собирает метки рисунков и ссылки на них в тексте. Находка выдаётся на рисунок

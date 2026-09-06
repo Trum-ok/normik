@@ -10,7 +10,7 @@ EXPECTED = """\
 Команда: nk check chapters --format agent
 Профиль: base, файлов проверено: 12
 
-chapters/01-intro.tex:12:3  info  G732-6.2.4-heading-hyphenation
+chapters/01-intro.tex:12:3  info  heading-hyphenation  (ГОСТ 7.32-2017 п. 6.2.4)
   Нарушение: Подпись рисунка заканчивается точкой и использует дефис вместо тире
   Требуется: Форма «Рисунок N — Название», тире с пробелами, без точки в конце
   Исправить: \\caption{Схема экспериментальной установки}
@@ -21,7 +21,7 @@ chapters/01-intro.tex:12:3  info  G732-6.2.4-heading-hyphenation
     13 | \\end{figure}
     14 |
 
-chapters/02-method.tex:145:3  error  G732-6.5.7-caption-dot
+chapters/02-method.tex:145:3  error  figure-caption-dot  (ГОСТ 7.32-2017 п. 6.5.7)
   Нарушение: Подпись рисунка заканчивается точкой и использует дефис вместо тире
   Требуется: Форма «Рисунок N — Название», тире с пробелами, без точки в конце
   Исправить: \\caption{Схема экспериментальной установки}
@@ -32,7 +32,7 @@ chapters/02-method.tex:145:3  error  G732-6.5.7-caption-dot
     146 | \\end{figure}
     147 |
 
-chapters/02-method.tex:160  warning  G732-6.6.2-table-no-reference
+chapters/02-method.tex:160  warning  table-no-reference  (ГОСТ 7.32-2017 п. 6.6.2)
   Нарушение: Подпись рисунка заканчивается точкой и использует дефис вместо тире
   Требуется: Форма «Рисунок N — Название», тире с пробелами, без точки в конце
   Исправить: \\caption{Схема экспериментальной установки}

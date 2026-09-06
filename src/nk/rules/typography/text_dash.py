@@ -18,10 +18,11 @@ LONELY_HYPHEN = re.compile(r"(?<!-)(?<!\w)-(?!-)(?=\s)")
 
 
 @rule(
-    id="NK-STYLE-dash",
+    id="text-dash",
     severity=Severity.INFO,
     title="Дефис вместо тире",
     fixable=True,
+    deprecated_ids=("NK-STYLE-dash",),
 )
 def text_dash(doc: Document) -> Iterable[Finding]:
     """Находит одиночный дефис там, где по смыслу стоит тире.

@@ -17,11 +17,12 @@ WRONG_SEPARATORS = ":.-–"
 
 
 @rule(
-    id="G732-6.7.3-note-dash",
+    id="note-dash",
     standards={G732: "6.7.3"},
     severity=Severity.ERROR,
     title="После слова «Примечание» стоит не тире",
     fixable=True,
+    deprecated_ids=("G732-6.7.3-note-dash",),
 )
 def note_dash(doc: Document) -> Iterable[Finding]:
     """Проверяет знак между словом «Примечание» и его текстом.

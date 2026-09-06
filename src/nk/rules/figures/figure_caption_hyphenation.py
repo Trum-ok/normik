@@ -16,11 +16,12 @@ from nk.rules._shared import (
 
 
 @rule(
-    id="G732-6.5.8-caption-hyphenation",
+    id="figure-caption-hyphenation",
     standards={G732: "6.5.8"},
     severity=Severity.ERROR,
     title="В наименовании рисунка задан перенос слова",
     fixable=True,
+    deprecated_ids=("G732-6.5.8-caption-hyphenation",),
 )
 def figure_caption_hyphenation(doc: Document) -> Iterable[Finding]:
     r"""Ищет в наименовании рисунка заданную вручную точку переноса `\-`.

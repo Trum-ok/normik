@@ -10,10 +10,11 @@ from nk.rules._shared import TABLE_ENVIRONMENTS, float_position
 
 
 @rule(
-    id="G732-6.6.2-table-position",
+    id="table-position",
     standards={G732: "6.6.2"},
     severity=Severity.ERROR,
     title="Таблица размещена выше первой ссылки на неё",
+    deprecated_ids=("G732-6.6.2-table-position",),
 )
 def table_position(doc: Document) -> Iterable[Finding]:
     r"""Сопоставляет положение таблицы с положением первой ссылки на неё. Находка

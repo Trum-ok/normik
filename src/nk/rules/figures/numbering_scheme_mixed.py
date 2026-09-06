@@ -10,10 +10,11 @@ from nk.core.standards import G732
 
 
 @rule(
-    id="G732-6.5.4-numbering-scheme-mixed",
+    id="figure-numbering-scheme-mixed",
     standards={G732: "6.5.4"},
     severity=Severity.ERROR,
     title="Схема нумерации иллюстраций задана в документе несколько раз",
+    deprecated_ids=("G732-6.5.4-numbering-scheme-mixed",),
 )
 def figure_numbering_scheme_mixed(doc: Document) -> Iterable[Finding]:
     """Проверяет, что схема нумерации иллюстраций объявлена один раз.

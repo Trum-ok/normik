@@ -11,11 +11,12 @@ from nk.rules._shared import listing_dash
 
 
 @rule(
-    id="G732-6.15-abbreviations-dash",
+    id="abbreviations-dash",
     standards={G732: "6.15"},
     severity=Severity.WARNING,
     title="В перечне сокращений расшифровка отделена дефисом",
     fixable=True,
+    deprecated_ids=("G732-6.15-abbreviations-dash",),
 )
 def abbreviations_dash(doc: Document) -> Iterable[Finding]:
     """Проверяет знак, отделяющий сокращение от расшифровки.

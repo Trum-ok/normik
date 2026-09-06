@@ -24,8 +24,8 @@ REPORT = """\
 \\end{document}
 """
 
-MISSING = "G732-4-required-element-missing"
-ORDER = "G732-4-elements-order"
+MISSING = "required-element-missing"
+ORDER = "elements-order"
 
 ALIASES = {"СПИСОК ЛИТЕРАТУРЫ": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"}
 

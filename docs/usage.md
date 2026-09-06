@@ -94,7 +94,7 @@ nk check report.tex chapters/method.tex
 ```console
 $ nk check chapters
 chapters/method.tex
-  8:3  error  G732-6.5.7-caption-dot
+  8:3  error  figure-caption-dot
     Нарушение: Наименование рисунка заканчивается точкой.
     Требуется: Наименование рисунка приводят с прописной буквы без точки в конце.
     Исправить: \caption{Схема экспериментальной установки}
@@ -119,7 +119,7 @@ $ nk check chapters --format agent
 Команда: nk check chapters --format agent
 Профиль: base, файлов проверено: 12
 
-chapters/method.tex:8:3  error  G732-6.5.7-caption-dot
+chapters/method.tex:8:3  error  figure-caption-dot
   Нарушение: Наименование рисунка заканчивается точкой.
   Требуется: Наименование рисунка приводят с прописной буквы без точки в конце.
   Исправить: \caption{Схема экспериментальной установки}
@@ -210,8 +210,8 @@ $ nk check chapters --fix
 
 ```latex
 \caption{Схема установки.}   % nk: ignore
-\caption{Схема установки.}   % nk: ignore G732-6.5.7-caption-dot
-\caption{Схема установки.}   % nk: ignore G732-6.5.7-caption-dot -- вынужденно, см. ТЗ
+\caption{Схема установки.}   % nk: ignore figure-caption-dot
+\caption{Схема установки.}   % nk: ignore figure-caption-dot -- вынужденно, см. ТЗ
 ```
 
 Без перечня идентификаторов подавляются все находки на этой строке; с перечнем —
@@ -222,14 +222,14 @@ $ nk check chapters --fix
 строк, ставьте её туда, куда указывает находка, — то есть на начало команды:
 
 ```latex
-\caption{Зависимость погрешности от числа % nk: ignore G732-6.5.7-caption-dot
+\caption{Зависимость погрешности от числа % nk: ignore figure-caption-dot
   измерений.}
 ```
 
 Для всего файла — `ignore-file`, в любом его месте, но по традиции первой строкой:
 
 ```latex
-% nk: ignore-file G732-6.5.1-reference-word -- на кафедре принято «рис.»
+% nk: ignore-file figure-reference-word -- на кафедре принято «рис.»
 ```
 
 Линтер следит и за самими директивами: подавление, которое ничего не подавило,

@@ -6,7 +6,7 @@ from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.profile import Profile, ProfileError
 from nk.core.registry import load_rules, select_rules, validate_profile
-from nk.core.rule import REGISTRY, RuleRegistry, UnknownRuleError, rule
+from nk.core.rule import REGISTRY, DuplicateRuleError, RuleRegistry, UnknownRuleError, rule
 from nk.core.standards import G732
 
 
@@ -122,3 +122,53 @@ def test_select_overrides_default_off(registry: RuleRegistry) -> None:
 
     chosen = select_rules(registry, select=["NK-STYLE-шумное"])
     assert [impl.id for impl in chosen] == ["NK-STYLE-шумное"]
+
+
+def test_deprecated_id_resolves_to_the_rule() -> None:
+    registry = load_rules()
+
+    assert registry.get("G732-6.5.7-caption-dot").id == "figure-caption-dot"
+    assert "G732-6.5.7-caption-dot" in registry
+    assert registry.canonical("G732-6.5.7-caption-dot") == "figure-caption-dot"
+
+
+def test_every_rule_keeps_its_previous_id() -> None:
+    """Переименование не должно ломать чужие профили и подавления молча."""
+    orphans = [impl.id for impl in load_rules() if not impl.deprecated_ids]
+
+    assert orphans == []
+
+
+def test_deprecated_id_can_be_selected() -> None:
+    registry = load_rules()
+
+    chosen = select_rules(registry, select=["G732-6.5.7-caption-dot"])
+
+    assert [impl.id for impl in chosen] == ["figure-caption-dot"]
+
+
+def test_deprecated_id_colliding_with_a_rule_is_rejected() -> None:
+    registry = RuleRegistry()
+
+    @rule(
+        id="занято",
+        standards={G732: "6.1"},
+        severity=Severity.INFO,
+        title="Первое",
+        registry=registry,
+    )
+    def first(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    with pytest.raises(DuplicateRuleError, match="занят правилом"):
+
+        @rule(
+            id="второе",
+            standards={G732: "6.1"},
+            severity=Severity.INFO,
+            title="Второе",
+            deprecated_ids=("занято",),
+            registry=registry,
+        )
+        def second(doc: Document) -> Iterable[Finding]:
+            return ()

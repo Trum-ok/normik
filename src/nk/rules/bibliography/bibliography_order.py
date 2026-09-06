@@ -15,10 +15,11 @@ from nk.rules._shared import (
 
 
 @rule(
-    id="G732-6.16-bibliography-order",
+    id="bibliography-order",
     standards={G732: "6.16"},
     severity=Severity.ERROR,
     title="Записи списка источников идут не в порядке появления ссылок",
+    deprecated_ids=("G732-6.16-bibliography-order",),
 )
 def bibliography_order(doc: Document) -> Iterable[Finding]:
     r"""Сопоставляет порядок записей в списке источников с порядком первых ссылок

@@ -11,10 +11,11 @@ from nk.rules._shared import listing_order
 
 
 @rule(
-    id="G732-6.14-terms-order",
+    id="terms-order",
     standards={G732: "6.14"},
     severity=Severity.ERROR,
     title="Термины в перечне идут не по алфавиту",
+    deprecated_ids=("G732-6.14-terms-order",),
 )
 def terms_order(doc: Document) -> Iterable[Finding]:
     """Сравнивает термины перечня между собой по алфавиту. Записью считается строка

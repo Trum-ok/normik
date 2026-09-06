@@ -12,11 +12,12 @@ FOOTNOTE_COMMANDS = ("footnote", "footnotemark")
 
 
 @rule(
-    id="G732-6.7.4-footnote-space",
+    id="footnote-space",
     standards={G732: "6.7.4"},
     severity=Severity.ERROR,
     title="Знак сноски отделён пробелом от поясняемого слова",
     fixable=True,
+    deprecated_ids=("G732-6.7.4-footnote-space",),
 )
 def footnote_space(doc: Document) -> Iterable[Finding]:
     """Проверяет, что сноска стоит вплотную к слову, к которому относится.

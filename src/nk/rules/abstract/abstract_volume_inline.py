@@ -15,10 +15,11 @@ LINE_BREAK = "\\\\"
 
 
 @rule(
-    id="G732-6.12.1-abstract-volume-inline",
+    id="abstract-volume-inline",
     standards={G732: "6.12.1"},
     severity=Severity.ERROR,
     title="Сведения об объёме реферата приведены не в строку",
+    deprecated_ids=("G732-6.12.1-abstract-volume-inline",),
 )
 def abstract_volume_inline(doc: Document) -> Iterable[Finding]:
     """Проверяет, что первая компонента реферата — одна строка через запятые.

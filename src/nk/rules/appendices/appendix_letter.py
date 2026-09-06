@@ -13,10 +13,11 @@ DESIGNATION = re.compile(r"^ПРИЛОЖЕНИЕ\s+(\S+)")
 
 
 @rule(
-    id="G732-6.17.4-appendix-letter",
+    id="appendix-letter",
     standards={G732: "6.17.4"},
     severity=Severity.ERROR,
     title="Приложение обозначено недопустимой буквой",
+    deprecated_ids=("G732-6.17.4-appendix-letter",),
 )
 def appendix_letter(doc: Document) -> Iterable[Finding]:
     """Проверяет букву в заголовке вида «ПРИЛОЖЕНИЕ А»: она должна быть одной прописной

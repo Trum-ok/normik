@@ -27,12 +27,13 @@ PAGE_STARTS = ("\\begin{document}", "\\end{titlepage}", "\\maketitle", "\\titlep
 
 
 @rule(
-    id="G732-6.2.1-section-page-break",
+    id="section-page-break",
     standards={G732: "6.2.1"},
     severity=Severity.ERROR,
     title="Раздел не начинается с новой страницы",
     fixable=True,
     params={"breaking_commands": list(BREAKING_COMMANDS), "structural_only": False},
+    deprecated_ids=("G732-6.2.1-section-page-break",),
 )
 def section_page_break(doc: Document) -> Iterable[Finding]:
     r"""Проверяет разрыв страницы перед рубрикой уровня раздела — и структурного

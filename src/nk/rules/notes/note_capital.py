@@ -15,11 +15,12 @@ NOTE_HEADER = re.compile(r"^\s*(примечани[ея])\b", re.IGNORECASE)
 
 
 @rule(
-    id="G732-6.7.2-note-capital",
+    id="note-capital",
     standards={G732: "6.7.2"},
     severity=Severity.ERROR,
     title="Слово «Примечание» набрано со строчной буквы",
     fixable=True,
+    deprecated_ids=("G732-6.7.2-note-capital",),
 )
 def note_capital(doc: Document) -> Iterable[Finding]:
     """Проверяет регистр слова, которым начинается примечание.

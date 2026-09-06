@@ -17,29 +17,25 @@ def write(tmp_path: Path, name: str, text: str) -> Path:
 
 def test_empty_profile_changes_nothing() -> None:
     profile = Profile()
-    assert not profile.is_disabled("G732-6.5.7-caption-dot")
-    assert profile.severity_for("G732-6.5.7-caption-dot", Severity.ERROR) is Severity.ERROR
-    assert profile.params_for("G732-6.5.7-caption-dot") == {}
+    assert not profile.is_disabled("figure-caption-dot")
+    assert profile.severity_for("figure-caption-dot", Severity.ERROR) is Severity.ERROR
+    assert profile.params_for("figure-caption-dot") == {}
 
 
 def test_disable_and_severity_override() -> None:
     profile = Profile(
         name="Кафедра N",
         disabled=frozenset({"G732-4-required-elements"}),
-        severities={"G732-6.2.4-heading-hyphenation": Severity.WARNING},
+        severities={"heading-hyphenation": Severity.WARNING},
     )
     assert profile.is_disabled("G732-4-required-elements")
-    assert (
-        profile.severity_for("G732-6.2.4-heading-hyphenation", Severity.ERROR) is Severity.WARNING
-    )
+    assert profile.severity_for("heading-hyphenation", Severity.ERROR) is Severity.WARNING
 
 
 def test_resolve_merges_defaults_with_overrides() -> None:
-    profile = Profile(params={"G732-5.3.2.1-keywords-count": {"keywords_max": 20}})
-    resolved = profile.resolve(
-        {"G732-5.3.2.1-keywords-count": {"keywords_min": 5, "keywords_max": 15}}
-    )
-    assert resolved.params_for("G732-5.3.2.1-keywords-count") == {
+    profile = Profile(params={"keywords-count": {"keywords_max": 20}})
+    resolved = profile.resolve({"keywords-count": {"keywords_min": 5, "keywords_max": 15}})
+    assert resolved.params_for("keywords-count") == {
         "keywords_min": 5,
         "keywords_max": 20,
     }
@@ -172,12 +168,12 @@ def test_invalid_severity(tmp_path: Path) -> None:
 
 
 def test_enable_is_read_from_toml(tmp_path: Path) -> None:
-    path = write(tmp_path, "кафедра.toml", 'enable = ["NK-STYLE-preposition-nbsp"]\n')
+    path = write(tmp_path, "кафедра.toml", 'enable = ["preposition-nbsp"]\n')
 
     profile = load_profile(path)
 
-    assert profile.is_enabled("NK-STYLE-preposition-nbsp")
-    assert "NK-STYLE-preposition-nbsp" in profile.mentioned_rules()
+    assert profile.is_enabled("preposition-nbsp")
+    assert "preposition-nbsp" in profile.mentioned_rules()
 
 
 def test_enable_accumulates_through_extends(tmp_path: Path) -> None:
@@ -407,7 +403,7 @@ def test_unknown_standard_is_rejected(tmp_path: Path) -> None:
 
 def test_clause_without_a_named_source_is_rejected(tmp_path: Path) -> None:
     """Пункт без источника непонятно чей."""
-    path = write(tmp_path, "источник.toml", '[rules."G732-6.2.3-heading-dot"]\nclause = "9.3"\n')
+    path = write(tmp_path, "источник.toml", '[rules."heading-dot"]\nclause = "9.3"\n')
 
     with pytest.raises(ProfileError, match="источник не назван"):
         load_profile(path)
@@ -567,3 +563,16 @@ def test_origin_names_the_file_when_there_is_one(tmp_path: Path) -> None:
 
     assert load_profile(path).origin == str(path)
     assert Profile(name="Кафедра N").origin == "Кафедра N"
+
+
+def test_renamed_maps_previous_rule_ids() -> None:
+    """Профиль кафедры переживает переименование правила."""
+    profile = Profile(
+        disabled=frozenset({"G732-6.5.7-caption-dot"}),
+        params={"G732-6.5.7-caption-dot": {"a": 1}},
+    )
+
+    renamed = profile.renamed({"G732-6.5.7-caption-dot": "figure-caption-dot"})
+
+    assert renamed.is_disabled("figure-caption-dot")
+    assert renamed.params_for("figure-caption-dot") == {"a": 1}

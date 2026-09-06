@@ -12,7 +12,7 @@ from nk.core.position import Region
 from nk.core.rule import RuleRegistry, rule
 from nk.core.standards import G732
 
-RULE_ID = "G732-6.5.7-caption-dot"
+RULE_ID = "figure-caption-dot"
 
 runner = CliRunner()
 
@@ -427,7 +427,7 @@ def test_fix_leaves_unfixable_findings(tmp_path: Path) -> None:
     result = runner.invoke(app, ["check", str(path), "--fix", "--format", "agent"])
 
     assert result.exit_code == EXIT_FOUND_ERRORS
-    assert "G732-6.5.1-figure-no-reference" in result.stdout
+    assert "figure-no-reference" in result.stdout
     assert "\\caption{Схема установки}" in path.read_text(encoding="utf-8")
 
 
@@ -437,7 +437,7 @@ def test_fix_respects_suppressions(tmp_path: Path) -> None:
         "Схема приведена на рисунке~\\ref{fig:a}.\n\n"
         "\\begin{figure}\n"
         "  \\includegraphics{img/a.png}\n"
-        "  \\caption{Схема установки.} % nk: ignore G732-6.5.7-caption-dot\n"
+        "  \\caption{Схема установки.} % nk: ignore figure-caption-dot\n"
         "  \\label{fig:a}\n"
         "\\end{figure}\n"
     )

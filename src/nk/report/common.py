@@ -109,6 +109,17 @@ def finding_fields(finding: Finding) -> list[tuple[str, str]]:
     return [(label, value) for label, value in pairs if value]
 
 
+def citation(finding: Finding) -> str:
+    """Откуда требование: «ГОСТ 7.32-2017 п. 6.5.7».
+
+    Идентификатор правила пункта не называет — он один на все источники, а пункт
+    у каждого свой, и какой из них действует, решает профиль.
+    """
+    if not finding.clause:
+        return ""
+    return f"{finding.source} п. {finding.clause}" if finding.source else f"п. {finding.clause}"
+
+
 def summary_line(counts: dict[Severity, int]) -> str:
     return ", ".join(f"{counts[level]} {SEVERITY_LABELS[level]}" for level in Severity)
 

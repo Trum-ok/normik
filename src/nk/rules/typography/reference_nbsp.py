@@ -17,10 +17,11 @@ BEFORE_NUMBER = re.compile(
 
 
 @rule(
-    id="NK-STYLE-reference-nbsp",
+    id="reference-nbsp",
     severity=Severity.INFO,
     title="Номер в ссылке отделён разрывным пробелом",
     fixable=True,
+    deprecated_ids=("NK-STYLE-reference-nbsp",),
 )
 def reference_nbsp(doc: Document) -> Iterable[Finding]:
     """Находит обычный пробел между словом и номером в ссылке.

@@ -10,10 +10,11 @@ from nk.rules._shared import APPENDIX_REFERENCE, appendix_spans, is_full_documen
 
 
 @rule(
-    id="G732-6.17.2-appendix-order",
+    id="appendix-order",
     standards={G732: "6.17.2"},
     severity=Severity.ERROR,
     title="Приложения идут не в порядке ссылок на них",
+    deprecated_ids=("G732-6.17.2-appendix-order",),
 )
 def appendix_order(doc: Document) -> Iterable[Finding]:
     """Сопоставляет порядок приложений с порядком первых упоминаний вида
