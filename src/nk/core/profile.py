@@ -166,24 +166,54 @@ def load_profile(
     Без явного источника профиль ищется по дереву каталогов (``search_from``), а если
     не найден — берётся встроенный ``base``.
 
-    ``extends`` — один уровень: профиль, от которого наследуются, сам наследоваться
-    не может. Это исключает циклы без отдельной проверки.
+    ``extends`` образует цепочку любой длины: профиль кафедры наследуется от
+    профиля вуза, тот — от профиля стандарта. Замкнувшаяся цепочка — ошибка.
     """
     if source is None:
         found = discover(search_from) if search_from is not None else None
         source = found if found is not None else DEFAULT_PROFILE
 
-    child_path, child = _read(source)
-    parent_ref = child.get("extends")
-    if parent_ref is None:
-        return _build(child, child_path)
+    chain, child_path = _chain(source)
+    merged = chain[-1]
+    for closer in reversed(chain[:-1]):
+        merged = _merge(merged, closer)
+    return _build(merged, child_path)
 
-    _, parent = _read(parent_ref, relative_to=child_path)
-    if parent.get("extends") is not None:
-        raise ProfileError(
-            f"профиль {parent_ref!r} сам наследуется от другого: наследование только на один уровень"
-        )
-    return _build(_merge(parent, child), child_path)
+
+def _chain(source: str | Path) -> tuple[list[dict[str, Any]], Path | None]:
+    """Профили от запрошенного вверх по ``extends`` и путь к запрошенному.
+
+    Каждый следующий ищется относительно того, кто на него сослался, поэтому
+    профиль кафедры может ссылаться на соседний файл, а тот — на встроенный.
+    """
+    read: list[dict[str, Any]] = []
+    visited: list[str] = []
+    trail: list[str] = []
+    path, data = _read(source)
+    first, reference = path, str(source)
+    while True:
+        origin = _origin(path, reference)
+        if origin in visited:
+            raise ProfileError(f"профили наследуются по кругу: {' → '.join([*trail, reference])}")
+        visited.append(origin)
+        trail.append(reference)
+        read.append(data)
+
+        parent = data.get("extends")
+        if parent is None:
+            return read, first
+        reference = str(parent)
+        path, data = _read(parent, relative_to=path)
+
+
+def _origin(path: Path | None, reference: str) -> str:
+    """Чем профиль опознаётся в цепочке: файл — путём, встроенный — именем.
+
+    Один и тот же файл, названный по-разному, обязан опознаваться как один,
+    иначе цикл через относительный путь остался бы незамеченным. В сообщении
+    профиль называют так, как его написал автор: по этой строке он его и ищет.
+    """
+    return str(path.resolve()) if path is not None else reference
 
 
 def discover(paths: Sequence[Path]) -> Path | None:

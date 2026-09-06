@@ -118,19 +118,55 @@ def test_extends_a_neighbouring_file(tmp_path: Path) -> None:
     assert profile.params_for("G732-b") == {"limit": 9, "step": 2}
 
 
-def test_two_levels_of_extends_are_rejected(tmp_path: Path) -> None:
-    write(tmp_path, "дед.toml", 'name = "Дед"\n')
-    write(tmp_path, "отец.toml", 'name = "Отец"\nextends = "дед"\n')
+def test_extends_forms_a_chain(tmp_path: Path) -> None:
+    """Кафедра наследуется от вуза, вуз — от стандарта."""
+    write(tmp_path, "дед.toml", 'name = "Дед"\ndisable = ["heading-dot"]\n')
+    write(tmp_path, "отец.toml", 'name = "Отец"\nextends = "дед"\ndisable = ["heading-empty"]\n')
     child = write(tmp_path, "сын.toml", 'name = "Сын"\nextends = "отец"\n')
 
-    with pytest.raises(ProfileError, match="один уровень"):
-        load_profile(child)
+    profile = load_profile(child)
+
+    assert profile.name == "Сын"
+    assert profile.disabled == frozenset({"heading-dot", "heading-empty"})
+
+
+def test_the_nearest_profile_wins_along_the_chain(tmp_path: Path) -> None:
+    write(tmp_path, "дед.toml", '[rules."heading-dot"]\nseverity = "info"\n')
+    write(
+        tmp_path,
+        "отец.toml",
+        'extends = "дед"\n\n[rules."heading-dot"]\nseverity = "warning"\n',
+    )
+    child = write(tmp_path, "сын.toml", 'name = "Сын"\nextends = "отец"\n')
+
+    profile = load_profile(child)
+
+    assert profile.severity_for("heading-dot", Severity.ERROR) is Severity.WARNING
+
+
+def test_a_builtin_profile_can_be_extended(tmp_path: Path) -> None:
+    """Готовый профиль вуза сам наследуется от base, и это больше не мешает."""
+    path = write(tmp_path, "кафедра.toml", 'name = "Кафедра"\nextends = "bmstu-vkr"\n')
+
+    profile = load_profile(path)
+
+    assert profile.name == "Кафедра"
+    assert profile.source_title.startswith("Положение МГТУ")
+    assert profile.appendix_letters == "123456789"
+
+
+def test_a_cycle_is_rejected(tmp_path: Path) -> None:
+    write(tmp_path, "первый.toml", 'extends = "второй"\n')
+    path = write(tmp_path, "второй.toml", 'extends = "первый"\n')
+
+    with pytest.raises(ProfileError, match="по кругу"):
+        load_profile(path)
 
 
 def test_self_extends_is_rejected(tmp_path: Path) -> None:
     path = write(tmp_path, "сам.toml", 'name = "Сам"\nextends = "сам"\n')
 
-    with pytest.raises(ProfileError, match="один уровень"):
+    with pytest.raises(ProfileError, match="по кругу"):
         load_profile(path)
 
 
