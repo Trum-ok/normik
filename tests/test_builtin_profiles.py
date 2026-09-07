@@ -296,3 +296,37 @@ def test_regulation_forbids_the_rubric_word_in_a_heading(tmp_path: Path) -> None
     assert [(f.clause, f.source) for f in found] == [
         ("10.4", "Положение МГТУ им. Н.Э. Баумана № 01-01-ПЛ-016 01-2024")
     ]
+
+
+#: Список источников, набранный в исходнике: описание с ошибкой в предписанной
+#: пунктуации — она проверяется только по ГОСТ Р 7.0.100.
+BIBLIOGRAPHY = """\
+Методика изложена в \\cite{ivanov}.
+\\begin{thebibliography}{9}
+\\bibitem{ivanov} Иванов, И.~И. Методика измерений: пособие. – Москва : Наука, 2020. – 120~с.
+\\end{thebibliography}
+"""
+
+
+def test_referenced_standard_switches_on_its_rules() -> None:
+    """Положение велит оформить источники по ГОСТ Р 7.0.100 — правила о нём работают."""
+    registry = load_rules()
+    chosen = {impl.id for impl in select_rules(registry, profile=load_profile(BMSTU))}
+
+    assert "bibitem-prescribed-spacing" in chosen
+    assert "bibitem-final-dot" in chosen
+
+
+def test_referenced_standard_stays_out_of_the_pure_report_standard() -> None:
+    """ГОСТ 7.32 ссылается на ГОСТ 7.1, а не на 7.0.100: под base правила молчат."""
+    registry = load_rules()
+    chosen = {impl.id for impl in select_rules(registry, profile=load_profile("base"))}
+
+    assert "bibitem-prescribed-spacing" not in chosen
+    assert "bibitem-final-dot" not in chosen
+
+
+def test_finding_cites_the_referenced_standard(tmp_path: Path) -> None:
+    found = findings(tmp_path, BIBLIOGRAPHY, BMSTU, "bibitem-prescribed-spacing")
+
+    assert [(f.clause, f.source) for f in found] == [("4.6.5", "ГОСТ Р 7.0.100-2018")]

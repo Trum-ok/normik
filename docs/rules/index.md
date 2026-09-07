@@ -122,7 +122,12 @@
 
 | ID | Источник | Пункты | Уровень | Название |
 |---|---|---|---|---|
+| [`bibitem-area-separator`](bibitem-area-separator.md) | стандарт | ГОСТ Р 7.0.100-2018 п. 4.6.2 | <span class="nk-severity nk-severity--error">error</span> | Области описания разделены не знаком «точка и тире» |
+| [`bibitem-final-dot`](bibitem-final-dot.md) | стандарт | ГОСТ Р 7.0.100-2018 п. 4.6.1 | <span class="nk-severity nk-severity--error">error</span> | Библиографическое описание не заканчивается точкой |
+| [`bibitem-prescribed-spacing`](bibitem-prescribed-spacing.md) | стандарт | ГОСТ Р 7.0.100-2018 п. 4.6.5 | <span class="nk-severity nk-severity--error">error</span> | У знака предписанной пунктуации нет пробела |
 | [`bibitem-uncited`](bibitem-uncited.md) | стандарт | ГОСТ 7.32-2017 п. 6.16<br>ГОСТ Р 2.105-2019 п. 6.4.2 | <span class="nk-severity nk-severity--warning">warning</span> | На запись списка источников нет ссылок в тексте |
+| [`bibitem-url-access-date`](bibitem-url-access-date.md) | стандарт | ГОСТ Р 7.0.100-2018 п. 5.8.6.4 | <span class="nk-severity nk-severity--error">error</span> | У электронного адреса нет даты обращения |
+| [`bibitem-url-prefix`](bibitem-url-prefix.md) | стандарт | ГОСТ Р 7.0.100-2018 п. 5.8.6.4 | <span class="nk-severity nk-severity--error">error</span> | Электронный адрес приведён без аббревиатуры URL |
 | [`bibliography-order`](bibliography-order.md) | стандарт | ГОСТ 7.32-2017 п. 6.16<br>ГОСТ Р 2.105-2019 п. 6.4.2 | <span class="nk-severity nk-severity--error">error</span> | Записи списка источников идут не в порядке появления ссылок |
 | [`bibtex-order-unverifiable`](bibtex-order-unverifiable.md) | стандарт | ГОСТ 7.32-2017 п. 6.16<br>ГОСТ Р 2.105-2019 п. 6.4.2 | <span class="nk-severity nk-severity--info">info</span> | Порядок записей библиографии задан стилем BibTeX и по исходникам не проверяется |
 | [`cite-unresolved`](cite-unresolved.md) | стандарт | ГОСТ 7.32-2017 п. 6.9.1<br>ГОСТ Р 2.105-2019 п. 6.4.2 | <span class="nk-severity nk-severity--error">error</span> | Ссылка указывает на отсутствующую запись списка источников |

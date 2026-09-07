@@ -73,7 +73,12 @@
     * [note-capital](note-capital.md)
     * [note-dash](note-dash.md)
 * Источники и ссылки на них
+    * [bibitem-area-separator](bibitem-area-separator.md)
+    * [bibitem-final-dot](bibitem-final-dot.md)
+    * [bibitem-prescribed-spacing](bibitem-prescribed-spacing.md)
     * [bibitem-uncited](bibitem-uncited.md)
+    * [bibitem-url-access-date](bibitem-url-access-date.md)
+    * [bibitem-url-prefix](bibitem-url-prefix.md)
     * [bibliography-order](bibliography-order.md)
     * [bibtex-order-unverifiable](bibtex-order-unverifiable.md)
     * [cite-unresolved](cite-unresolved.md)
