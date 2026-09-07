@@ -44,15 +44,27 @@ def _categories_table() -> str:
 
 
 def _standards_table() -> str:
+    """Стандарты, которые профиль вправе назвать активным."""
     rows = [
         f"| `{item.id}` | {item.title}{', по умолчанию' if item is standards.DEFAULT else ''} |"
         for item in standards.STANDARDS.values()
+        if not item.referenced
+    ]
+    return "\n".join(["| Значение | Стандарт |", "|---|---|", *rows])
+
+
+def _references_table() -> str:
+    """Стандарты, которые активными не бывают: их только привлекают."""
+    rows = [
+        f"| `{item.id}` | {item.title} |"
+        for item in standards.STANDARDS.values()
+        if item.referenced
     ]
     return "\n".join(["| Значение | Стандарт |", "|---|---|", *rows])
 
 
 def _standards_list() -> str:
-    titles = [item.title for item in standards.STANDARDS.values()]
+    titles = [item.title for item in standards.STANDARDS.values() if not item.referenced]
     if len(titles) == 1:
         return titles[0]
     return f"{', '.join(titles[:-1])} и {titles[-1]}"
@@ -65,6 +77,7 @@ VALUES = {
     "agent_limit": str(DEFAULT_LIMIT),
     "diagnostics_table": _diagnostics_table(),
     "standards_table": _standards_table(),
+    "references_table": _references_table(),
     "standards_list": _standards_list(),
     "standards_default": standards.DEFAULT.title,
     "categories_table": _categories_table(),

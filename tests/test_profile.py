@@ -437,6 +437,81 @@ def test_unknown_standard_is_rejected(tmp_path: Path) -> None:
         load_profile(path)
 
 
+def test_references_are_read_from_the_profile(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", 'references = ["GR70100"]\n')
+
+    profile = load_profile(path)
+
+    assert profile.references == (standards.GR70100,)
+    assert profile.active == (standards.DEFAULT, standards.GR70100)
+
+
+def test_references_are_empty_by_default() -> None:
+    assert Profile().references == ()
+    assert Profile().active == (standards.DEFAULT,)
+
+
+def test_referenced_standard_cannot_be_the_active_one(tmp_path: Path) -> None:
+    """Под ГОСТ Р 7.0.100 замолчало бы всё, кроме правил о библиографии."""
+    path = write(tmp_path, "источник.toml", 'standard = "GR70100"\n')
+
+    with pytest.raises(ProfileError, match="нельзя сделать активным"):
+        load_profile(path)
+
+
+def test_active_standard_is_not_referenced_again(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", 'standard = "GR2105"\nreferences = ["GR2105"]\n')
+
+    with pytest.raises(ProfileError, match="уже назван активным"):
+        load_profile(path)
+
+
+def test_unknown_reference_is_rejected(tmp_path: Path) -> None:
+    path = write(tmp_path, "источник.toml", 'references = ["G0000"]\n')
+
+    with pytest.raises(ProfileError, match="неизвестный стандарт"):
+        load_profile(path)
+
+
+def test_references_must_be_a_list(tmp_path: Path) -> None:
+    """Строка развернулась бы в перечень букв, и стандартом оказалась бы «G»."""
+    path = write(tmp_path, "источник.toml", 'references = "GR70100"\n')
+
+    with pytest.raises(ProfileError, match="references должен быть списком"):
+        load_profile(path)
+
+
+def test_references_accumulate_along_the_chain(tmp_path: Path) -> None:
+    """Профиль кафедры дописывает свои привлечённые стандарты к вузовским."""
+    write(tmp_path, "вуз.toml", 'references = ["GR70100"]\n')
+    path = write(tmp_path, "кафедра.toml", 'extends = "вуз.toml"\nreferences = ["GR70100"]\n')
+
+    assert load_profile(path).references == (standards.GR70100,)
+
+
+def test_clause_of_a_referenced_standard_is_used(tmp_path: Path) -> None:
+    """Требование, записанное только в привлечённом стандарте, ссылается на него."""
+    profile = Profile(references=(standards.GR70100,))
+
+    assert profile.requirement("bibitem-final-dot", {"GR70100": "4.6.1"}) == (
+        "4.6.1",
+        "ГОСТ Р 7.0.100-2018",
+    )
+
+
+def test_active_standard_wins_over_a_referenced_one() -> None:
+    profile = Profile(references=(standards.GR70100,))
+    clauses = {"G732": "6.16", "GR70100": "4.6.1"}
+
+    assert profile.requirement("bibliography-order", clauses) == ("6.16", "ГОСТ 7.32-2017")
+
+
+def test_resolve_keeps_references() -> None:
+    profile = Profile(references=(standards.GR70100,)).resolve({})
+
+    assert profile.references == (standards.GR70100,)
+
+
 def test_clause_without_a_named_source_is_rejected(tmp_path: Path) -> None:
     """Пункт без источника непонятно чей."""
     path = write(tmp_path, "источник.toml", '[rules."heading-dot"]\nclause = "9.3"\n')

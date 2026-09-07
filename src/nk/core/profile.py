@@ -31,7 +31,18 @@ PYPROJECT_SECTION = "tool.nk"
 CONFIG_NAMES = ("nk.toml", ".nk.toml", PYPROJECT)
 
 _TOP_LEVEL_KEYS = frozenset(
-    {"name", "extends", "standard", "source", "disable", "enable", "rules", "elements", "appendix"}
+    {
+        "name",
+        "extends",
+        "standard",
+        "references",
+        "source",
+        "disable",
+        "enable",
+        "rules",
+        "elements",
+        "appendix",
+    }
 )
 _RULE_KEYS = frozenset({"severity", "params", "clause"})
 _ELEMENT_KEYS = frozenset({"aliases", "order", "roles"})
@@ -67,6 +78,16 @@ class Profile:
     standard: standards.Standard = standards.DEFAULT
     """Стандарт, по которому проверяется отчёт: его пункты попадают в находки."""
 
+    references: tuple[standards.Standard, ...] = ()
+    """Стандарты, привлечённые действующим источником требований.
+
+    Положение вуза требует оформить список источников по ГОСТ Р 7.0.100-2018,
+    а сам отчёт остаётся отчётом по ГОСТ 7.32-2017. Пункты привлечённого
+    стандарта действуют наравне с пунктами активного, но искать их начинают
+    только после него: там, где требование записано в обоих, отчёт оформляют
+    по активному.
+    """
+
     source_title: str = ""
     """Свой источник требований профиля — положение вуза и тому подобное."""
 
@@ -75,6 +96,11 @@ class Profile:
 
     source: Path | None = None
     """Файл, из которого прочитан профиль; ``None`` — встроенный."""
+
+    @property
+    def active(self) -> tuple[standards.Standard, ...]:
+        """Стандарты, чьи пункты действуют: активный, за ним привлечённые."""
+        return (self.standard, *self.references)
 
     @property
     def origin(self) -> str:
@@ -112,9 +138,10 @@ class Profile:
         own = self.clauses.get(rule_id)
         if own is not None:
             return own, self.source_title
-        clause = clauses.get(self.standard.id, standards.NO_CLAUSE)
-        if clause:
-            return clause, self.standard.title
+        for standard in self.active:
+            clause = clauses.get(standard.id, standards.NO_CLAUSE)
+            if clause:
+                return clause, standard.title
         if origin is standards.Origin.REGULATION:
             return standards.NO_CLAUSE, self.source_title
         return standards.NO_CLAUSE, ""
@@ -155,19 +182,7 @@ class Profile:
         merged: dict[str, Params] = {}
         for rule_id in defaults.keys() | self.params.keys():
             merged[rule_id] = {**defaults.get(rule_id, {}), **self.params.get(rule_id, {})}
-        return Profile(
-            name=self.name,
-            disabled=self.disabled,
-            enabled=self.enabled,
-            severities=self.severities,
-            params=merged,
-            elements=self.elements,
-            appendix_letters=self.appendix_letters,
-            standard=self.standard,
-            source_title=self.source_title,
-            clauses=self.clauses,
-            source=self.source,
-        )
+        return replace(self, params=merged)
 
 
 def load_profile(
@@ -325,6 +340,12 @@ def _parse(text: str, origin: str, section: bool = False) -> dict[str, Any]:
                 f"профиль {origin}: правило {rule_id!r}, неизвестные ключи {sorted(extra)}"
             )
 
+    references = data.get("references", [])
+    if isinstance(references, str) or not isinstance(references, list):
+        raise ProfileError(
+            f'профиль {origin}: references должен быть списком, например ["GR70100"]'
+        )
+
     elements = data.get("elements", {})
     if not isinstance(elements, dict):
         raise ProfileError(f"профиль {origin}: секция [elements] должна быть таблицей")
@@ -385,6 +406,9 @@ def _merge(parent: dict[str, Any], child: dict[str, Any]) -> dict[str, Any]:
         "elements": _merge_elements(parent.get("elements", {}), child.get("elements", {})),
         "appendix": {**parent.get("appendix", {}), **child.get("appendix", {})},
         "standard": child.get("standard", parent.get("standard")),
+        # Привлечённые стандарты накапливаются, как disable и enable: профиль
+        # кафедры дописывает свои к тем, что привлёк профиль вуза.
+        "references": [*parent.get("references", []), *child.get("references", [])],
         "source": {**parent.get("source", {}), **child.get("source", {})},
     }
 
@@ -419,6 +443,7 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
         if clause is not None:
             clauses[rule_id] = str(clause)
 
+    standard = _standard(data.get("standard"))
     source_title = str(data.get("source", {}).get("title", ""))
     if clauses and not source_title:
         raise ProfileError(
@@ -434,7 +459,8 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
         params=params,
         elements=_elements(data.get("elements", {})),
         appendix_letters=_appendix_letters(data.get("appendix", {})),
-        standard=_standard(data.get("standard")),
+        standard=standard,
+        references=_references(data.get("references", []), standard),
         source_title=source_title,
         clauses=clauses,
         source=source,
@@ -444,6 +470,35 @@ def _build(data: dict[str, Any], source: Path | None = None) -> Profile:
 def _standard(raw: object) -> standards.Standard:
     if raw is None:
         return standards.DEFAULT
+    standard = _named(raw)
+    if standard.referenced:
+        raise ProfileError(
+            f"профиль: {standard.title} нельзя сделать активным стандартом — "
+            f"по нему не оформляют отчёт целиком. Привлеките его ключом "
+            f'references = ["{standard.id}"]'
+        )
+    return standard
+
+
+def _references(raw: list[Any], standard: standards.Standard) -> tuple[standards.Standard, ...]:
+    """Стандарты, привлечённые источником требований, в порядке объявления.
+
+    Активный стандарт в перечень не входит: его пункты и так старше, а от
+    повторения ничего бы не изменилось, кроме путаницы в профиле.
+    """
+    found: dict[str, standards.Standard] = {}
+    for item in raw:
+        referenced = _named(item)
+        if referenced.id == standard.id:
+            raise ProfileError(
+                f"профиль: {referenced.title} уже назван активным стандартом, "
+                "привлекать его повторно незачем"
+            )
+        found[referenced.id] = referenced
+    return tuple(found.values())
+
+
+def _named(raw: object) -> standards.Standard:
     try:
         return standards.get(str(raw))
     except standards.UnknownStandardError as error:

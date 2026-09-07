@@ -14,7 +14,7 @@ from nk.core.rule import (
     UnknownRuleError,
     rule,
 )
-from nk.core.standards import G732
+from nk.core.standards import G732, GR2105, GR70100, Origin
 
 
 def test_decorator_registers_rule_with_metadata(registry: RuleRegistry) -> None:
@@ -169,3 +169,34 @@ def test_registry_collects_default_params(registry: RuleRegistry) -> None:
         return ()
 
     assert registry.default_params() == {"G732-с-параметрами": {"limit": 3}}
+
+
+def test_rule_applies_under_any_of_the_active_standards(registry: RuleRegistry) -> None:
+    """Стандартов бывает несколько: активный и привлечённые им."""
+
+    @rule(
+        id="bibitem-final-dot",
+        standards={GR70100: "4.6.1"},
+        severity=Severity.ERROR,
+        title="Описание не заканчивается точкой",
+        registry=registry,
+    )
+    def bibitem_final_dot(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    assert not bibitem_final_dot.applies_under(G732)
+    assert bibitem_final_dot.applies_under(G732, GR70100)
+
+
+def test_rule_outside_the_standards_applies_to_any(registry: RuleRegistry) -> None:
+    @rule(
+        id="text-dash",
+        origin=Origin.UNIVERSAL,
+        severity=Severity.INFO,
+        title="Дефис вместо тире",
+        registry=registry,
+    )
+    def text_dash(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    assert text_dash.applies_under(GR2105)

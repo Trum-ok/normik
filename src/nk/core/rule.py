@@ -113,9 +113,15 @@ class RuleImpl:
         """Пункт требования в этом стандарте либо пустая строка."""
         return self.clauses.get(standard_id, NO_CLAUSE)
 
-    def applies_under(self, standard: Standard) -> bool:
-        """Проверяется ли требование, когда отчёт идёт по этому стандарту."""
-        return self.origin is not Origin.STANDARD or standard.id in self.clauses
+    def applies_under(self, *active: Standard) -> bool:
+        """Проверяется ли требование, когда отчёт идёт по этим стандартам.
+
+        Стандартов бывает несколько: активный и привлечённые им. Пункта хватает
+        в любом из них — требование записано и действует.
+        """
+        if self.origin is not Origin.STANDARD:
+            return True
+        return any(standard.id in self.clauses for standard in active)
 
     def params(self, doc: Document) -> Params:
         """Значения по умолчанию, перекрытые профилем документа."""
