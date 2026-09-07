@@ -1,7 +1,8 @@
 """Команды CLI. Вся логика — в ядре; здесь только разбор аргументов и вывод."""
 
 import sys
-from collections.abc import Mapping
+from collections import Counter
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -17,7 +18,16 @@ from nk.core.diagnostics import INTERNAL
 from nk.core.finding import Severity
 from nk.core.fixer import diff, plan, write
 from nk.core.profile import Profile, ProfileError, load_profile
-from nk.core.registry import load_rules, partition_ids, select_rules, validate_profile
+from nk.core.registry import (
+    REASON_LABELS,
+    Decision,
+    Reason,
+    load_rules,
+    partition_ids,
+    review,
+    select_rules,
+    validate_profile,
+)
 from nk.core.rule import RuleImpl, UnknownRuleError
 from nk.core.runner import RunResult, run
 from nk.parse.tex import parse, parse_findings
@@ -127,33 +137,88 @@ def profile_show(
         raise typer.Exit(EXIT_INTERNAL_ERROR) from None
 
     profile = profile.resolve(registry.default_params())
-    active = {impl.id for impl in select_rules(registry, profile=profile)}
+    decisions = review(registry, profile=profile)
 
     console.print(f"Профиль: [bold]{profile.name}[/bold]")
     console.print(f"Файл: {_source(profile)}")
     console.print(f"Стандарт: {profile.standard.title}")
+    if profile.references:
+        console.print(f"Привлечены: {', '.join(item.title for item in profile.references)}")
     if profile.source_title:
         console.print(f"Свой источник: {profile.source_title}")
-    console.print(f"Правил включено: {len(active)} из {len(registry)}")
+    console.print(f"Правил включено: {sum(item.enabled for item in decisions)} из {len(registry)}")
+    _print_idle(decisions)
     if not len(registry):
         return
 
+    rows = [_profile_row(profile, decision) for decision in decisions]
+    # Колонка чужих источников пустует у профиля, который не расходится со
+    # стандартом, — а пустая колонка отнимает ширину у тех, где что-то есть.
+    foreign = any(row[3] for row in rows)
+
     table = Table(box=None, pad_edge=False)
-    table.add_column("ID")
+    # Идентификатор — ключ строки: обрезанный, он бесполезен, поэтому в узком
+    # терминале сжимается что угодно, кроме него.
+    table.add_column("ID", min_width=max(len(impl.id) for impl in registry))
     table.add_column("Уровень")
     table.add_column("Состояние")
+    if foreign:
+        table.add_column("Источник")
     table.add_column("Параметры")
-    for impl in registry:
-        severity = profile.severity_for(impl.id, impl.severity)
-        changed = "" if severity is impl.severity else f" (было {impl.severity.value})"
-        params = profile.params_for(impl.id)
-        table.add_row(
-            impl.id,
-            f"{severity.value}{changed}",
-            "включено" if impl.id in active else "отключено",
-            ", ".join(f"{k}={v!r}" for k, v in sorted(params.items())),
-        )
+    for row in rows:
+        table.add_row(*(row if foreign else (*row[:3], row[4])))
     console.print(table)
+
+
+def _profile_row(profile: Profile, decision: Decision) -> tuple[str, str, str, str, str]:
+    """Строка таблицы: правило, его итоговый уровень, состояние, источник, параметры."""
+    impl = decision.rule
+    severity = profile.severity_for(impl.id, impl.severity)
+    changed = "" if severity is impl.severity else f" (было {impl.severity.value})"
+    params = profile.params_for(impl.id)
+    return (
+        impl.id,
+        f"{severity.value}{changed}",
+        decision.label,
+        _source_cell(profile, impl),
+        ", ".join(f"{key}={value!r}" for key, value in sorted(params.items())),
+    )
+
+
+def _print_idle(decisions: Sequence[Decision]) -> None:
+    """Почему остальные правила не запускаются, по причинам.
+
+    Одно слово «отключено» на всех означало пять разных вещей сразу: чаще всего
+    правило молчит не потому, что его выключили, а потому, что его требования
+    нет в стандарте прогона.
+    """
+    counted = Counter(item.reason for item in decisions if not item.enabled)
+    if not counted:
+        return
+    parts = [
+        f"{counted[reason]} — {REASON_LABELS[reason]}" for reason in Reason if reason in counted
+    ]
+    console.print(f"Не запускаются: {', '.join(parts)}")
+
+
+#: Как называют в таблице свой источник профиля: полное его имя стоит в шапке.
+OWN_SOURCE_CELL = "свой источник"
+
+
+def _source_cell(profile: Profile, impl: RuleImpl) -> str:
+    """Чей пункт попадёт в находку, если он не из активного стандарта.
+
+    Колонка отвечает на вопрос, ответ на который непредсказуем. Пункт активного
+    стандарта предсказуем — он назван в шапке и на странице правила, и повторять
+    его в каждой из сотни строк значило бы прятать за ним те немногие строки,
+    где источник другой: привлечённый стандарт или положение вуза.
+    """
+    clause, source = profile.requirement(impl.id, impl.clauses, impl.origin)
+    if not source or source == profile.standard.title:
+        return ""
+    if source == profile.source_title:
+        source = OWN_SOURCE_CELL
+    return f"{source} п. {clause}" if clause else source
 
 
 @app.command("check")

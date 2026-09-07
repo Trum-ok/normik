@@ -16,6 +16,9 @@ RULE_ID = "figure-caption-dot"
 
 runner = CliRunner()
 
+#: Терминал, в котором таблица помещается целиком и ячейки не переносятся.
+WIDE = {"COLUMNS": "200"}
+
 
 FIGURE = """\
 Схема установки приведена на рисунке~\\ref{fig:setup}.
@@ -200,6 +203,42 @@ def test_profile_show_lists_the_active_set() -> None:
     assert "Файл: встроенный" in result.stdout
     assert "Стандарт: ГОСТ 7.32-2017" in result.stdout
     assert RULE_ID in result.stdout
+
+
+def test_profile_show_names_the_reason_a_rule_is_idle() -> None:
+    """Правило другого стандарта молчит не потому, что его выключили."""
+    result = runner.invoke(app, ["profile", "show"])
+
+    assert "нет в стандарте" in result.stdout
+    assert "выключено по умолчанию" in result.stdout
+    assert "Не запускаются:" in result.stdout
+
+
+def test_profile_show_names_the_referenced_standard() -> None:
+    """Привлечённый стандарт объясняет, откуда взялись правила библиографии."""
+    # Ширина задана явно: в узком терминале Rich переносит ячейку, и проверять
+    # подстроку становится нечего.
+    result = runner.invoke(app, ["profile", "show", "--profile", "bmstu-vkr"], env=WIDE)
+
+    assert result.exit_code == EXIT_OK
+    assert "Привлечены: ГОСТ Р 7.0.100-2018" in result.stdout
+    assert "отключено профилем" in result.stdout
+    assert "включено профилем" in result.stdout
+
+
+def test_profile_show_marks_a_clause_of_its_own(tmp_path: Path) -> None:
+    """Пункт положения виден в таблице: находка сошлётся на него, а не на стандарт."""
+    profile = tmp_path / "кафедра.toml"
+    profile.write_text(
+        f'[source]\ntitle = "Положение вуза"\n\n[rules."{RULE_ID}"]\nclause = "10.11"\n',
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["profile", "show", "--profile", str(profile)])
+
+    assert result.exit_code == EXIT_OK
+    assert "Свой источник: Положение вуза" in result.stdout
+    assert "свой источник" in result.stdout
 
 
 def test_inline_suppression_lowers_exit_code(tmp_path: Path) -> None:

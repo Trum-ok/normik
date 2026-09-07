@@ -5,7 +5,7 @@ import pytest
 from nk.core.document import Document
 from nk.core.finding import Finding, Severity
 from nk.core.profile import Profile, ProfileError
-from nk.core.registry import load_rules, select_rules, validate_profile
+from nk.core.registry import Reason, load_rules, review, select_rules, validate_profile
 from nk.core.rule import (
     REGISTRY,
     DuplicateRuleError,
@@ -263,3 +263,98 @@ def test_deprecated_id_colliding_with_a_rule_is_rejected() -> None:
         )
         def second(doc: Document) -> Iterable[Finding]:
             return ()
+
+
+def test_decision_names_the_standard_when_the_rule_is_idle(registry: RuleRegistry) -> None:
+    @rule(
+        id="требование-2.105",
+        standards={GR2105: "6.9.4"},
+        severity=Severity.INFO,
+        title="Требование одного стандарта",
+        registry=registry,
+    )
+    def eskd_only(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    (decision,) = review(registry, profile=Profile(standard=G732))
+
+    assert not decision.enabled
+    assert decision.reason is Reason.OTHER_STANDARD
+
+
+def test_decision_tells_disabled_from_idle(three_rules: RuleRegistry) -> None:
+    """Отключённое профилем и неприменимое — разные вещи, и раньше обе звались одинаково."""
+    profile = Profile(standard=G732, disabled=frozenset({"G732-a"}))
+
+    reasons = {item.rule.id: item.reason for item in review(three_rules, profile=profile)}
+
+    assert reasons == {
+        "G732-a": Reason.DISABLED,
+        "G732-b": Reason.ACTIVE,
+        "G732-c": Reason.ACTIVE,
+    }
+
+
+def test_decision_marks_what_the_profile_switched_on(registry: RuleRegistry) -> None:
+    @rule(
+        id="шумное",
+        origin=Origin.UNIVERSAL,
+        severity=Severity.INFO,
+        title="Шумное правило",
+        default_off=True,
+        registry=registry,
+    )
+    def noisy(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    (decision,) = review(registry, profile=Profile(enabled=frozenset({"шумное"})))
+
+    assert decision.enabled
+    assert decision.reason is Reason.ENABLED
+
+
+def test_enable_of_a_working_rule_changes_nothing(three_rules: RuleRegistry) -> None:
+    """Профиль перечисляет в ``enable`` и то, что и так работает: причина от этого не меняется."""
+    profile = Profile(standard=G732, enabled=frozenset({"G732-a"}))
+
+    reasons = {item.rule.id: item.reason for item in review(three_rules, profile=profile)}
+
+    assert reasons["G732-a"] is Reason.ACTIVE
+
+
+def test_disable_wins_over_the_key(three_rules: RuleRegistry) -> None:
+    profile = Profile(disabled=frozenset({"G732-a"}))
+
+    decisions = {
+        item.rule.id: item for item in review(three_rules, profile=profile, select=["G732-a"])
+    }
+
+    assert decisions["G732-a"].reason is Reason.DISABLED
+    assert decisions["G732-b"].reason is Reason.NOT_SELECTED
+
+
+def test_key_overrides_the_standard(registry: RuleRegistry) -> None:
+    """``--select`` сильнее стандарта: правило запрашивают по имени, зная, что делают."""
+
+    @rule(
+        id="требование-2.105",
+        standards={GR2105: "6.9.4"},
+        severity=Severity.INFO,
+        title="Требование одного стандарта",
+        registry=registry,
+    )
+    def eskd_only(doc: Document) -> Iterable[Finding]:
+        return ()
+
+    (decision,) = review(registry, profile=Profile(standard=G732), select=["требование-2.105"])
+
+    assert decision.enabled
+    assert decision.reason is Reason.SELECTED
+
+
+def test_review_covers_the_whole_registry(three_rules: RuleRegistry) -> None:
+    """Решение принимается по каждому правилу: иначе о молчащем нечего сказать."""
+    decisions = review(three_rules, ignore=["G732-b"])
+
+    assert [item.rule.id for item in decisions] == ["G732-a", "G732-b", "G732-c"]
+    assert [item.enabled for item in decisions] == [True, False, True]
