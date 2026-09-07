@@ -2,7 +2,7 @@ from pathlib import Path
 
 from nk.core import categories
 from nk.core.registry import load_rules
-from nk.report import examples, rules_docs
+from nk.report import common, examples, rules_docs
 
 ROOT = Path(__file__).parent.parent
 RULES_DIR = ROOT / "docs" / "rules"
@@ -91,3 +91,18 @@ def test_every_rule_belongs_to_a_declared_category() -> None:
     misplaced = [impl.id for impl in load_rules() if impl.category not in categories.BY_NAME]
 
     assert misplaced == []
+
+
+def test_docs_url_matches_the_site_config() -> None:
+    """Ссылки в выводе строит код, а адрес сайта объявлен в конфиге: они не должны расходиться."""
+    config = (ROOT / "properdocs.yml").read_text(encoding="utf-8")
+
+    assert f"site_url: {common.DOCS_URL}" in config
+
+
+def test_rule_link_points_at_the_page_of_that_rule() -> None:
+    """Адрес страницы правила собирается из идентификатора — как и имя её файла."""
+    impl = next(iter(load_rules()))
+
+    assert common.rule_docs_url(impl.id) == f"{common.DOCS_URL}{RULES_DIR.name}/{impl.id}/"
+    assert (RULES_DIR / f"{impl.id}.md").is_file()

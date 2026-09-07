@@ -64,3 +64,19 @@ def test_caret_points_at_the_place_without_colour(plain: Console) -> None:
 def test_no_caret_under_a_command(plain: Console, result: RunResult) -> None:
     """Под \\caption указывать нечего: строка помечена стрелкой, а знака там нет."""
     assert "      |   ^" not in capture(plain, result)
+
+
+def test_rule_id_links_to_its_documentation_page(result: RunResult) -> None:
+    """В терминале идентификатор — ссылка: страница правила с примером в одном щелчке."""
+    terminal = Console(width=120, force_terminal=True, legacy_windows=False)
+    text = capture(terminal, result)
+
+    assert "https://trum-ok.github.io/normik/rules/figure-caption-dot/" in text
+
+
+def test_link_does_not_leak_into_a_file(plain: Console, result: RunResult) -> None:
+    """При перенаправлении вывода разметки нет — остаётся один идентификатор."""
+    text = capture(plain, result)
+
+    assert "https://" not in text
+    assert "figure-caption-dot" in text

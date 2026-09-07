@@ -18,6 +18,7 @@ from nk.report.common import (
     finding_fields,
     fixable_line,
     group_by_file,
+    rule_docs_url,
     suppressed_line,
     total_line,
 )
@@ -30,6 +31,12 @@ SEVERITY_STYLES: dict[Severity, str] = {
 
 MARKER = "> "
 INDENT = "  "
+
+#: Идентификатор правила ведёт на его страницу в документации: с примером
+#: нарушения и правки под рукой непонятную находку разбирают, не уходя из
+#: терминала. Терминалы без поддержки ссылок покажут просто идентификатор,
+#: а при перенаправлении в файл разметки не будет вовсе.
+RULE_STYLE = "dim link {url}"
 
 
 def render(result: RunResult, console: Console, fixed: int = 0) -> None:
@@ -74,7 +81,8 @@ def _print_finding(console: Console, finding: Finding, room: int) -> None:
 
     header = Text(f"{INDENT}{position}  ")
     header.append(SEVERITY_LABELS[finding.severity], style=style)
-    header.append(f"  {finding.rule_id}", style="dim")
+    header.append("  ")
+    header.append(finding.rule_id, style=RULE_STYLE.format(url=rule_docs_url(finding.rule_id)))
     source = citation(finding)
     if source:
         header.append(f"  ({source})", style="dim")

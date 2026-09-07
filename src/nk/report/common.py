@@ -19,6 +19,16 @@ SEVERITY_LABELS: dict[Severity, str] = {
 }
 
 
+#: Где опубликована документация. Адрес меняется вместе с ``site_url`` в
+#: ``properdocs.yml``: код собирает ссылки сам, читать конфиг сайта он не может.
+DOCS_URL = "https://trum-ok.github.io/normik/"
+
+
+def rule_docs_url(rule_id: str) -> str:
+    """Страница правила в документации: там же и пример нарушения."""
+    return f"{DOCS_URL}rules/{rule_id}/"
+
+
 def group_by_file(findings: Iterable[Finding]) -> list[tuple[Path, list[Finding]]]:
     """Находки по файлам; внутри файла — по возрастанию номера строки."""
     ordered = sorted(findings, key=lambda finding: finding.sort_key)
